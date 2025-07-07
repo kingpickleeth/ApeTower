@@ -495,31 +495,49 @@ bar.name = 'hpBar';
         if (this.lives <= 0 && !this.gameOver) {
           this.gameOver = true;
           this.enemySpawnEvent.remove(false);
-          this.scene.pause();
+          this.isPaused = true; // Stop game logic
+          this.physics.pause(); // Stop physics
           // 🧹 Stop all tower shoot timers
           this.towers.forEach(tower => {
           const timer = tower.getData('shootTimer');
           timer?.remove(false);
           });
-          
-          const gameOverText = this.add.text(300, 250, '💀 Game Over', {
-            fontSize: '40px',
-            color: '#ff3333'
-          }).setOrigin(0.5);
-        
-          const restartBtn = this.add.text(300, 300, '🔁 Restart', {
-            fontSize: '20px',
-            backgroundColor: '#444444',
-            padding: { x: 10, y: 6 },
-            color: '#ffffff'
-          })
-          .setOrigin(0.5)
-          .setInteractive()
-          .on('pointerdown', () => {
-            gameOverText.destroy();
-            restartBtn.destroy();
-            this.restartGame();
-          });        
+
+          const centerX = Number(this.game.config.width) / 2;
+const centerY = Number(this.game.config.height) / 2;
+
+const overlay = this.add.rectangle(centerX, centerY, this.game.config.width as number, this.game.config.height as number, 0x000000, 0.4).setOrigin(0.5);
+overlay.setDepth(-1); // ensure it stays behind
+
+// 🧱 Black background box
+const popupBg = this.add.rectangle(centerX, centerY, 320, 140, 0x000000, 0.8)
+  .setOrigin(0.5)
+  .setStrokeStyle(2, 0xff3333);
+
+// 💀 Game Over text
+const gameOverText = this.add.text(centerX, centerY - 30, '💀 Game Over', {
+  fontSize: '40px',
+  color: '#ff3333'
+}).setOrigin(0.5);
+
+// 🔁 Restart button
+const restartBtn = this.add.text(centerX, centerY + 30, '🔁 Restart', {
+  fontSize: '20px',
+  backgroundColor: '#444444',
+  padding: { x: 10, y: 6 },
+  color: '#ffffff'
+})
+.setOrigin(0.5)
+.setInteractive()
+.on('pointerdown', () => {
+  popupBg.destroy();
+  gameOverText.destroy();
+  restartBtn.destroy();
+  this.restartGame(); // Directly call without delay
+});
+
+
+    
           
         }
 
@@ -694,8 +712,18 @@ this.children.getAll().forEach(child => {
     this.livesText.setText(`Lives: 10`);
   
     // ▶️ Resume gameplay
-    this.scene.resume();
     this.startNextWave();
+    this.isPaused = false;
+    this.physics.resume();
+    
+    // 🔁 Re-create enemy spawn event
+    this.enemySpawnEvent = this.time.addEvent({
+      delay: 1000,
+      callback: this.spawnEnemy,
+      callbackScope: this,
+      loop: true,
+    });
+    
   }
   
 
