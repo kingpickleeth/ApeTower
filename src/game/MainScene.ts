@@ -547,8 +547,7 @@ const y = tower.y;
     const panel = this.add.container(x, y).setName('upgradePanel');
 
   // 🎯 Show range indicator (don't add to panel!)
-    const range = tower.getData('range');
-   
+  
 
     const bgWidth = 170;
     const bgHeight = 110;
