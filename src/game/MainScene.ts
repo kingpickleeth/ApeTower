@@ -195,6 +195,7 @@ const buttonYBase = screenHeight - buttonMargin - totalHeight;
     const btnY = buttonYBase + index * (buttonHeight + buttonSpacing);
     buttonContainer.setPosition(btnX, btnY);
     buttonContainer.setSize(bg.width, bg.height);
+    buttonContainer.setDepth(1);
     buttonContainer.setInteractive(new Phaser.Geom.Rectangle(0, 0, bg.width, bg.height), Phaser.Geom.Rectangle.Contains);
   
     buttonContainer.on('pointerdown', () => {
@@ -226,15 +227,13 @@ const buttonYBase = screenHeight - buttonMargin - totalHeight;
         0xffff00;
       bg.setStrokeStyle(2, strokeColor);
     }
-   
-
   });
-   // ✅ Add background *after* buttons are created
+
+  // ✅ Background rectangle AFTER buttons are created
 const panelPadding = 10;
 const firstButton = towerButtons[0];
 const lastButton = towerButtons[towerButtons.length - 1];
 
-// Calculate bounds from buttons
 const minX = firstButton.x - buttonWidth / 2 - panelPadding;
 const minY = firstButton.y - buttonHeight / 2 - panelPadding;
 const maxX = lastButton.x + buttonWidth / 2 + panelPadding;
@@ -248,12 +247,12 @@ this.add.rectangle(
   minY,
   panelWidth,
   panelHeight,
-  0x111a12, // ✅ solid fill
-  1         // ✅ solid alpha
+  0x111a12, // ✅ solid dark fill
+  1         // ✅ fully opaque
 )
 .setOrigin(0, 0)
-.setStrokeStyle(2, 0x2aff84) // ✅ green border fully visible
-.setDepth(-2);
+.setStrokeStyle(2, 0x2aff84)
+.setDepth(0); // ✅ behind buttons
 
     // 💥 Bullet + Enemy collision
       this.physics.add.overlap(
