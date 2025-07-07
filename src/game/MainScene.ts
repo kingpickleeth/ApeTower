@@ -92,19 +92,8 @@ export default class MainScene extends Phaser.Scene {
 
    
     // 💬 UI Text
-    const hudY = this.mapOffsetY / 3;
-    this.add.rectangle(
-      screenWidth / 2,
-      hudY + 12,
-      screenWidth - 40,
-      46,
-      0x111a12,
-      1
-    )
-    .setOrigin(0.5)
-    .setStrokeStyle(1, 0x2aff84)
-    .setDepth(-1);    
-    
+    const hudY = 16; // top margin padding
+
     
     const textStyle = {
       fontSize: '18px',
@@ -343,7 +332,7 @@ const restartBtn = this.add.text(0, 0, '⟳ Restart', {
 
 // Position side-by-side in the top-right margin area
 const spacing = 12;
-const hudTopY = this.mapOffsetY / 6; // same as vine/wave HUD
+const hudTopY = this.mapOffsetY / 8; // same as vine/wave HUD
 
 const rightMargin = 24;
 
@@ -445,7 +434,10 @@ bar.name = 'hpBar';
     }
 
     if (!closestEnemy) return;
-
+    const originalColor = tower.fillColor;
+    tower.setFillStyle(0xffffff); // Flash white
+    this.time.delayedCall(80, () => tower.setFillStyle(originalColor));
+    
     const bullet = this.add.circle(tower.x, tower.y, 4, 0xffff00);
     this.physics.add.existing(bullet);
 
