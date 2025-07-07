@@ -7,6 +7,7 @@ export default class MainScene extends Phaser.Scene {
   bulletGroup!: Phaser.GameObjects.Group;
   tower!: Phaser.GameObjects.Arc;
   towers: Phaser.GameObjects.Arc[] = [];
+  hudBar!: Phaser.GameObjects.Rectangle;
 
   vineBalance: number = 50; // 💰 Start with 50 VINE
   vineText!: Phaser.GameObjects.Text;
@@ -94,13 +95,30 @@ export default class MainScene extends Phaser.Scene {
     this.path.draw(graphics);
 
     // 💬 UI Text
-    const hudY = this.mapOffsetY / 4;
-
-this.vineText = this.add.text(40, hudY, '$VINE: 50', { fontSize: '20px', color: '#ffffff' });
-this.waveText = this.add.text(220, hudY, 'Wave: 1', { fontSize: '20px', color: '#ffffff' });
-this.livesText = this.add.text(400, hudY, 'Lives: 10', { fontSize: '20px', color: '#ffffff' });
-
-
+    const hudY = this.mapOffsetY / 3;
+    this.add.rectangle(
+      screenWidth / 2,
+      hudY + 12,
+      screenWidth - 40,
+      46,
+      0x111a12,
+      1
+    )
+    .setOrigin(0.5)
+    .setStrokeStyle(1, 0x2aff84)
+    .setDepth(-1);    
+    
+    
+    const textStyle = {
+      fontSize: '18px',
+      fontFamily: 'Orbitron',
+      color: '#eeeeee',
+    };
+    
+    this.vineText = this.add.text(40, hudY, '$VINE: 50', textStyle);
+    this.waveText = this.add.text(220, hudY, 'Wave: 1', textStyle);
+    this.livesText = this.add.text(400, hudY, 'Lives: 10', textStyle);
+    
     // 🧱 Tilemap logic (1 = buildable, 0 = path)
     this.tileMap = Array.from({ length: this.mapRows }, () => Array(this.mapCols).fill(1));
     for (const [col, row] of pathTiles) this.tileMap[row][col] = 0;
@@ -140,31 +158,41 @@ this.livesText = this.add.text(400, hudY, 'Lives: 10', { fontSize: '20px', color
 
   // 🧠 Tower type selector with hover + selection styling
   const types = ['basic', 'cannon', 'rapid'];
-  const buttonSpacing = 40;
-  const buttonMargin = 20;
-  
-  const buttonStartX = screenWidth - buttonMargin;
-  const buttonStartY = screenHeight - (types.length * buttonSpacing) - buttonMargin;
-  
+  const buttonSpacing = 12;
+const buttonMargin = 24;
+
+const buttonWidth = 100;
+const buttonHeight = 36;
+
+// Right align: X position inside the margin
+const buttonX = screenWidth - buttonMargin - buttonWidth / 2;
+
+// Stack upward from the bottom margin
+const totalHeight = types.length * buttonHeight + (types.length - 1) * buttonSpacing;
+const buttonYBase = screenHeight - buttonMargin - totalHeight;
+
   const towerButtons: Phaser.GameObjects.Container[] = [];
   
+ // 📦 Updated tower select panel background with top-left alignment
+
+
   types.forEach((type, index) => {
     const label = this.add.text(0, 0, type.toUpperCase(), {
       fontSize: '16px',
+      fontFamily: 'Orbitron',
       color: '#ffffff',
       align: 'center'
     });
   
-    const paddingX = 12;
-    const paddingY = 8;
-    const bg = this.add.rectangle(0, 0, label.width + paddingX * 2, label.height + paddingY * 2, 0x333333)
+  
+    const bg = this.add.rectangle(0, 0, buttonWidth, buttonHeight, 0x333333)
       .setStrokeStyle(0); // no border initially
   
     label.setPosition(-label.width / 2, -label.height / 2);
     const buttonContainer = this.add.container(0, 0, [bg, label]);
   
-    const btnX = buttonStartX - bg.width / 2;
-    const btnY = buttonStartY + index * buttonSpacing;
+    const btnX = buttonX; // <-- Already properly calculated as "right-aligned"
+    const btnY = buttonYBase + index * (buttonHeight + buttonSpacing);
     buttonContainer.setPosition(btnX, btnY);
     buttonContainer.setSize(bg.width, bg.height);
     buttonContainer.setInteractive(new Phaser.Geom.Rectangle(0, 0, bg.width, bg.height), Phaser.Geom.Rectangle.Contains);
@@ -198,8 +226,35 @@ this.livesText = this.add.text(400, hudY, 'Lives: 10', { fontSize: '20px', color
         0xffff00;
       bg.setStrokeStyle(2, strokeColor);
     }
+   
+
   });
-  
+   // ✅ Add background *after* buttons are created
+const panelPadding = 10;
+const firstButton = towerButtons[0];
+const lastButton = towerButtons[towerButtons.length - 1];
+
+// Calculate bounds from buttons
+const minX = firstButton.x - buttonWidth / 2 - panelPadding;
+const minY = firstButton.y - buttonHeight / 2 - panelPadding;
+const maxX = lastButton.x + buttonWidth / 2 + panelPadding;
+const maxY = lastButton.y + buttonHeight / 2 + panelPadding;
+
+const panelWidth = maxX - minX;
+const panelHeight = maxY - minY;
+
+this.add.rectangle(
+  minX,
+  minY,
+  panelWidth,
+  panelHeight,
+  0x111a12, // ✅ solid fill
+  1         // ✅ solid alpha
+)
+.setOrigin(0, 0)
+.setStrokeStyle(2, 0x2aff84) // ✅ green border fully visible
+.setDepth(-2);
+
     // 💥 Bullet + Enemy collision
       this.physics.add.overlap(
       this.bulletGroup,
@@ -257,10 +312,11 @@ this.livesText = this.add.text(400, hudY, 'Lives: 10', { fontSize: '20px', color
     // Restart Button
 // ⏸ Pause Button
 const pauseBtn = this.add.text(0, 0, '⏸ Pause', {
-  fontSize: '18px',
-  color: '#ffffff',
-  backgroundColor: '#444444',
-  padding: { x: 10, y: 6 }
+  fontSize: '16px',
+  fontFamily: 'Orbitron',
+  backgroundColor: '#2a2a2a',
+  color: '#e2e619',
+  padding: { x: 12, y: 8 }
 })
 .setOrigin(1, 0)
 .setInteractive()
@@ -271,10 +327,11 @@ const pauseBtn = this.add.text(0, 0, '⏸ Pause', {
 
 // 🔁 Restart Button
 const restartBtn = this.add.text(0, 0, '⟳ Restart', {
-  fontSize: '18px',
-  color: '#ffffff',
-  backgroundColor: '#444444',
-  padding: { x: 10, y: 6 }
+  fontSize: '16px',
+  fontFamily: 'Orbitron',
+  backgroundColor: '#2a2a2a',
+  color: '#eb4034',
+  padding: { x: 12, y: 8 }
 })
 .setOrigin(1, 0)
 .setInteractive()
@@ -284,8 +341,12 @@ const restartBtn = this.add.text(0, 0, '⟳ Restart', {
 const spacing = 12;
 const hudTopY = this.mapOffsetY / 6; // same as vine/wave HUD
 
-restartBtn.setPosition(Number(this.game.config.width) - buttonMargin, hudTopY);
-pauseBtn.setPosition(restartBtn.x - restartBtn.width - spacing, hudTopY);
+const rightMargin = 24;
+
+const startX = Number(this.game.config.width) - rightMargin;
+
+restartBtn.setPosition(startX, hudTopY);
+pauseBtn.setPosition(startX - restartBtn.width - spacing, hudTopY);
 
   }
 
@@ -517,6 +578,9 @@ const popupBg = this.add.rectangle(centerX, centerY, 320, 140, 0x000000, 0.8)
 // 💀 Game Over text
 const gameOverText = this.add.text(centerX, centerY - 30, '💀 Game Over', {
   fontSize: '40px',
+  fontFamily: 'Orbitron',
+  fontStyle: 'bold',
+  align: 'center',
   color: '#ff3333'
 }).setOrigin(0.5);
 
@@ -633,11 +697,26 @@ if (this.activeUpgradeButton && this.activeUpgradeCost !== undefined) {
       bannerBg.y,
       `🌊 Wave ${this.waveNumber}`,
       {
-        fontSize: '26px',
-        color: '#ffcc00',
+        fontSize: '28px',
+        fontFamily: 'Orbitron',
+        color: '#2aff84',
         fontStyle: 'bold',
+        align: 'center',
       }
     ).setOrigin(0.5);
+    bannerText.setAlpha(0).setScale(0.9);
+    bannerBg.setAlpha(0).setScale(0.9);
+
+    this.tweens.add({
+      targets: [bannerText, bannerBg],
+      alpha: { from: 0, to: 1 },
+      scale: { from: 0.9, to: 1 },
+      duration: 300,
+      ease: 'Back',
+      yoyo: true,
+      hold: 1400
+    });
+    
     
     this.time.delayedCall(2000, () => {
       bannerBg.destroy();
@@ -725,8 +804,6 @@ this.children.getAll().forEach(child => {
     });
     
   }
-  
-
   // SHOW TOWER UPGRADE PANEL FUNCTION
   showUpgradePanel(tower: Phaser.GameObjects.Arc) {
     const existing = this.children.getByName('upgradePanel');
@@ -757,8 +834,6 @@ const y = tower.y;
     const panel = this.add.container(x, y).setName('upgradePanel');
 
   // 🎯 Show range indicator (don't add to panel!)
-  
-
     const bgWidth = 170;
     const bgHeight = 110;
 
@@ -787,25 +862,22 @@ this.nextRangeCircle = this.add.circle(tower.x, tower.y, nextRng, 0x88ccff, 0.15
   .setStrokeStyle(1, 0x88ccff)
   .setDepth(-1);
 
-
-
     const statsText = this.add.text(-bgWidth / 2 + 10, -bgHeight / 2 + 16, 
       `🔸 DMG: ${dmg} ➡️ ${nextDmg}\n🔹 RNG: ${rng} ➡️ ${nextRng}`, 
       {
-        fontSize: '14px',
+        fontSize: '12px',
+        fontFamily: 'Orbitron',
         color: '#ffffff',
         align: 'left',
         lineSpacing: 6 // 🧼 adds vertical space between lines
       }
     );
-    
-    
-
   
     const hasEnough = this.vineBalance >= upgradeCost;
   
     const upgradeBtn = this.add.text(0, 20, `Upgrade 🔼 (${upgradeCost})`, {
-      fontSize: '14px',
+      fontSize: '12px',
+      fontFamily: 'Orbitron',
       backgroundColor: hasEnough ? '#555555' : '#552222',
       padding: { x: 10, y: 6 },
       color: hasEnough ? '#ffff00' : '#ff3333'
