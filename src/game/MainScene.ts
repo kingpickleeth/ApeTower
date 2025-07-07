@@ -8,7 +8,7 @@ export default class MainScene extends Phaser.Scene {
   tower!: Phaser.GameObjects.Arc;
   towers: Phaser.GameObjects.Arc[] = [];
 
-  vineBalance: number = 0;
+  vineBalance: number = 50; // 💰 Start with 50 VINE
   vineText!: Phaser.GameObjects.Text;
   waveText!: Phaser.GameObjects.Text;
   livesText!: Phaser.GameObjects.Text;
@@ -16,11 +16,10 @@ export default class MainScene extends Phaser.Scene {
   nextRangeCircle?: Phaser.GameObjects.Arc;
   mapOffsetX = 0;
   mapOffsetY = 0;
-  
+  isPaused: boolean = false;
   activeUpgradeButton?: Phaser.GameObjects.Text;
   activeUpgradeCost?: number;
   activeTower?: Phaser.GameObjects.Arc;
-
 
   tileSize = 64;
   mapCols = 10;
@@ -97,9 +96,10 @@ export default class MainScene extends Phaser.Scene {
     // 💬 UI Text
     const hudY = this.mapOffsetY / 4;
 
-this.vineText = this.add.text(40, hudY, '$VINE: 0', { fontSize: '20px', color: '#ffffff' });
+this.vineText = this.add.text(40, hudY, '$VINE: 50', { fontSize: '20px', color: '#ffffff' });
 this.waveText = this.add.text(220, hudY, 'Wave: 1', { fontSize: '20px', color: '#ffffff' });
 this.livesText = this.add.text(400, hudY, 'Lives: 10', { fontSize: '20px', color: '#ffffff' });
+
 
     // 🧱 Tilemap logic (1 = buildable, 0 = path)
     this.tileMap = Array.from({ length: this.mapRows }, () => Array(this.mapCols).fill(1));
@@ -250,7 +250,42 @@ this.livesText = this.add.text(400, hudY, 'Lives: 10', { fontSize: '20px', color
         }
       }
     );
+
+    
     this.startNextWave(); // 👈 Kick off the first wave!
+
+    // Restart Button
+// ⏸ Pause Button
+const pauseBtn = this.add.text(0, 0, '⏸ Pause', {
+  fontSize: '18px',
+  color: '#ffffff',
+  backgroundColor: '#444444',
+  padding: { x: 10, y: 6 }
+})
+.setOrigin(1, 0)
+.setInteractive()
+.on('pointerdown', () => {
+  this.isPaused = !this.isPaused;
+  pauseBtn.setText(this.isPaused ? '▶️ Resume' : '⏸ Pause');
+});
+
+// 🔁 Restart Button
+const restartBtn = this.add.text(0, 0, '⟳ Restart', {
+  fontSize: '18px',
+  color: '#ffffff',
+  backgroundColor: '#444444',
+  padding: { x: 10, y: 6 }
+})
+.setOrigin(1, 0)
+.setInteractive()
+.on('pointerdown', () => this.restartGame());
+
+// Position side-by-side in the top-right margin area
+const spacing = 12;
+const hudTopY = this.mapOffsetY / 6; // same as vine/wave HUD
+
+restartBtn.setPosition(Number(this.game.config.width) - buttonMargin, hudTopY);
+pauseBtn.setPosition(restartBtn.x - restartBtn.width - spacing, hudTopY);
 
   }
 
@@ -297,7 +332,11 @@ this.livesText = this.add.text(400, hudY, 'Lives: 10', { fontSize: '20px', color
     enemy.setData('speed', speed);
   
     const barBg = this.add.rectangle(enemy.x, enemy.y - 16, 20, 4, 0x222222);
-    const bar = this.add.rectangle(enemy.x, enemy.y - 16, 20, 4, 0x00ff00);
+barBg.name = 'hpBarBg';
+
+const bar = this.add.rectangle(enemy.x, enemy.y - 16, 20, 4, 0x00ff00);
+bar.name = 'hpBar';
+
     enemy.setData('hpBar', bar);
     enemy.setData('hpBarBg', barBg);
   
@@ -364,7 +403,24 @@ this.livesText = this.add.text(400, hudY, 'Lives: 10', { fontSize: '20px', color
   placeTowerAt(col: number, row: number) {
     if (this.upgradePanelOpen) return;
     if (this.tileMap[row][col] !== 1) return;
-
+    let cost = 10;
+    if (this.currentTowerType === 'cannon') {
+      cost = 15;
+    } else if (this.currentTowerType === 'rapid') {
+      cost = 12;
+    }
+    
+    if (this.vineBalance < cost) {
+      const warning = this.add.text(Number(this.game.config.width) / 2, 40, '❌ Not enough $VINE', {
+        fontSize: '16px',
+        color: '#ff3333',
+        fontStyle: 'bold',
+      }).setOrigin(0.5);
+    
+      this.time.delayedCall(1200, () => warning.destroy());
+      return;
+    }
+    
     const x = this.mapOffsetX + col * this.tileSize + this.tileSize / 2;
     const y = this.mapOffsetY + row * this.tileSize + this.tileSize / 2;
 
@@ -376,7 +432,8 @@ this.livesText = this.add.text(400, hudY, 'Lives: 10', { fontSize: '20px', color
     } else if (this.currentTowerType === 'rapid') {
       color = 0xffff00; fireRate = 400; range = 150; damage = 0.5;
     }
-
+    this.vineBalance -= cost;
+    this.vineText.setText(`$VINE: ${this.vineBalance}`);    
     const tower = this.add.circle(x, y, 15, color);
     this.physics.add.existing(tower);
     tower.setData('range', range);
@@ -390,17 +447,24 @@ this.livesText = this.add.text(400, hudY, 'Lives: 10', { fontSize: '20px', color
     this.tileSprites[row][col].setFillStyle(0x0000ff).setAlpha(0.3);
     this.towers.push(tower);
 
-    this.time.addEvent({
+    const shootTimer = this.time.addEvent({
       delay: fireRate,
-      callback: () => this.shootFromTower(tower),
+      callback: () => {
+        if (!this.isPaused) {
+          this.shootFromTower(tower);
+        }
+      },
       loop: true
     });
+    
+    // Store timer on tower
+    tower.setData('shootTimer', shootTimer);    
   }
 
   // 🔁 Main game loop
   update(_: number, delta: number) {
     const baseSpeed = 1 / 8000;
-
+    if (this.isPaused) return;
     this.enemyGroup.getChildren().forEach((enemyObj) => {
       const enemy = enemyObj as Phaser.GameObjects.Arc;
       let t = enemy.getData('t') ?? 0;
@@ -423,6 +487,12 @@ this.livesText = this.add.text(400, hudY, 'Lives: 10', { fontSize: '20px', color
           this.gameOver = true;
           this.enemySpawnEvent.remove(false);
           this.scene.pause();
+          // 🧹 Stop all tower shoot timers
+          this.towers.forEach(tower => {
+          const timer = tower.getData('shootTimer');
+          timer?.remove(false);
+          });
+
           this.add.text(300, 250, '💀 Game Over', {
             fontSize: '40px',
             color: '#ff3333'
@@ -518,12 +588,75 @@ if (this.activeUpgradeButton && this.activeUpgradeCost !== undefined) {
     console.log(`🚨 Wave ${this.waveNumber} starting...`);
   }  
 
+
+  restartGame() {
+    console.log('🔁 Restarting game...');
+  
+    // 🧹 Cleanup enemies and bullets
+    this.enemyGroup.getChildren().forEach((enemyObj) => {
+      const enemy = enemyObj as Phaser.GameObjects.GameObject;
+    
+      if (!enemy || !enemy.active) return;
+    
+      const hpBar = enemy.getData('hpBar');
+      const hpBarBg = enemy.getData('hpBarBg');
+    
+      if (hpBar && hpBar.destroy) hpBar.destroy();
+      if (hpBarBg && hpBarBg.destroy) hpBarBg.destroy();
+      if (enemy.destroy) enemy.destroy();
+    });
+    
+    this.enemyGroup.clear(true, true);
+    // 🔥 Destroy leftover health bars (in case enemies were destroyed without clearing bars)
+this.children.getAll().forEach(child => {
+  if (child.name === 'hpBar' || child.name === 'hpBarBg') {
+    child.destroy();
+  }
+});
+
+    this.bulletGroup.clear(true, true);
+  
+    // 🧹 Destroy towers and cancel shoot timers
+    this.towers.forEach(tower => {
+      tower.getData('shootTimer')?.remove(false);
+      tower.destroy();
+    });
+    this.towers = [];
+  
+    // 🧹 Reset tile map visuals
+    for (let row = 0; row < this.mapRows; row++) {
+      for (let col = 0; col < this.mapCols; col++) {
+        if (this.tileMap[row][col] === 2) this.tileMap[row][col] = 1;
+        this.tileSprites[row][col].setFillStyle(
+          this.tileMap[row][col] === 0 ? 0x555555 : 0x228b22
+        );
+      }
+    }
+  
+    // 🔁 Reset game state
+    this.waveNumber = 0;
+    this.vineBalance = 20;
+    this.lives = 10;
+    this.gameOver = false;
+  
+    // 🔄 Update UI
+    this.vineText.setText(`$VINE: ${this.vineBalance}`);
+    this.waveText.setText(`Wave: 1`);
+    this.livesText.setText(`Lives: 10`);
+  
+    // ▶️ Resume gameplay
+    this.scene.resume();
+    this.startNextWave();
+  }
+  
+
   // SHOW TOWER UPGRADE PANEL FUNCTION
   showUpgradePanel(tower: Phaser.GameObjects.Arc) {
     const existing = this.children.getByName('upgradePanel');
     if (existing) existing.destroy();
     
     this.upgradePanelOpen = true;
+    this.isPaused = true;
     // 🚮 Remove any old range circles
 this.rangeCircle?.destroy();
 this.nextRangeCircle?.destroy();
@@ -639,7 +772,7 @@ this.rangeCircle = undefined;
 this.nextRangeCircle = undefined;
 
         this.upgradePanelOpen = false;
-        
+        this.isPaused = false;
         // 💣 Remove range circle when panel closes
         const existingCircle = this.children.getByName('rangeCircle');
         existingCircle?.destroy();
