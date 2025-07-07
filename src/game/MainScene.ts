@@ -90,10 +90,7 @@ export default class MainScene extends Phaser.Scene {
       );      
     }
 
-    const graphics = this.add.graphics();
-    graphics.lineStyle(4, 0x00ff00, 1);
-    this.path.draw(graphics);
-
+   
     // 💬 UI Text
     const hudY = this.mapOffsetY / 3;
     this.add.rectangle(
