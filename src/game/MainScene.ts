@@ -435,8 +435,17 @@ bar.name = 'hpBar';
     this.vineBalance -= cost;
     this.vineText.setText(`$VINE: ${this.vineBalance}`);    
     const tower = this.add.circle(x, y, 15, color);
+    const levelText = this.add.text(x + 12, y - 18, '1', {
+      fontSize: '14px',
+      color: '#ffffff',
+      fontStyle: 'bold'
+    }).setOrigin(0.5);
+    
+    // Store on tower for reference
+    tower.setData('levelText', levelText);    
     this.physics.add.existing(tower);
     tower.setData('range', range);
+    tower.setData('level', 1);
     tower.setData('damage', damage);
     tower.setInteractive().on('pointerdown', () => {
       if (this.upgradePanelOpen) return; // 🚫 Block if panel already open
@@ -493,10 +502,33 @@ bar.name = 'hpBar';
           timer?.remove(false);
           });
 
-          this.add.text(300, 250, '💀 Game Over', {
+          const gameOverBg = this.add.rectangle(
+            Number(this.game.config.width) / 2,
+            Number(this.game.config.height) / 2,
+            320, 100,
+            0x111111,
+            0.9
+          ).setOrigin(0.5).setStrokeStyle(3, 0xff3333);
+          
+          const gameOverText = this.add.text(300, 250, '💀 Game Over', {
             fontSize: '40px',
             color: '#ff3333'
           }).setOrigin(0.5);
+        
+          const restartBtn = this.add.text(300, 300, '🔁 Restart', {
+            fontSize: '20px',
+            backgroundColor: '#444444',
+            padding: { x: 10, y: 6 },
+            color: '#ffffff'
+          })
+          .setOrigin(0.5)
+          .setInteractive()
+          .on('pointerdown', () => {
+            gameOverText.destroy();
+            restartBtn.destroy();
+            this.restartGame();
+          });        
+          
         }
 
         return;
@@ -578,13 +610,35 @@ if (this.activeUpgradeButton && this.activeUpgradeCost !== undefined) {
     this.enemyQueue = queue;
     this.enemiesPerWave = queue.length;
   
-    const banner = this.add.text(300, 200, `Wave ${this.waveNumber}`, {
-      fontSize: '32px',
-      color: '#ffcc00',
-      fontStyle: 'bold'
-    }).setOrigin(0.5);
+    const bannerBg = this.add.rectangle(
+      Number(this.game.config.width) / 2,
+      Number(this.game.config.height) / 2,
+      250, 80,
+      0x222222,
+      0.85
+    ).setOrigin(0.5).setStrokeStyle(2, 0xffff00);
+    
+    const bannerText = this.add.text(
+      bannerBg.x,
+      bannerBg.y,
+      `🌊 Wave ${this.waveNumber}`,
+      {
+        fontSize: '26px',
+        color: '#ffcc00',
+        fontStyle: 'bold',
+      }
+    ).setOrigin(0.5);
+    
+    this.time.delayedCall(2000, () => {
+      bannerBg.destroy();
+      bannerText.destroy();
+    });
+    
   
-    this.time.delayedCall(2000, () => banner.destroy());
+    this.time.delayedCall(2000, () => {
+      bannerBg.destroy();
+      bannerText.destroy();
+    });    
     console.log(`🚨 Wave ${this.waveNumber} starting...`);
   }  
 
@@ -619,8 +673,11 @@ this.children.getAll().forEach(child => {
     // 🧹 Destroy towers and cancel shoot timers
     this.towers.forEach(tower => {
       tower.getData('shootTimer')?.remove(false);
+      const levelText = tower.getData('levelText') as Phaser.GameObjects.Text;
+      levelText?.destroy();
       tower.destroy();
     });
+    
     this.towers = [];
   
     // 🧹 Reset tile map visuals
@@ -742,7 +799,11 @@ this.nextRangeCircle = this.add.circle(tower.x, tower.y, nextRng, 0x88ccff, 0.15
         tower.setData('level', level + 1);
         tower.setData('damage', dmg + 1);
         tower.setData('range', rng + 20);
-    
+        const levelText = tower.getData('levelText') as Phaser.GameObjects.Text;
+if (levelText) {
+  levelText.setText(String(level + 1));
+}
+
         // 🧼 Clean up previous range circles
         this.rangeCircle?.destroy();
         this.nextRangeCircle?.destroy();
