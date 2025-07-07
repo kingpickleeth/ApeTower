@@ -92,7 +92,7 @@ export default class MainScene extends Phaser.Scene {
 
    
     // 💬 UI Text
-    const hudY = 16; // top margin padding
+    const hudY = 10; // top margin padding
 
     
     const textStyle = {
