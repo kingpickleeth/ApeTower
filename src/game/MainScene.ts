@@ -501,14 +501,6 @@ bar.name = 'hpBar';
           const timer = tower.getData('shootTimer');
           timer?.remove(false);
           });
-
-          const gameOverBg = this.add.rectangle(
-            Number(this.game.config.width) / 2,
-            Number(this.game.config.height) / 2,
-            320, 100,
-            0x111111,
-            0.9
-          ).setOrigin(0.5).setStrokeStyle(3, 0xff3333);
           
           const gameOverText = this.add.text(300, 250, '💀 Game Over', {
             fontSize: '40px',
