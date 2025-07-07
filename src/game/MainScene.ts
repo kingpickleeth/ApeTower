@@ -194,10 +194,18 @@ const buttonYBase = screenHeight - buttonMargin - totalHeight;
     buttonContainer.setSize(bg.width, bg.height);
     buttonContainer.setDepth(1);
     buttonContainer.setInteractive(new Phaser.Geom.Rectangle(0, 0, bg.width, bg.height), Phaser.Geom.Rectangle.Contains);
-  
-    buttonContainer.on('pointerdown', () => {
+    buttonContainer.on('pointerout', () => {
       this.currentTowerType = type;
       console.log(`🔧 Selected tower: ${type}`);
+      this.tweens.add({
+        targets: buttonContainer,
+        scale: 1.0,
+        duration: 100,
+        ease: 'Power1'
+      });
+    });
+    buttonContainer.on('pointerdown', () => {
+      
   
       // Reset all button borders
       towerButtons.forEach(btn => {
@@ -504,10 +512,28 @@ bar.name = 'hpBar';
     tower.setData('range', range);
     tower.setData('level', 1);
     tower.setData('damage', damage);
-    tower.setInteractive().on('pointerdown', () => {
-      if (this.upgradePanelOpen) return; // 🚫 Block if panel already open
-      this.showUpgradePanel(tower);
+    tower.setInteractive()
+  .on('pointerdown', () => {
+    if (this.upgradePanelOpen) return;
+    this.showUpgradePanel(tower);
+  })
+  .on('pointerover', () => {
+    this.tweens.add({
+      targets: tower,
+      scale: 1.15,
+      duration: 100,
+      ease: 'Power1'
     });
+  })
+  .on('pointerout', () => {
+    this.tweens.add({
+      targets: tower,
+      scale: 1,
+      duration: 100,
+      ease: 'Power1'
+    });
+  });
+
     
     this.tileMap[row][col] = 2;
     this.tileSprites[row][col].setFillStyle(0x0000ff).setAlpha(0.3);
