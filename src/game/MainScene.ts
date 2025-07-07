@@ -876,7 +876,7 @@ this.nextRangeCircle = this.add.circle(tower.x, tower.y, nextRng, 0x88ccff, 0.15
       fontFamily: 'Orbitron',
       backgroundColor: hasEnough ? '#555555' : '#552222',
       padding: { x: 10, y: 6 },
-      color: hasEnough ? '#ffff00' : '#ff3333'
+      color: hasEnough ? '#00ff00' : '#ff3333'
     })
     .setOrigin(0.5)
     .setInteractive()
