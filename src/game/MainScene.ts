@@ -9,6 +9,7 @@ export default class MainScene extends Phaser.Scene {
   tower!: Phaser.GameObjects.Arc;
   towers: Phaser.GameObjects.Arc[] = [];
   hudBar!: Phaser.GameObjects.Rectangle;
+  assetsLoaded: boolean = false;
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
@@ -278,6 +279,7 @@ export default class MainScene extends Phaser.Scene {
   const startX = Number(this.game.config.width) - rightMargin;
   restartBtn.setPosition(startX, topY);
   pauseBtn.setPosition(startX - restartBtn.width - spacing, topY);
+  this.assetsLoaded = true;
 }
 // ---------------------------------------------------------------------------
 // ☠️ Unused legacy function (still present for potential future use)
@@ -414,8 +416,12 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
   // 🧱 placeTowerAt(): Places a tower on a buildable tile
   // ---------------------------------------------------------------------------
   placeTowerAt(col: number, row: number) {
-  if (this.upgradePanelOpen) return;
-  if (this.tileMap[row][col] !== 1) return;
+    if (!this.assetsLoaded) {
+      console.warn('⏳ Assets not fully loaded yet. Skipping tower placement.');
+      return;
+    }
+    if (this.upgradePanelOpen) return;
+    if (this.tileMap[row][col] !== 1) return;
   // 💰 Set tower cost based on type
   let cost = 10;
   if (this.currentTowerType === 'cannon') cost = 15;
@@ -439,9 +445,6 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
   if (this.currentTowerType === 'basic') imageKey = 'basicTower';
   else if (this.currentTowerType === 'cannon') imageKey = 'cannonTower';
   else if (this.currentTowerType === 'rapid') imageKey = 'rapidTower';
-  
-
-
 if (this.currentTowerType === 'basic') {
   imageKey = 'basicTower';
 } else if (this.currentTowerType === 'cannon') {
@@ -449,7 +452,6 @@ if (this.currentTowerType === 'basic') {
 } else if (this.currentTowerType === 'rapid') {
   imageKey = 'rapidTower';
 }
-
 if (imageKey !== null) {
   tower = this.add.image(x, y, imageKey)
     .setScale(0.075)
@@ -460,7 +462,6 @@ if (imageKey !== null) {
   tower = this.add.circle(x, y, 15, 0xffffff);
   this.physics.add.existing(tower);
 }
-
   tower.setDataEnabled();
   tower.setData('range', range);
   tower.setData('level', 1);
