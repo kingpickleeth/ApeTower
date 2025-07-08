@@ -2,6 +2,8 @@
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  margin: 0 !important;
+  padding: 0 !important;
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
@@ -32,7 +34,7 @@ body {
   padding: 0;
   width: 100%;
   height: 100%;
-  display: block;
+  display: flex;
 }
 
 
@@ -79,17 +81,40 @@ button:focus-visible {
 /* ===== Modern Animated Background for Game Wrapper ===== */
 
 #game-wrapper {
- 
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+}
 
+#game-content {
   display: flex;
   flex-direction: column;
-  align-items: center; /* ✅ centers horizontally */
-  justify-content: center; /* ✅ centers vertically */
-  position: relative;
-  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+
+  /* ✅ Shifts visual center up slightly */
+  transform: translateY(-4vh);
 }
+
+
+#game-title {
+  font-size: 3.2em;
+  font-family: Orbitron;
+  color: #f9f9f9;
+  margin-bottom: 24px; /* 👈 space between title and canvas */
+  text-shadow: 0 0 12px rgba(42, 255, 132, 0.5);
+  text-align: center;
+}
+
+
 
 
 
@@ -119,11 +144,11 @@ button:focus-visible {
   box-shadow: 0 0 40px rgba(0, 255, 128, 0.12);
   overflow: hidden;
 }
-body, html {
+html, body, #root {
   margin: 0;
   padding: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
 }
 
@@ -140,4 +165,7 @@ body, html {
   backdrop-filter: blur(8px);
   transition: all 0.3s ease;
   margin: 0 auto; /* ✅ this line centers horizontally */
+}
+*, *::before, *::after {
+  box-sizing: inherit;
 }
