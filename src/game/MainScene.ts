@@ -7,7 +7,7 @@ export default class MainScene extends Phaser.Scene {
   enemyGroup!: Phaser.GameObjects.Group;
   bulletGroup!: Phaser.GameObjects.Group;
   tower!: Phaser.GameObjects.Arc;
-  towers: Phaser.GameObjects.Arc[] = [];
+  towers: (Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform)[] = [];
   hudBar!: Phaser.GameObjects.Rectangle;
   assetsLoaded: boolean = false;
   // ---------------------------------------------------------------------------
@@ -63,6 +63,9 @@ export default class MainScene extends Phaser.Scene {
   this.load.image('basicTower', 'https://admin.demwitches.xyz/assets/archerturret.png');
   this.load.image('cannonTower', 'https://admin.demwitches.xyz/assets/cannonturret.png');
   this.load.image('rapidTower', 'https://admin.demwitches.xyz/assets/rapidturret.png');
+  this.load.image('enemyNormal', 'https://admin.demwitches.xyz/assets/normalenemy.png');
+  this.load.image('enemyFast', 'https://admin.demwitches.xyz/assets/fastenemy.png');
+  this.load.image('enemyTank', 'https://admin.demwitches.xyz/assets/tankenemy.png');
   }
   // ---------------------------------------------------------------------------
   // 🎮 create(): Setup the map, UI, path, selectors, towers, collisions
@@ -299,11 +302,12 @@ spawnEnemy() {
   if (this.enemiesSpawned >= this.enemyQueue.length) return;
   const type = this.enemyQueue[this.enemiesSpawned];
   const start = this.path.getStartPoint();
-  const enemy = this.createEnemyGraphic(type, start.x, start.y);
-  this.physics.add.existing(enemy);
-  const enemyBody = enemy.body as Phaser.Physics.Arcade.Body;
-  enemyBody.setImmovable(true);
-  enemy.setData('t', 0);
+  const enemy = this.createEnemyGraphic(type, start.x, start.y) as Phaser.GameObjects.Image;
+this.physics.add.existing(enemy);
+const body = enemy.body as Phaser.Physics.Arcade.Body;
+body.setImmovable(true);
+body.setSize(enemy.displayWidth, enemy.displayHeight);
+body.setOffset(-enemy.displayWidth / 2, -enemy.displayHeight / 2);
   // 🎯 Set enemy stats by type
   let speed = 1 / 8000;
   let hp = 2 + this.waveNumber;
@@ -335,18 +339,17 @@ spawnEnemy() {
 // ---------------------------------------------------------------------------
 // 🎨 createEnemyGraphic(): Shape varies by enemy type
 // ---------------------------------------------------------------------------
-createEnemyGraphic(
-  type: string,
-  x: number,
-  y: number
-): Phaser.GameObjects.Arc | Phaser.GameObjects.Rectangle | Phaser.GameObjects.Triangle {
+createEnemyGraphic(type: string, x: number, y: number): Phaser.GameObjects.Image {
+  let imageKey = 'enemyNormal';
   if (type === 'fast') {
-    return this.add.triangle(x, y, 0, 20, 10, 0, 20, 20, 0xffff00); // Yellow triangle
+    imageKey = 'enemyFast';
   } else if (type === 'tank') {
-    return this.add.rectangle(x, y, 20, 20, 0x3399ff); // Blue square
-  } else {
-    return this.add.circle(x, y, 10, 0xff0000); // Red circle (default)
+    imageKey = 'enemyTank';
   }
+  const enemy = this.add.image(x, y, imageKey)
+    .setScale(0.075) // adjust scale to fit your tile size
+    .setOrigin(0.5);
+  return enemy;
 }
 // ---------------------------------------------------------------------------
 // 🎯 shootFromTower(): Fires bullet at closest enemy in range
@@ -439,18 +442,32 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
   const x = this.mapOffsetX + col * this.tileSize + this.tileSize / 2;
   const y = this.mapOffsetY + row * this.tileSize + this.tileSize / 2;
   let tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform;
-  let fireRate = 700, range = 200, damage = 1;
-  let imageKey: string | null = null;
-  if (this.currentTowerType === 'basic') imageKey = 'basicTower';
-  else if (this.currentTowerType === 'cannon') imageKey = 'cannonTower';
-  else if (this.currentTowerType === 'rapid') imageKey = 'rapidTower';
+  let fireRate: number, range: number, damage: number;
+let imageKey: string | null = null;
+
 if (this.currentTowerType === 'basic') {
   imageKey = 'basicTower';
+  fireRate = 700;
+  range = 200;
+  damage = 1;
 } else if (this.currentTowerType === 'cannon') {
   imageKey = 'cannonTower';
+  fireRate = 1200;
+  range = 250;
+  damage = 3;
 } else if (this.currentTowerType === 'rapid') {
   imageKey = 'rapidTower';
+  fireRate = 400;
+  range = 150;
+  damage = 0.5;
+} else {
+  // 🛡️ Safety fallback (shouldn't happen)
+  imageKey = 'basicTower';
+  fireRate = 700;
+  range = 200;
+  damage = 1;
 }
+
 if (imageKey !== null) {
   tower = this.add.image(x, y, imageKey)
     .setScale(0.075)
@@ -458,6 +475,7 @@ if (imageKey !== null) {
   tower.setData('baseScale', 0.075);
 } else {
   // fallback for unknown types
+  
   tower = this.add.circle(x, y, 15, 0xffffff);
   this.physics.add.existing(tower);
 }
@@ -496,49 +514,65 @@ if (imageKey !== null) {
       if (!this.isPaused) this.shootFromTower(tower);
     },
     loop: true
+    
   });
   tower.setData('shootTimer', shootTimer);
+  // 🧠 Track this tower so we can clean it up later
+this.towers.push(tower);
+
 }
+
 // ---------------------------------------------------------------------------
 // 🔁 update(): Main game loop
 // ---------------------------------------------------------------------------
 update(_: number, delta: number) {
   const baseSpeed = 1 / 8000;
   if (this.isPaused) return;
-  this.enemyGroup.getChildren().forEach((enemyObj) => {
-    const enemy = enemyObj as Phaser.GameObjects.Arc;
+
+  for (const enemyObj of this.enemyGroup.getChildren()) {
+    const enemy = enemyObj as Phaser.GameObjects.Image;
     let t = enemy.getData('t') ?? 0;
     const speed = enemy.getData('speed') ?? baseSpeed;
     t += speed * delta;
+
     if (t >= 1) {
-      // Enemy escaped
+      // 🛑 Enemy reached the end of the path
       enemy.getData('hpBar')?.destroy();
       enemy.getData('hpBarBg')?.destroy();
       enemy.destroy();
       this.lives--;
       this.livesText.setText(`Lives: ${this.lives}`);
       this.enemiesEscaped++;
+
+      // 🧠 If no enemies left, start next wave
       if (!this.gameOver && this.enemyGroup.countActive() === 0) {
         this.time.delayedCall(1000, () => this.startNextWave());
       }
+
+      // 💀 Game Over condition
       if (this.lives <= 0 && !this.gameOver) {
         this.gameOver = true;
         this.enemySpawnEvent.remove(false);
         this.isPaused = true;
         this.physics.pause();
-        // ⛔ Stop tower shooting
+
+        // ⛔ Stop towers from firing
         this.towers.forEach(tower => {
           const timer = tower.getData('shootTimer');
           timer?.remove(false);
         });
-        // 💀 Show Game Over popup
+
+        // 🚨 Display Game Over popup
         const centerX = Number(this.game.config.width) / 2;
         const centerY = Number(this.game.config.height) / 2;
+
         const overlay = this.add.rectangle(centerX, centerY, this.game.config.width as number, this.game.config.height as number, 0x000000, 0.4).setOrigin(0.5);
         overlay.setDepth(-1);
+
         const popupBg = this.add.rectangle(centerX, centerY, 320, 140, 0x000000, 0.8)
           .setOrigin(0.5)
           .setStrokeStyle(2, 0xff3333);
+
         const gameOverText = this.add.text(centerX, centerY - 30, '💀 Game Over', {
           fontSize: '40px',
           fontFamily: 'Orbitron',
@@ -546,6 +580,7 @@ update(_: number, delta: number) {
           align: 'center',
           color: '#ff3333'
         }).setOrigin(0.5);
+
         const restartBtn = this.add.text(centerX, centerY + 30, '🔁 Restart', {
           fontSize: '20px',
           backgroundColor: '#444444',
@@ -560,31 +595,70 @@ update(_: number, delta: number) {
             restartBtn.destroy();
             this.restartGame();
           });
+
         return;
       }
+
+      // ✅ Important: Skip remaining logic for this enemy
+      continue;
     }
-    // 🧭 Move enemy along path
+
+    // 🧭 Move enemy along the path
     const vec = new Phaser.Math.Vector2();
     this.path.getPoint(t, vec);
     enemy.setPosition(vec.x, vec.y);
+
     const bar = enemy.getData('hpBar') as Phaser.GameObjects.Rectangle;
     const barBg = enemy.getData('hpBarBg') as Phaser.GameObjects.Rectangle;
     bar?.setPosition(vec.x, vec.y - 16);
     barBg?.setPosition(vec.x, vec.y - 16);
+
     const body = enemy.body as Phaser.Physics.Arcade.Body;
     body.reset(vec.x, vec.y);
-    // 🎯 Track and steer bullets
+
+    // 🎯 Move bullets toward targets
     this.bulletGroup.getChildren().forEach((bulletObj) => {
       const bullet = bulletObj as Phaser.GameObjects.Arc;
-      const target = bullet.getData('target') as Phaser.GameObjects.Arc;
-      if (!target || !target.active) return;
+      const target = bullet.getData('target') as Phaser.GameObjects.Image;
+
+      if (!target || !target.active || typeof target.x !== 'number' || typeof target.y !== 'number') {
+        bullet.destroy(); // cleanup stray bullet
+        return;
+      }
+
       const angle = Phaser.Math.Angle.Between(bullet.x, bullet.y, target.x, target.y);
       const velocity = this.physics.velocityFromRotation(angle, 500);
       (bullet.body as Phaser.Physics.Arcade.Body).setVelocity(velocity.x, velocity.y);
+
+      const dist = Phaser.Math.Distance.Between(bullet.x, bullet.y, target.x, target.y);
+      if (dist < 10) {
+        // 💥 Hit! Apply damage
+        const currentHp = target.getData('hp') ?? 1;
+        const damage = bullet.getData('damage') ?? 1;
+        const newHp = currentHp - damage;
+        target.setData('hp', newHp);
+        target.getData('hpBar')?.setScale(newHp / (target.getData('maxHp') || 1), 1);
+
+        if (newHp <= 0) {
+          this.vineBalance += target.getData('reward') || 0;
+          this.vineText.setText(`$VINE: ${this.vineBalance}`);
+          target.getData('hpBar')?.destroy();
+          target.getData('hpBarBg')?.destroy();
+          target.destroy();
+          bullet.destroy();
+          this.enemiesKilled++;
+          this.checkWaveOver();
+        } else {
+          bullet.destroy(); // Not dead, but hit
+        }
+      }
     });
+
+    // 💾 Save progress
     enemy.setData('t', t);
-  });
-  // 💡 Update upgrade button color based on VINE balance
+  }
+
+  // 🔄 Update upgrade button color
   if (this.activeUpgradeButton && this.activeUpgradeCost !== undefined) {
     if (this.vineBalance >= this.activeUpgradeCost) {
       this.activeUpgradeButton.setColor('#00ff00');
@@ -594,6 +668,7 @@ update(_: number, delta: number) {
     this.activeUpgradeButton.setText(`Upgrade 🔼 (${this.activeUpgradeCost})`);
   }
 }
+
   // ---------------------------------------------------------------------------
   // 🔁 checkWaveOver(): Ends wave and starts next if ready
   // ---------------------------------------------------------------------------
@@ -680,6 +755,13 @@ update(_: number, delta: number) {
     hpBar?.destroy();
     hpBarBg?.destroy();
     enemy.destroy();
+    this.bulletGroup.getChildren().forEach((bulletObj) => {
+      const bullet = bulletObj as Phaser.GameObjects.Arc;
+      const target = bullet.getData('target');
+      if (target === enemy) {
+        bullet.destroy();
+      }
+    });    
   });
   this.enemyGroup.clear(true, true);
   // 🔥 Extra health bar cleanup
@@ -689,14 +771,27 @@ update(_: number, delta: number) {
     }
   });
   this.bulletGroup.clear(true, true);
-  // 🧹 Destroy towers
-  this.towers.forEach(tower => {
-    tower.getData('shootTimer')?.remove(false);
-    const levelText = tower.getData('levelText') as Phaser.GameObjects.Text;
-    levelText?.destroy();
-    tower.destroy();
-  });
-  this.towers = [];
+// 🧹 Destroy towers
+this.towers.forEach(tower => {
+  const timer = tower.getData('shootTimer');
+  if (timer) timer.remove(true); // 🧼 Fully remove timer
+
+  const levelText = tower.getData('levelText') as Phaser.GameObjects.Text;
+  levelText?.destroy(); // 🧹 Destroy level badge
+
+  tower.destroy(); // 🧹 Destroy tower image
+});
+
+// 🔨 Extra brute-force cleanup for debug
+this.children.getAll().forEach(child => {
+  if (child instanceof Phaser.GameObjects.Image &&
+      ['basicTower', 'cannonTower', 'machineTower'].includes(child.texture.key)) {
+    child.destroy();
+  }
+});
+
+this.towers = []; // Clear tower references
+
   // 🔲 Reset map tiles
   for (let row = 0; row < this.mapRows; row++) {
     for (let col = 0; col < this.mapCols; col++) {
