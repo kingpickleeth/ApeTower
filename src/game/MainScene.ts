@@ -571,7 +571,7 @@ if (imageKey) {
     
   
     this.tileMap[row][col] = 2;
-this.tileSprites[row][col].setFillStyle(0x287097).setAlpha(0.3); // 👈 change this line
+this.tileSprites[row][col].setFillStyle(0x555555).setAlpha(0.3); // 👈 change this line
 
     
   
