@@ -89,7 +89,6 @@ button:focus-visible {
   justify-content: center; /* ✅ centers vertically */
   position: relative;
   overflow: hidden;
-  padding: 20px;
 }
 
 
