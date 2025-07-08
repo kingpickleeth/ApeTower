@@ -60,11 +60,10 @@ export default class MainScene extends Phaser.Scene {
   // 🔁 preload(): Load assets
   // ---------------------------------------------------------------------------
   preload() {
-  this.load.image('basicTower', 'https://admin.demwitches.xyz/assets/archerturret.svg');
-  this.load.image('cannonTower', 'https://admin.demwitches.xyz/assets/cannonturret.svg');
-  this.load.image('rapidTower', 'https://admin.demwitches.xyz/assets/rapidturret.svg');
+  this.load.image('basicTower', 'https://admin.demwitches.xyz/assets/archerturret.png');
+  this.load.image('cannonTower', 'https://admin.demwitches.xyz/assets/cannonturret.png');
+  this.load.image('rapidTower', 'https://admin.demwitches.xyz/assets/rapidturret.png');
   }
-
   // ---------------------------------------------------------------------------
   // 🎮 create(): Setup the map, UI, path, selectors, towers, collisions
   // ---------------------------------------------------------------------------
