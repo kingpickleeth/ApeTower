@@ -69,6 +69,7 @@ export default class MainScene extends Phaser.Scene {
   this.load.image('enemyNormal', 'https://admin.demwitches.xyz/assets/normalenemy.png');
   this.load.image('enemyFast', 'https://admin.demwitches.xyz/assets/fastenemy.png');
   this.load.image('enemyTank', 'https://admin.demwitches.xyz/assets/tankenemy.png');
+  this.load.audio('bgMusic', 'https://admin.demwitches.xyz/assets/music.mp3');
   }
   // ---------------------------------------------------------------------------
   // 🎮 create(): Setup the map, UI, path, selectors, towers, collisions
@@ -79,6 +80,11 @@ export default class MainScene extends Phaser.Scene {
   const screenHeight = Number(this.game.config.height);
   const mapWidth = this.mapCols * this.tileSize;
   const mapHeight = this.mapRows * this.tileSize;
+  const music = this.sound.add('bgMusic', {
+    loop: true,
+    volume: 0.5 // Adjust volume as needed
+  });
+  music.play();  
   this.mapOffsetX = (screenWidth - mapWidth) / 2;
   this.mapOffsetY = (screenHeight - mapHeight) / 2;
   // 🧿 Generate enemy texture as red circle
@@ -285,6 +291,28 @@ export default class MainScene extends Phaser.Scene {
   restartBtn.setPosition(startX, topY);
   pauseBtn.setPosition(startX - restartBtn.width - spacing, topY);
   this.assetsLoaded = true;
+
+  let isMuted = false;
+
+  const soundButton = this.add.text(20, this.scale.height - 40, '🔊', {
+    fontSize: '28px',
+    color: '#ffffff',
+    backgroundColor: '#222',
+    padding: { left: 8, right: 8, top: 4, bottom: 4 },
+    fontFamily: 'sans-serif'
+  })
+  .setOrigin(0, 0.5)
+  .setInteractive()
+  .setScrollFactor(0)
+  .setDepth(1000);
+  
+  soundButton.on('pointerdown', () => {
+    isMuted = !isMuted;
+    this.sound.mute = isMuted;
+    soundButton.setText(isMuted ? '🔇' : '🔊');
+  });
+  
+
 }
 // ---------------------------------------------------------------------------
 // ☠️ Unused legacy function (still present for potential future use)
