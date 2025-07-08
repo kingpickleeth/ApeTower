@@ -60,9 +60,12 @@ export default class MainScene extends Phaser.Scene {
   // 🔁 preload(): Load assets
   // ---------------------------------------------------------------------------
   preload() {
-  this.load.image('basicTower', 'https://admin.demwitches.xyz/assets/archerturret.png');
-  this.load.image('cannonTower', 'https://admin.demwitches.xyz/assets/cannonturret.png');
-  this.load.image('rapidTower', 'https://admin.demwitches.xyz/assets/rapidturret.png');
+  this.load.image('basicTowerRight', 'https://admin.demwitches.xyz/assets/archerturret.png');
+  this.load.image('basicTowerLeft', 'https://admin.demwitches.xyz/assets/archerturretleft.png');
+  this.load.image('cannonTowerRight', 'https://admin.demwitches.xyz/assets/cannonturret.png');
+  this.load.image('cannonTowerLeft', 'https://admin.demwitches.xyz/assets/cannonturretleft.png');
+  this.load.image('rapidTowerRight', 'https://admin.demwitches.xyz/assets/rapidturret.png');
+  this.load.image('rapidTowerLeft', 'https://admin.demwitches.xyz/assets/rapidturretleft.png');
   this.load.image('enemyNormal', 'https://admin.demwitches.xyz/assets/normalenemy.png');
   this.load.image('enemyFast', 'https://admin.demwitches.xyz/assets/fastenemy.png');
   this.load.image('enemyTank', 'https://admin.demwitches.xyz/assets/tankenemy.png');
@@ -368,6 +371,27 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
     }
   }
   if (!closestEnemy) return;
+  // 🔄 Update tower facing direction
+  if (tower instanceof Phaser.GameObjects.Image) {
+    const textureKey = tower.texture.key;
+    const towerX = tower.x;
+    const enemyX = closestEnemy.x;
+  
+    if (enemyX < towerX && !textureKey.endsWith('Left')) {
+      tower.setTexture(textureKey.replace('Right', 'Left'));
+      console.log('🟢 Switched to LEFT');
+    } else if (enemyX > towerX && !textureKey.endsWith('Right')) {
+      tower.setTexture(textureKey.replace('Left', 'Right'));
+      console.log('🟢 Switched to RIGHT');
+    } else if (enemyX === towerX) {
+      // Decide which way to face when perfectly aligned
+      if (!textureKey.endsWith('Right')) {
+        tower.setTexture(textureKey.replace('Left', 'Right'));
+        console.log('🟢 Defaulting to RIGHT');
+      }
+    }
+  }
+  
   // 🌀 Flash or bounce effect
   if (tower instanceof Phaser.GameObjects.Arc) {
     const originalColor = tower.fillColor;
@@ -446,23 +470,23 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
 let imageKey: string | null = null;
 
 if (this.currentTowerType === 'basic') {
-  imageKey = 'basicTower';
+  imageKey = 'basicTowerRight';
   fireRate = 700;
   range = 200;
   damage = 1;
 } else if (this.currentTowerType === 'cannon') {
-  imageKey = 'cannonTower';
+  imageKey = 'cannonTowerRight';
   fireRate = 1200;
   range = 250;
   damage = 3;
 } else if (this.currentTowerType === 'rapid') {
-  imageKey = 'rapidTower';
+  imageKey = 'rapidTowerRight';
   fireRate = 400;
   range = 150;
   damage = 0.5;
 } else {
   // 🛡️ Safety fallback (shouldn't happen)
-  imageKey = 'basicTower';
+  imageKey = 'basicTowerRight';
   fireRate = 700;
   range = 200;
   damage = 1;
@@ -785,7 +809,7 @@ this.towers.forEach(tower => {
 // 🔨 Extra brute-force cleanup for debug
 this.children.getAll().forEach(child => {
   if (child instanceof Phaser.GameObjects.Image &&
-      ['basicTower', 'cannonTower', 'machineTower'].includes(child.texture.key)) {
+      ['basicTowerRight', 'cannonTower', 'machineTower'].includes(child.texture.key)) {
     child.destroy();
   }
 });
