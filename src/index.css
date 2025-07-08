@@ -13,6 +13,10 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+title {
+  font-family: Orbitron;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -23,7 +27,7 @@ a:hover {
 }
 
 body {
-  background-color: #dbdbce;
+  background-color: #0d130f;
   margin: 0;
   display: flex;
   place-items: center;
@@ -34,6 +38,8 @@ body {
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  font-family: Orbitron;
+  color: #f9f9f9;
 }
 
 button {
@@ -67,9 +73,66 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* ===== Modern Animated Background for Game Wrapper ===== */
+
+#game-wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column; /* stack title + canvas vertically */
+}
+
+
+#background-visual {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+
+  background: linear-gradient(-45deg, #0d130f, #1c2a1d, #122f22, #0e1913);
+  background-size: 400% 400%;
+  animation: gradientShift 14s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 #game-container {
+  z-index: 1;
   width: 800px;
   height: 600px;
-  margin: 0 auto;
   background-color: #1e1e1e;
+  border-radius: 18px;
+  box-shadow: 0 0 40px rgba(0, 255, 128, 0.12);
+  overflow: hidden;
+}
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#game-frame {
+  position: relative;
+  z-index: 1;
+  padding: 20px;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+  box-shadow: 
+    0 0 20px rgba(0, 255, 128, 0.12),
+    0 0 60px rgba(42, 255, 132, 0.08);
+  border: 2px solid #2aff84;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
 }
