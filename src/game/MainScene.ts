@@ -69,7 +69,7 @@ export default class MainScene extends Phaser.Scene {
   this.load.image('enemyNormal', 'https://admin.demwitches.xyz/assets/normalenemy.png');
   this.load.image('enemyFast', 'https://admin.demwitches.xyz/assets/fastenemy.png');
   this.load.image('enemyTank', 'https://admin.demwitches.xyz/assets/tankenemy.png');
-  this.load.audio('bgMusic', 'https://admin.demwitches.xyz/assets/music.mp3');
+  
   }
   // ---------------------------------------------------------------------------
   // 🎮 create(): Setup the map, UI, path, selectors, towers, collisions
@@ -80,11 +80,12 @@ export default class MainScene extends Phaser.Scene {
   const screenHeight = Number(this.game.config.height);
   const mapWidth = this.mapCols * this.tileSize;
   const mapHeight = this.mapRows * this.tileSize;
-  const music = this.sound.add('bgMusic', {
-    loop: true,
-    volume: 0.5 // Adjust volume as needed
-  });
-  music.play();  
+  this.load.audio('bgMusic', ['https://admin.demwitches.xyz/assets/music.mp3']);
+this.load.once('complete', () => {
+  const music = this.sound.add('bgMusic', { loop: true, volume: 0.5 });
+  music.play();
+});
+this.load.start();
   this.mapOffsetX = (screenWidth - mapWidth) / 2;
   this.mapOffsetY = (screenHeight - mapHeight) / 2;
   // 🧿 Generate enemy texture as red circle
