@@ -322,7 +322,7 @@ this.load.start();
   
     musicButton.on('pointerdown', async () => {
     this.isMusicMuted = !this.isMusicMuted;
-    musicButton.setText(this.isMusicMuted ? '🔈' : '🔇');
+    musicButton.setText(this.isMusicMuted ? '🔇' : '🔈');
   
     const existingMusic = this.sound.get('bgMusic');
     if (this.isMusicMuted && existingMusic) {
@@ -345,7 +345,7 @@ this.load.start();
   
   sfxButton.on('pointerdown', () => {
     this.isSfxMuted = !this.isSfxMuted;
-    sfxButton.setText(this.isSfxMuted ? '🔔' : '🔕');
+    sfxButton.setText(this.isSfxMuted ? '🔕' : '🔔');
   });
   
 }
