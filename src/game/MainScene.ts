@@ -439,6 +439,10 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
   if (this.currentTowerType === 'basic') imageKey = 'basicTower';
   else if (this.currentTowerType === 'cannon') imageKey = 'cannonTower';
   else if (this.currentTowerType === 'rapid') imageKey = 'rapidTower';
+  if (!this.textures.exists(imageKey)) {
+    console.warn(`Texture ${imageKey} not yet loaded`);
+    return;
+  }  
   if (imageKey) {
     tower = this.add.image(x, y, imageKey)
       .setScale(0.075)
