@@ -33,28 +33,22 @@ const GameCanvas = () => {
 
   // 🔄 Step 2: Add orientation check overlay logic here
   useEffect(() => {
-    const checkPlayable = () => {
-      const overlay = document.getElementById('rotate-overlay');
+    const checkOrientation = () => {
+      const isTooSmall = window.innerWidth < 500; // 🟡 Adjust breakpoint as needed
       const isPortrait = window.innerHeight > window.innerWidth;
-      const isTooSmall = window.innerWidth < 768 
-  
-      const shouldShowOverlay = isPortrait || isTooSmall;
-  
+      const overlay = document.getElementById('rotate-overlay');
+    
       if (overlay) {
-        overlay.style.display = shouldShowOverlay ? 'flex' : 'none';
+        overlay.classList.toggle('active', isPortrait || isTooSmall);
       }
     };
-  
-    checkPlayable();
-    window.addEventListener('resize', checkPlayable);
-    window.addEventListener('orientationchange', checkPlayable);
-  
-    return () => {
-      window.removeEventListener('resize', checkPlayable);
-      window.removeEventListener('orientationchange', checkPlayable);
-    };
+    
+
+    window.addEventListener('resize', checkOrientation);
+    checkOrientation(); // initial check
+
+    return () => window.removeEventListener('resize', checkOrientation);
   }, []);
-  
 
   return <div id="game-container" />;
 };
