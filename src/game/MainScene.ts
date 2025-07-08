@@ -439,19 +439,28 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
   if (this.currentTowerType === 'basic') imageKey = 'basicTower';
   else if (this.currentTowerType === 'cannon') imageKey = 'cannonTower';
   else if (this.currentTowerType === 'rapid') imageKey = 'rapidTower';
-  if (!this.textures.exists(imageKey)) {
-    console.warn(`Texture ${imageKey} not yet loaded`);
-    return;
-  }  
-  if (imageKey) {
-    tower = this.add.image(x, y, imageKey)
-      .setScale(0.075)
-      .setInteractive({ useHandCursor: true });
-    tower.setData('baseScale', 0.075);
-  } else {
-    tower = this.add.circle(x, y, 15, 0xffffff);
-    this.physics.add.existing(tower);
-  }
+  
+
+
+if (this.currentTowerType === 'basic') {
+  imageKey = 'basicTower';
+} else if (this.currentTowerType === 'cannon') {
+  imageKey = 'cannonTower';
+} else if (this.currentTowerType === 'rapid') {
+  imageKey = 'rapidTower';
+}
+
+if (imageKey !== null) {
+  tower = this.add.image(x, y, imageKey)
+    .setScale(0.075)
+    .setInteractive({ useHandCursor: true });
+  tower.setData('baseScale', 0.075);
+} else {
+  // fallback for unknown types
+  tower = this.add.circle(x, y, 15, 0xffffff);
+  this.physics.add.existing(tower);
+}
+
   tower.setDataEnabled();
   tower.setData('range', range);
   tower.setData('level', 1);
