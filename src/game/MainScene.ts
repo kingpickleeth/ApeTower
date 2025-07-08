@@ -20,7 +20,8 @@ export default class MainScene extends Phaser.Scene {
   isPaused: boolean = false;
   activeUpgradeButton?: Phaser.GameObjects.Text;
   activeUpgradeCost?: number;
-  activeTower?: Phaser.GameObjects.Arc;
+  activeTower?: Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform & { getData: Function };
+
 
   tileSize = 64;
   mapCols = 10;
@@ -47,7 +48,9 @@ export default class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    // 🔹 Load assets if needed
+    this.load.image('basicTower', 'https://admin.demwitches.xyz/assets/archerturret.svg');
+    this.load.image('cannonTower', 'https://admin.demwitches.xyz/assets/cannonturret.svg'); // ⬅️ new
+    this.load.image('rapidTower', 'https://admin.demwitches.xyz/assets/rapidturret.svg');   // ⬅️ new
   }
 
   create() {
@@ -417,14 +420,15 @@ bar.name = 'hpBar';
   }  
   
   // 🎯 Shoot bullet at closest enemy in range
-  shootFromTower(tower: Phaser.GameObjects.Arc) {
+  shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform) {
+
     const enemies = this.enemyGroup.getChildren() as Phaser.GameObjects.Arc[];
     if (!enemies.length) return;
-
+  
     const range = tower.getData('range') ?? 200;
     let closestEnemy: Phaser.GameObjects.Arc | null = null;
     let minDist = range;
-
+  
     for (const enemy of enemies) {
       const dist = Phaser.Math.Distance.Between(tower.x, tower.y, enemy.x, enemy.y);
       if (dist < minDist) {
@@ -432,105 +436,145 @@ bar.name = 'hpBar';
         minDist = dist;
       }
     }
-
-    if (!closestEnemy) return;
-    const originalColor = tower.fillColor;
-    tower.setFillStyle(0xffffff); // Flash white
-    this.time.delayedCall(80, () => tower.setFillStyle(originalColor));
+    if (tower instanceof Phaser.GameObjects.Image) {
+      const baseScale = tower.getData('baseScale') ?? 0.075;
+      this.tweens.add({
+        targets: tower,
+        scale: baseScale * 1.15,
+        yoyo: true,
+        duration: 80,
+        ease: 'Sine.easeInOut'
+      });
+    }
     
+    if (!closestEnemy) return;
+  
+    // 💥 Flash visual feedback (color flash for Arc, scale pop for Image)
+    if (tower instanceof Phaser.GameObjects.Arc) {
+      const originalColor = tower.fillColor;
+      tower.setFillStyle(0xffffff); // Flash white
+      this.time.delayedCall(80, () => tower.setFillStyle(originalColor));
+    } else if (tower instanceof Phaser.GameObjects.Image) {
+      const baseScale = tower.getData('baseScale') ?? 0.075;
+    
+      this.tweens.add({
+        targets: tower,
+        scale: baseScale * 1.15,
+        yoyo: true,
+        duration: 80,
+        ease: 'Sine.easeInOut'
+      });
+    }
+    
+  
+    // 🟡 Create bullet
     const bullet = this.add.circle(tower.x, tower.y, 4, 0xffff00);
     this.physics.add.existing(bullet);
-
+  
     bullet.setData('target', closestEnemy);
     bullet.setData('damage', tower.getData('damage'));
-
-    console.log(`💥 Creating bullet | Damage: ${tower.getData('damage')}`);
-
+  
     const velocity = this.physics.velocityFromRotation(
       Phaser.Math.Angle.Between(tower.x, tower.y, closestEnemy.x, closestEnemy.y),
       500
     );
     (bullet.body as Phaser.Physics.Arcade.Body).setVelocity(velocity.x, velocity.y);
+  
     this.bulletGroup.add(bullet);
-
+  
     this.time.delayedCall(1500, () => bullet.destroy());
   }
-
+  
   // 🧱 Place tower based on current type
   placeTowerAt(col: number, row: number) {
     if (this.upgradePanelOpen) return;
     if (this.tileMap[row][col] !== 1) return;
+  
     let cost = 10;
-    if (this.currentTowerType === 'cannon') {
-      cost = 15;
-    } else if (this.currentTowerType === 'rapid') {
-      cost = 12;
-    }
-    
+    if (this.currentTowerType === 'cannon') cost = 15;
+    if (this.currentTowerType === 'rapid') cost = 12;
+  
     if (this.vineBalance < cost) {
       const warning = this.add.text(Number(this.game.config.width) / 2, 40, '❌ Not enough $VINE', {
         fontSize: '16px',
         color: '#ff3333',
         fontStyle: 'bold',
       }).setOrigin(0.5);
-    
+  
       this.time.delayedCall(1200, () => warning.destroy());
       return;
     }
-    
+  
     const x = this.mapOffsetX + col * this.tileSize + this.tileSize / 2;
     const y = this.mapOffsetY + row * this.tileSize + this.tileSize / 2;
+  
+    let tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform;
+    let fireRate = 700, range = 200, damage = 1;
+  
+    let imageKey: string | null = null;
 
+if (this.currentTowerType === 'basic') {
+  imageKey = 'basicTower';
+} else if (this.currentTowerType === 'cannon') {
+  imageKey = 'cannonTower';
+} else if (this.currentTowerType === 'rapid') {
+  imageKey = 'rapidTower';
+}
 
-    let color = 0x3366ff, fireRate = 700, range = 200, damage = 1;
+if (imageKey) {
+  tower = this.add.image(x, y, imageKey)
+    .setScale(0.075)
+    .setInteractive({ useHandCursor: true });
+  tower.setData('baseScale', 0.075);
+} else {
+  // fallback for unknown types
+  tower = this.add.circle(x, y, 15, 0xffffff);
+  this.physics.add.existing(tower);
+}
 
-    if (this.currentTowerType === 'cannon') {
-      color = 0xff3333; fireRate = 1200; range = 250; damage = 3;
-    } else if (this.currentTowerType === 'rapid') {
-      color = 0xffff00; fireRate = 400; range = 150; damage = 0.5;
-    }
-    this.vineBalance -= cost;
-    this.vineText.setText(`$VINE: ${this.vineBalance}`);    
-    const tower = this.add.circle(x, y, 15, color);
-    const levelText = this.add.text(x + 12, y - 18, '1', {
+  
+    tower.setDataEnabled();
+    tower.setData('range', range);
+    tower.setData('level', 1);
+    tower.setData('damage', damage);
+    tower.setData('type', this.currentTowerType);
+
+  
+    const levelText = this.add.text(x -2 , y + 12, '1', {
       fontSize: '14px',
       color: '#ffffff',
       fontStyle: 'bold'
     }).setOrigin(0.5);
-    
-    // Store on tower for reference
-    tower.setData('levelText', levelText);    
-    this.physics.add.existing(tower);
-    tower.setData('range', range);
-    tower.setData('level', 1);
-    tower.setData('damage', damage);
-    tower.setInteractive()
-  .on('pointerdown', () => {
-    if (this.upgradePanelOpen) return;
-    this.showUpgradePanel(tower);
-  })
-  .on('pointerover', () => {
-    this.tweens.add({
-      targets: tower,
-      scale: 1.15,
-      duration: 100,
-      ease: 'Power1'
+  
+    tower.setData('levelText', levelText);
+  
+    tower.on('pointerdown', () => {
+      if (this.upgradePanelOpen) return;
+  
+      // Only show upgrade panel if it's a circle tower
+      if (tower.getData('type') === this.currentTowerType) {
+        this.showUpgradePanel(tower);
+      }
+      
+      
     });
-  })
-  .on('pointerout', () => {
-    this.tweens.add({
-      targets: tower,
-      scale: 1,
-      duration: 100,
-      ease: 'Power1'
-    });
-  });
+  
+    const baseScale = tower.scale; // store initial scale
 
+    tower.on('pointerover', () => {
+      this.tweens.add({ targets: tower, scale: baseScale * 1.15, duration: 100 });
+    });
     
+    tower.on('pointerout', () => {
+      this.tweens.add({ targets: tower, scale: baseScale, duration: 100 });
+    });
+    
+  
     this.tileMap[row][col] = 2;
-    this.tileSprites[row][col].setFillStyle(0x0000ff).setAlpha(0.3);
-    this.towers.push(tower);
+this.tileSprites[row][col].setFillStyle(0x287097).setAlpha(0.3); // 👈 change this line
 
+    
+  
     const shootTimer = this.time.addEvent({
       delay: fireRate,
       callback: () => {
@@ -540,10 +584,10 @@ bar.name = 'hpBar';
       },
       loop: true
     });
-    
-    // Store timer on tower
-    tower.setData('shootTimer', shootTimer);    
+  
+    tower.setData('shootTimer', shootTimer);
   }
+  
 
   // 🔁 Main game loop
   update(_: number, delta: number) {
@@ -819,7 +863,8 @@ this.children.getAll().forEach(child => {
     
   }
   // SHOW TOWER UPGRADE PANEL FUNCTION
-  showUpgradePanel(tower: Phaser.GameObjects.Arc) {
+  showUpgradePanel(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform & { getData: Function }) {
+
     const existing = this.children.getByName('upgradePanel');
     if (existing) existing.destroy();
     
