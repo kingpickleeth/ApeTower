@@ -10,6 +10,9 @@ export default class MainScene extends Phaser.Scene {
   towers: (Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform)[] = [];
   hudBar!: Phaser.GameObjects.Rectangle;
   assetsLoaded: boolean = false;
+  isMusicMuted: boolean = false;
+  isSfxMuted: boolean = false;
+  bgMusic!: Phaser.Sound.BaseSound;
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
@@ -20,6 +23,7 @@ export default class MainScene extends Phaser.Scene {
   lives: number = 10;
   gameOver: boolean = false;
   isPaused: boolean = false;
+  
   // ---------------------------------------------------------------------------
   // 🗺️ Grid & Map
   // ---------------------------------------------------------------------------
@@ -56,6 +60,7 @@ export default class MainScene extends Phaser.Scene {
   constructor() {
     super('MainScene');
   }
+ 
   // ---------------------------------------------------------------------------
   // 🔁 preload(): Load assets
   // ---------------------------------------------------------------------------
@@ -143,6 +148,10 @@ this.load.start();
       }
     }
   }
+  // 🎵 Music Toggle Button
+
+// 🔊 SFX Toggle Button
+
   // 👾 Create enemy and bullet groups
   this.enemyGroup = this.add.group();
   this.bulletGroup = this.add.group();
@@ -292,29 +301,67 @@ this.load.start();
   restartBtn.setPosition(startX, topY);
   pauseBtn.setPosition(startX - restartBtn.width - spacing, topY);
   this.assetsLoaded = true;
-
-  let isMuted = false;
-
-  const soundButton = this.add.text(20, this.scale.height - 40, '🔊', {
+  const buttonStyle = {
     fontSize: '28px',
     color: '#ffffff',
     backgroundColor: '#222',
     padding: { left: 8, right: 8, top: 4, bottom: 4 },
-    fontFamily: 'sans-serif'
-  })
-  .setOrigin(0, 0.5)
-  .setInteractive()
-  .setScrollFactor(0)
-  .setDepth(1000);
+    fontFamily: 'sans-serif',
+  };
   
-  soundButton.on('pointerdown', () => {
-    isMuted = !isMuted;
-    this.sound.mute = isMuted;
-    soundButton.setText(isMuted ? '🔇' : '🔊');
+  const marginX = 20;
+  const marginY = this.scale.height - 90; // Top button Y
+  const spacingY = 40;
+  
+  // 🎵 Music Toggle Button
+  const musicButton = this.add.text(marginX, marginY, '🔈', buttonStyle)
+    .setOrigin(0, 0.5)
+    .setInteractive()
+    .setScrollFactor(0)
+    .setDepth(1000);
+  
+    musicButton.on('pointerdown', async () => {
+    this.isMusicMuted = !this.isMusicMuted;
+    musicButton.setText(this.isMusicMuted ? '🔈' : '🔇');
+  
+    const existingMusic = this.sound.get('bgMusic');
+    if (this.isMusicMuted && existingMusic) {
+      existingMusic.pause();
+    } else if (!this.isMusicMuted && existingMusic) {
+      existingMusic.resume();
+    } else if (!existingMusic) {
+      await this.loadAudio('bgMusic', 'https://admin.demwitches.xyz/assets/music.mp3');
+      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.4 });
+      if (!this.isMusicMuted) this.bgMusic.play();
+    }
   });
   
-
+  // 🔊 SFX Toggle Button
+  const sfxButton = this.add.text(marginX, marginY + spacingY, '🔔', buttonStyle)
+    .setOrigin(0, 0.5)
+    .setInteractive()
+    .setScrollFactor(0)
+    .setDepth(1000);
+  
+  sfxButton.on('pointerdown', () => {
+    this.isSfxMuted = !this.isSfxMuted;
+    sfxButton.setText(this.isSfxMuted ? '🔔' : '🔕');
+  });
+  
 }
+
+loadAudio(key: string, url: string): Promise<void> {
+  return new Promise((resolve) => {
+    if (this.sound.get(key)) {
+      resolve();
+      return;
+    }
+    this.load.audio(key, url);
+    this.load.once(Phaser.Loader.Events.COMPLETE, () => resolve());
+    this.load.start();
+  });
+}
+
 // ---------------------------------------------------------------------------
 // ☠️ Unused legacy function (still present for potential future use)
 // ---------------------------------------------------------------------------
@@ -464,6 +511,8 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
   );
   (bullet.body as Phaser.Physics.Arcade.Body).setVelocity(velocity.x, velocity.y);
   this.bulletGroup.add(bullet);
+  this.playPewSound();
+
   // 💨 Auto-destroy after timeout
   this.time.delayedCall(1500, () => bullet.destroy());
 }
@@ -573,6 +622,27 @@ if (imageKey !== null) {
   // 🧠 Track this tower so we can clean it up later
 this.towers.push(tower);
 
+}
+
+playPewSound() {
+  if (this.isSfxMuted) return;
+
+  if (this.sound.get('pew')) {
+    this.sound.play('pew', {
+      volume: 0.4,
+      rate: Phaser.Math.FloatBetween(0.95, 1.05),
+    });
+  } else {
+    this.load.audio('pew', 'https://admin.demwitches.xyz/assets/pewpew.mp3');
+    this.load.once('complete', () => {
+      const pew = this.sound.add('pew');
+      pew.play({
+        volume: 0.4,
+        rate: Phaser.Math.FloatBetween(0.95, 1.05),
+      });
+    });
+    this.load.start();
+  }
 }
 
 // ---------------------------------------------------------------------------
