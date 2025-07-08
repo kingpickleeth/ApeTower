@@ -169,3 +169,31 @@ html, body, #root {
 *, *::before, *::after {
   box-sizing: inherit;
 }
+
+#rotate-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(8, 12, 8, 0.95);
+  color: #ffffff;
+  font-family: Orbitron, sans-serif;
+  font-size: 1.6em;
+  display: none; /* toggled by JS */
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  text-align: center;
+  padding: 2rem;
+}
+
+
+#rotate-overlay.active {
+  display: flex;
+}
+
+.rotate-message {
+  font-size: 2rem;
+  font-family: Orbitron;
+}
