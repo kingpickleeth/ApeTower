@@ -16,6 +16,8 @@ export default class MainScene extends Phaser.Scene {
   selectedTilePos?: { x: number; y: number };
   selectedTile?: { col: number, row: number };
   towerSelectPanel?: Phaser.GameObjects.Container;
+  towerSelectHighlight?: Phaser.GameObjects.Rectangle;
+  canSelectTile: boolean = true;
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
@@ -149,9 +151,11 @@ this.load.start();
       if (type === 1) {
         tile.on('pointerdown', () => {
           // prevent placing over existing tower
-          if (this.tileMap[row][col] === 1 && !this.towers.find(t => t.getData('tileX') === col && t.getData('tileY') === row)) {
+          if (this.canSelectTile && !this.towerSelectPanel) {
+            this.canSelectTile = false;
             this.showTowerSelectPanel(col, row);
           }
+          
         });
       }
       
@@ -311,75 +315,131 @@ loadAudio(key: string, url: string): Promise<void> {
     this.load.start();
   });
 }
+
 showTowerSelectPanel(col: number, row: number) {
+  console.log('[🟢 showTowerSelectPanel]', {
+    inputEnabled: this.input.enabled,
+    towerSelectPanel: !!this.towerSelectPanel,
+  });
+
+  const towerCosts: Record<string, number> = {
+    basic: 10,
+    cannon: 15,
+    rapid: 12,
+  };
+
   const screenX = this.mapOffsetX + col * this.tileSize + this.tileSize / 2;
   const screenY = this.mapOffsetY + row * this.tileSize + this.tileSize / 2;
 
   this.selectedTile = { col, row };
+
+  // 🟨 Tile highlight
+  const highlightX = this.mapOffsetX + col * this.tileSize;
+  const highlightY = this.mapOffsetY + row * this.tileSize;
+
+  const tileHighlight = this.add.rectangle(
+    highlightX + this.tileSize / 2,
+    highlightY + this.tileSize / 2,
+    this.tileSize,
+    this.tileSize,
+    0xffff00,
+    0.3
+  ).setStrokeStyle(2, 0xffff00).setDepth(999);
+
+  this.towerSelectHighlight = tileHighlight;
+
   this.isPaused = true;
   this.physics.pause();
   this.enemySpawnEvent.paused = true;
-  
+
   // Clear any existing panel
   this.towerSelectPanel?.destroy();
 
-  const container = this.add.container(screenX, screenY);
-  const background = this.add.rectangle(0, 0, 120, 140, 0x111a12, 1).setStrokeStyle(2, 0x2aff84).setOrigin(0.5);
+  const container = this.add.container(screenX + 100, screenY + 60);
+  container.setDepth(1000);
+  const background = this.add.rectangle(0, 0, 120, 140, 0x111a12, 1)
+    .setStrokeStyle(2, 0x2aff84)
+    .setOrigin(0.5);
   container.add(background);
 
   const towerTypes = ['basic', 'cannon', 'rapid'];
   const buttonWidth = 100;
-const buttonHeight = 36;
-const buttonSpacing = 10; // Slightly reduced so spacing feels more balanced
-const totalHeight = towerTypes.length * buttonHeight + (towerTypes.length - 1) * buttonSpacing;
-const startY = -totalHeight / 2 + buttonHeight / 2; // Centered vertical start
+  const buttonHeight = 36;
+  const buttonSpacing = 10;
+  const totalHeight = towerTypes.length * buttonHeight + (towerTypes.length - 1) * buttonSpacing;
+  const startY = -totalHeight / 2 + buttonHeight / 2;
 
   towerTypes.forEach((type, index) => {
-  const bg = this.add.rectangle(0, 0, buttonWidth, buttonHeight, 0x333333)
-    .setStrokeStyle(0)
-    .setOrigin(0.5);
+    const bg = this.add.rectangle(0, 0, buttonWidth, buttonHeight, 0x333333)
+      .setStrokeStyle(0)
+      .setOrigin(0.5);
 
-  const label = this.add.text(0, 0, type.toUpperCase(), {
-    fontSize: '16px',
-    fontFamily: 'Orbitron',
-    color: '#ffffff',
-    align: 'center',
-  }).setOrigin(0.5);
+    const cost = towerCosts[type];
+    const canAfford = this.vineBalance >= cost;
+    const costColor = canAfford ? '#00ff00' : '#ff3333';
 
-  const buttonContainer = this.add.container(0, 0, [bg, label]);
-  buttonContainer.setPosition(0, startY + index * (buttonHeight + buttonSpacing));
-  buttonContainer.setSize(buttonWidth, buttonHeight);
-  buttonContainer.setInteractive(new Phaser.Geom.Rectangle(0, 0, buttonWidth, buttonHeight), Phaser.Geom.Rectangle.Contains);
+    const labelName = this.add.text(0, -8, type.toUpperCase(), {
+      fontSize: '14px',
+      fontFamily: 'Orbitron',
+      color: '#ffffff',
+      align: 'center',
+    }).setOrigin(0.5);
 
-  buttonContainer.on('pointerdown', () => {
-    this.currentTowerType = type;
-    this.placeTowerAt(col, row);
+    const labelCost = this.add.text(0, 10, `${cost} $VINE`, {
+      fontSize: '12px',
+      fontFamily: 'Orbitron',
+      color: costColor,
+      align: 'center',
+    }).setOrigin(0.5);
+
+    const buttonContainer = this.add.container(0, 0, [bg, labelName, labelCost]);
+    buttonContainer.setPosition(0, startY + index * (buttonHeight + buttonSpacing));
+    buttonContainer.setSize(buttonWidth, buttonHeight);
+    buttonContainer.setInteractive(
+      new Phaser.Geom.Rectangle(0, 0, buttonWidth, buttonHeight),
+      Phaser.Geom.Rectangle.Contains
+    );
+
+    buttonContainer.on('pointerdown', () => {
+      if (this.vineBalance < cost) return;
+      this.currentTowerType = type;
+      this.placeTowerAt(col, row);
+      this.towerSelectPanel?.destroy();
+      this.towerSelectPanel = undefined;
+      this.towerSelectHighlight?.destroy();
+      this.towerSelectHighlight = undefined;
+      this.isPaused = false;
+      this.physics.resume();
+      this.enemySpawnEvent.paused = false;
+      this.canSelectTile = true; // ✅ fix: allow immediate next tile selection
+    });
+
+    container.add(buttonContainer);
+  });
+
+  this.towerSelectPanel = container;
+
+  const blocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.001)
+    .setOrigin(0)
+    .setInteractive()
+    .setDepth(999);
+
+  blocker.once('pointerdown', () => {
+    console.log('[🔴 Blocker clicked]');
     this.towerSelectPanel?.destroy();
     this.towerSelectPanel = undefined;
+    this.towerSelectHighlight?.destroy();
+    this.towerSelectHighlight = undefined;
+    blocker.destroy();
     this.isPaused = false;
     this.physics.resume();
     this.enemySpawnEvent.paused = false;
-  });
 
-  container.add(buttonContainer);
-});
-
-
-  this.towerSelectPanel = container;
-  this.time.delayedCall(100, () => {
-    this.input.once('pointerdown', (objects: Phaser.GameObjects.GameObject[]) => {
-      const clickedInsidePanel = objects.some(obj => this.towerSelectPanel?.list.includes(obj));
-      if (!clickedInsidePanel) {
-        this.towerSelectPanel?.destroy();
-        this.towerSelectPanel = undefined;
-        this.isPaused = false;
-        this.physics.resume();
-        this.enemySpawnEvent.paused = false;
-      }
+    this.time.delayedCall(16, () => {
+      this.input.enabled = true;
+      this.canSelectTile = true; // ✅ make sure this is also true from cancel
     });
   });
-  
-
 }
 
 // ---------------------------------------------------------------------------
@@ -800,7 +860,11 @@ update(_: number, delta: number) {
         }
       }
     });
-
+    if (!this.input.enabled && !this.upgradePanelOpen && !this.towerSelectPanel) {
+      console.warn('🛠 Auto-reenabling input');
+      this.input.enabled = true;
+    }
+    
     // 💾 Save progress
     enemy.setData('t', t);
   }
