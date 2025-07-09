@@ -679,6 +679,7 @@ if (imageKey !== null) {
     this.activeTower = tower;
     
       this.showUpgradePanel(tower);
+      
     
   });
   // 🌀 Hover scale effect
@@ -1137,13 +1138,38 @@ this.towers = []; // Clear tower references
       this.nextRangeCircle = undefined;
       this.upgradePanelOpen = false;
       this.isPaused = false;
-      
+  
+      // ✅ FIX: Resume the selected tower’s shooting timer (if it exists)
+      const shootTimer = tower.getData('shootTimer');
+      shootTimer.paused = false;
+  
       const existingCircle = this.children.getByName('rangeCircle');
       existingCircle?.destroy();
       this.activeUpgradeButton = undefined;
       this.activeUpgradeCost = undefined;
       this.activeTower = undefined;
     });
+  });  
+  const blocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.001)
+  .setOrigin(0)
+  .setInteractive()
+  .setDepth(999);
+
+blocker.once('pointerdown', () => {
+  console.log('[🔴 Blocker clicked]');
+  this.towerSelectPanel?.destroy();
+  this.towerSelectPanel = undefined;
+  this.towerSelectHighlight?.destroy();
+  this.towerSelectHighlight = undefined;
+  blocker.destroy();
+  this.isPaused = false;
+  this.physics.resume();
+  this.enemySpawnEvent.paused = false;
+
+  this.time.delayedCall(16, () => {
+    this.input.enabled = true;
+    this.canSelectTile = true; // ✅ make sure this is also true from cancel
   });
+});
 }
 }
