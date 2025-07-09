@@ -401,6 +401,7 @@ showTowerSelectPanel(col: number, row: number) {
     );
 
     buttonContainer.on('pointerdown', () => {
+      console.log('[🔴 Upgrade clicked]');
       if (this.vineBalance < cost) return;
       this.currentTowerType = type;
       this.placeTowerAt(col, row);
@@ -408,6 +409,7 @@ showTowerSelectPanel(col: number, row: number) {
       this.towerSelectPanel = undefined;
       this.towerSelectHighlight?.destroy();
       this.towerSelectHighlight = undefined;
+      blocker.destroy();
       this.isPaused = false;
       this.physics.resume();
       this.enemySpawnEvent.paused = false;
