@@ -13,6 +13,9 @@ export default class MainScene extends Phaser.Scene {
   isMusicMuted: boolean = false;
   isSfxMuted: boolean = false;
   bgMusic!: Phaser.Sound.BaseSound;
+  selectedTilePos?: { x: number; y: number };
+  selectedTile?: { col: number, row: number };
+  towerSelectPanel?: Phaser.GameObjects.Container;
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
@@ -144,8 +147,14 @@ this.load.start();
         .setAlpha(0.2);
       this.tileSprites[row][col] = tile;
       if (type === 1) {
-        tile.on('pointerdown', () => this.placeTowerAt(col, row));
+        tile.on('pointerdown', () => {
+          // prevent placing over existing tower
+          if (this.tileMap[row][col] === 1 && !this.towers.find(t => t.getData('tileX') === col && t.getData('tileY') === row)) {
+            this.showTowerSelectPanel(col, row);
+          }
+        });
       }
+      
     }
   }
   // 🎵 Music Toggle Button
@@ -162,66 +171,7 @@ this.load.start();
     callbackScope: this,
     loop: true,
   });
-  // 🧠 Tower selector UI buttons
-  const types = ['basic', 'cannon', 'rapid'];
-  const towerButtons: Phaser.GameObjects.Container[] = [];
-  const buttonSpacing = 12;
-  const buttonMargin = 24;
-  const buttonWidth = 100;
-  const buttonHeight = 36;
-  const buttonX = screenWidth - buttonMargin - buttonWidth / 2;
-  const totalHeight = types.length * buttonHeight + (types.length - 1) * buttonSpacing;
-  const buttonYBase = screenHeight - buttonMargin - totalHeight;
-  types.forEach((type, index) => {
-    const label = this.add.text(0, 0, type.toUpperCase(), {
-      fontSize: '16px',
-      fontFamily: 'Orbitron',
-      color: '#ffffff',
-      align: 'center',
-    });
-    const bg = this.add.rectangle(0, 0, buttonWidth, buttonHeight, 0x333333).setStrokeStyle(0);
-    label.setPosition(-label.width / 2, -label.height / 2);
-    const buttonContainer = this.add.container(0, 0, [bg, label]);
-    buttonContainer.setPosition(buttonX, buttonYBase + index * (buttonHeight + buttonSpacing));
-    buttonContainer.setSize(bg.width, bg.height);
-    buttonContainer.setDepth(1);
-    buttonContainer.setInteractive(new Phaser.Geom.Rectangle(0, 0, bg.width, bg.height), Phaser.Geom.Rectangle.Contains);
-    buttonContainer.on('pointerdown', () => {
-      this.currentTowerType = type;
-      console.log(`🔧 Selected tower: ${type}`);
-      towerButtons.forEach(btn => {
-        const bgRect = btn.list[0] as Phaser.GameObjects.Rectangle;
-        bgRect.setStrokeStyle(0);
-      });
-      const strokeColor = type === 'basic' ? 0x3366ff : type === 'cannon' ? 0xff3333 : 0xffff00;
-      bg.setStrokeStyle(2, strokeColor);
-      this.tweens.add({
-        targets: buttonContainer,
-        scale: 1.0,
-        duration: 100,
-        ease: 'Power1',
-      });
-    });
-    towerButtons.push(buttonContainer);
-    if (type === this.currentTowerType) {
-      const strokeColor = type === 'basic' ? 0x3366ff : type === 'cannon' ? 0xff3333 : 0xffff00;
-      bg.setStrokeStyle(2, strokeColor);
-    }
-  });
-  // 🖼️ Selector panel background
-  const panelPadding = 10;
-  const firstButton = towerButtons[0];
-  const lastButton = towerButtons[towerButtons.length - 1];
-  const minX = firstButton.x - buttonWidth / 2 - panelPadding;
-  const minY = firstButton.y - buttonHeight / 2 - panelPadding;
-  const maxX = lastButton.x + buttonWidth / 2 + panelPadding;
-  const maxY = lastButton.y + buttonHeight / 2 + panelPadding;
-  const panelWidth = maxX - minX;
-  const panelHeight = maxY - minY;
-  this.add.rectangle(minX, minY, panelWidth, panelHeight, 0x111a12, 1)
-    .setOrigin(0, 0)
-    .setStrokeStyle(2, 0x2aff84)
-    .setDepth(0);
+ 
   // 💥 Bullet + Enemy collision logic
   this.physics.add.overlap(
     this.bulletGroup,
@@ -360,6 +310,76 @@ loadAudio(key: string, url: string): Promise<void> {
     this.load.once(Phaser.Loader.Events.COMPLETE, () => resolve());
     this.load.start();
   });
+}
+showTowerSelectPanel(col: number, row: number) {
+  const screenX = this.mapOffsetX + col * this.tileSize + this.tileSize / 2;
+  const screenY = this.mapOffsetY + row * this.tileSize + this.tileSize / 2;
+
+  this.selectedTile = { col, row };
+  this.isPaused = true;
+  this.physics.pause();
+  this.enemySpawnEvent.paused = true;
+  
+  // Clear any existing panel
+  this.towerSelectPanel?.destroy();
+
+  const container = this.add.container(screenX, screenY);
+  const background = this.add.rectangle(0, 0, 120, 140, 0x111a12, 1).setStrokeStyle(2, 0x2aff84).setOrigin(0.5);
+  container.add(background);
+
+  const towerTypes = ['basic', 'cannon', 'rapid'];
+  const buttonWidth = 100;
+const buttonHeight = 36;
+const buttonSpacing = 10; // Slightly reduced so spacing feels more balanced
+const totalHeight = towerTypes.length * buttonHeight + (towerTypes.length - 1) * buttonSpacing;
+const startY = -totalHeight / 2 + buttonHeight / 2; // Centered vertical start
+
+  towerTypes.forEach((type, index) => {
+  const bg = this.add.rectangle(0, 0, buttonWidth, buttonHeight, 0x333333)
+    .setStrokeStyle(0)
+    .setOrigin(0.5);
+
+  const label = this.add.text(0, 0, type.toUpperCase(), {
+    fontSize: '16px',
+    fontFamily: 'Orbitron',
+    color: '#ffffff',
+    align: 'center',
+  }).setOrigin(0.5);
+
+  const buttonContainer = this.add.container(0, 0, [bg, label]);
+  buttonContainer.setPosition(0, startY + index * (buttonHeight + buttonSpacing));
+  buttonContainer.setSize(buttonWidth, buttonHeight);
+  buttonContainer.setInteractive(new Phaser.Geom.Rectangle(0, 0, buttonWidth, buttonHeight), Phaser.Geom.Rectangle.Contains);
+
+  buttonContainer.on('pointerdown', () => {
+    this.currentTowerType = type;
+    this.placeTowerAt(col, row);
+    this.towerSelectPanel?.destroy();
+    this.towerSelectPanel = undefined;
+    this.isPaused = false;
+    this.physics.resume();
+    this.enemySpawnEvent.paused = false;
+  });
+
+  container.add(buttonContainer);
+});
+
+
+  this.towerSelectPanel = container;
+  this.time.delayedCall(100, () => {
+    this.input.once('pointerdown', (objects: Phaser.GameObjects.GameObject[]) => {
+      const clickedInsidePanel = objects.some(obj => this.towerSelectPanel?.list.includes(obj));
+      if (!clickedInsidePanel) {
+        this.towerSelectPanel?.destroy();
+        this.towerSelectPanel = undefined;
+        this.isPaused = false;
+        this.physics.resume();
+        this.enemySpawnEvent.paused = false;
+      }
+    });
+  });
+  
+
 }
 
 // ---------------------------------------------------------------------------
@@ -586,6 +606,9 @@ if (imageKey !== null) {
   tower.setData('level', 1);
   tower.setData('damage', damage);
   tower.setData('type', this.currentTowerType);
+  tower.setData('tileX', col);
+  tower.setData('tileY', row);
+
   const levelText = this.add.text(x - 2, y + 12, '1', {
     fontSize: '14px',
     color: '#ffffff',
@@ -937,6 +960,7 @@ this.towers = []; // Clear tower references
   this.startNextWave();
   this.isPaused = false;
   this.physics.resume();
+  
   // 🔁 Resume enemy spawns
   this.enemySpawnEvent = this.time.addEvent({
     delay: 1000,
@@ -953,6 +977,8 @@ this.towers = []; // Clear tower references
   if (existing) existing.destroy();
   this.upgradePanelOpen = true;
   this.isPaused = true;
+  this.physics.pause();
+  this.enemySpawnEvent.paused = true;
 
   // 🧹 Cleanup any previous range indicators
   this.rangeCircle?.destroy();
@@ -1044,6 +1070,7 @@ this.towers = []; // Clear tower references
       this.nextRangeCircle = undefined;
       this.upgradePanelOpen = false;
       this.isPaused = false;
+      
       const existingCircle = this.children.getByName('rangeCircle');
       existingCircle?.destroy();
       this.activeUpgradeButton = undefined;
