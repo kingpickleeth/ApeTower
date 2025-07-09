@@ -81,6 +81,7 @@ export default class MainScene extends Phaser.Scene {
   this.load.image('enemyTank', 'https://admin.demwitches.xyz/assets/tankenemy.png');
   
   }
+  
   // ---------------------------------------------------------------------------
   // 🎮 create(): Setup the map, UI, path, selectors, towers, collisions
   // ---------------------------------------------------------------------------
@@ -220,74 +221,121 @@ this.load.start();
   // 🎬 Start wave
   this.startNextWave();
   // ⏸ Pause Button
-  
-  const pauseBtn = this.add.text(0, 0, '⏸ Pause', {
-    fontSize: '16px',
-    fontFamily: 'Orbitron',
-    backgroundColor: '#2a2a2a',
-    color: '#e2e619',
-    padding: { x: 12, y: 8 },
-  })
-    .setOrigin(1, 0)
-    .setInteractive()
-    .on('pointerdown', () => {
-      this.isPaused = !this.isPaused;
-  
-      // Update button label
-      pauseBtn.setText(this.isPaused ? '▶️ Resume' : '⏸ Pause');
-  
-      // Toggle physics
-      if (this.isPaused) {
-        this.physics.pause();
-      } else {
-        this.physics.resume();
-      }
-  
-      // Toggle enemy spawns
-      if (this.enemySpawnEvent) {
-        this.enemySpawnEvent.paused = this.isPaused;
-      }
-  
-      // Toggle all tower shoot timers
-      this.towers.forEach(tower => {
-        const timer = tower.getData('shootTimer');
-        if (timer) timer.paused = this.isPaused;
-      });
-      // Also pause/resume bullet despawn timers
-this.bulletGroup.getChildren().forEach(bullet => {
-  const timer = bullet.getData('despawnTimer');
-  if (timer) timer.paused = this.isPaused;
+  // Draw rounded rectangle background
+const pauseBg = this.add.graphics();
+const pauseWidth = 104;
+const pauseHeight = 35;
+const pauseRadius = 10;
+const pauseX = Number(this.game.config.width) - 24 - pauseWidth * 2 - 12;
+const pauseY = this.mapOffsetY / 8;
+
+pauseBg.fillStyle(0x2a2a2a, 1);
+pauseBg.fillRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
+pauseBg.lineStyle(2, 0xe2e619, 1);
+pauseBg.strokeRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
+
+// Add text on top
+const pauseBtnText = this.add.text(pauseX + pauseWidth / 2, pauseY + pauseHeight / 2, '⏸ Pause', {
+  fontSize: '16px',
+  fontFamily: 'Orbitron',
+  color: '#e2e619',
+}).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+// Hover effect
+pauseBtnText.on('pointerover', () => {
+  pauseBg.clear();
+  pauseBg.fillStyle(0x3a3a3a, 1);
+  pauseBg.fillRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
+  pauseBg.lineStyle(2, 0xe2e619, 1);
+  pauseBg.strokeRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
+});
+pauseBtnText.on('pointerout', () => {
+  pauseBg.clear();
+  pauseBg.fillStyle(0x2a2a2a, 1);
+  pauseBg.fillRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
+  pauseBg.lineStyle(2, 0xe2e619, 1);
+  pauseBg.strokeRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
 });
 
-    });
-  
+// Click logic
+pauseBtnText.on('pointerdown', () => {
+  this.isPaused = !this.isPaused;
+  pauseBtnText.setText(this.isPaused ? '▶️ Resume' : '⏸ Pause');
+
+  if (this.isPaused) {
+    this.physics.pause();
+  } else {
+    this.physics.resume();
+  }
+
+  if (this.enemySpawnEvent) {
+    this.enemySpawnEvent.paused = this.isPaused;
+  }
+
+  this.towers.forEach(tower => {
+    const timer = tower.getData('shootTimer');
+    if (timer) timer.paused = this.isPaused;
+  });
+
+  this.bulletGroup.getChildren().forEach(bullet => {
+    const timer = bullet.getData('despawnTimer');
+    if (timer) timer.paused = this.isPaused;
+  });
+});
 
   // 🔁 Restart Button
-  const restartBtn = this.add.text(0, 0, '⟳ Restart', {
-    fontSize: '16px',
-    fontFamily: 'Orbitron',
-    backgroundColor: '#2a2a2a',
-    color: '#eb4034',
-    padding: { x: 12, y: 8 },
-  })
-    .setOrigin(1, 0)
-    .setInteractive()
-    .on('pointerdown', () => this.restartGame());
+  // Draw rounded rectangle background for Restart
+const restartBg = this.add.graphics();
+const restartWidth = 100;
+const restartHeight = 35;
+const restartRadius = 10;
+
+// Position: right of pause button
+const restartX = pauseX + pauseWidth + 12;
+const restartY = pauseY;
+
+restartBg.fillStyle(0x2a2a2a, 1);
+restartBg.fillRoundedRect(restartX, restartY, restartWidth, restartHeight, restartRadius);
+restartBg.lineStyle(2, 0xeb4034, 1); // Red border
+restartBg.strokeRoundedRect(restartX, restartY, restartWidth, restartHeight, restartRadius);
+
+// Add Restart button text
+const restartBtnText = this.add.text(restartX + restartWidth / 2, restartY + restartHeight / 2, '⟳ Restart', {
+  fontSize: '16px',
+  fontFamily: 'Orbitron',
+  color: '#eb4034',
+}).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+// Hover effect
+restartBtnText.on('pointerover', () => {
+  restartBg.clear();
+  restartBg.fillStyle(0x3a3a3a, 1);
+  restartBg.fillRoundedRect(restartX, restartY, restartWidth, restartHeight, restartRadius);
+  restartBg.lineStyle(2, 0xeb4034, 1);
+  restartBg.strokeRoundedRect(restartX, restartY, restartWidth, restartHeight, restartRadius);
+});
+restartBtnText.on('pointerout', () => {
+  restartBg.clear();
+  restartBg.fillStyle(0x2a2a2a, 1);
+  restartBg.fillRoundedRect(restartX, restartY, restartWidth, restartHeight, restartRadius);
+  restartBg.lineStyle(2, 0xeb4034, 1);
+  restartBg.strokeRoundedRect(restartX, restartY, restartWidth, restartHeight, restartRadius);
+});
+
+// Click logic
+restartBtnText.on('pointerdown', () => this.restartGame());
+
   // 📍 Position top-right
-  const spacing = 12;
-  const rightMargin = 24;
-  const topY = this.mapOffsetY / 8;
-  const startX = Number(this.game.config.width) - rightMargin;
-  restartBtn.setPosition(startX, topY);
-  pauseBtn.setPosition(startX - restartBtn.width - spacing, topY);
+ 
   this.assetsLoaded = true;
   const buttonStyle = {
     fontSize: '28px',
+    fontFamily: 'Orbitron',
     color: '#ffffff',
-    backgroundColor: '#222',
-    padding: { left: 8, right: 8, top: 4, bottom: 4 },
-    fontFamily: 'sans-serif',
+    backgroundColor: '#2a2a2a',
+    padding: { left: 12, right: 12, top: 8, bottom: 8 },
   };
+  
   
   const marginX = 20;
   const marginY = this.scale.height - 90; // Top button Y
