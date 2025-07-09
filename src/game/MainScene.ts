@@ -594,9 +594,10 @@ if (imageKey !== null) {
   tower.setData('levelText', levelText);
   // 🧠 Show upgrade on click
   tower.on('pointerdown', () => {
-    if (!this.upgradePanelOpen && tower.getData('type') === this.currentTowerType) {
+    this.activeTower = tower;
+    
       this.showUpgradePanel(tower);
-    }
+    
   });
   // 🌀 Hover scale effect
   const baseScale = tower.scale;
