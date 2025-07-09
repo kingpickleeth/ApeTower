@@ -132,7 +132,7 @@ this.load.start();
     color: '#eeeeee',
   };
   this.vineText = this.add.text(40, hudY, '$VINE: 50', textStyle);
-  this.waveText = this.add.text(220, hudY, 'Wave: 1', textStyle);
+  this.waveText = this.add.text(220, hudY, 'Wave: 1', textStyle).setDepth(20);
   this.livesText = this.add.text(400, hudY, 'Lives: 10', textStyle);
   // 🧱 Initialize tile map (1 = buildable, 0 = path)
   this.tileMap = Array.from({ length: this.mapRows }, () => Array(this.mapCols).fill(1));
@@ -418,7 +418,7 @@ showTowerSelectPanel(col: number, row: number) {
     this.tileSize,
     0xffff00,
     0.3
-  ).setStrokeStyle(2, 0xffff00).setDepth(999);
+  ).setStrokeStyle(2, 0xffff00).setDepth(500);
 
   this.towerSelectHighlight = tileHighlight;
 
@@ -1001,7 +1001,7 @@ update(_: number, delta: number) {
     250, 80,
     0x222222,
     0.85
-  ).setOrigin(0.5).setStrokeStyle(2, 0xffff00);
+  ).setOrigin(0.5).setDepth(1005).setStrokeStyle(2, 0xffff00);
   const bannerText = this.add.text(
     bannerBg.x, bannerBg.y,
     `🌊 Wave ${this.waveNumber}`,
@@ -1012,7 +1012,7 @@ update(_: number, delta: number) {
       fontStyle: 'bold',
       align: 'center',
     }
-  ).setOrigin(0.5);
+  ).setOrigin(0.5).setDepth(2000);
   bannerText.setAlpha(0).setScale(0.9);
   bannerBg.setAlpha(0).setScale(0.9);
   this.tweens.add({
