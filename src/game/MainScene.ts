@@ -220,6 +220,7 @@ this.load.start();
   // 🎬 Start wave
   this.startNextWave();
   // ⏸ Pause Button
+  
   const pauseBtn = this.add.text(0, 0, '⏸ Pause', {
     fontSize: '16px',
     fontFamily: 'Orbitron',
@@ -231,8 +232,36 @@ this.load.start();
     .setInteractive()
     .on('pointerdown', () => {
       this.isPaused = !this.isPaused;
+  
+      // Update button label
       pauseBtn.setText(this.isPaused ? '▶️ Resume' : '⏸ Pause');
+  
+      // Toggle physics
+      if (this.isPaused) {
+        this.physics.pause();
+      } else {
+        this.physics.resume();
+      }
+  
+      // Toggle enemy spawns
+      if (this.enemySpawnEvent) {
+        this.enemySpawnEvent.paused = this.isPaused;
+      }
+  
+      // Toggle all tower shoot timers
+      this.towers.forEach(tower => {
+        const timer = tower.getData('shootTimer');
+        if (timer) timer.paused = this.isPaused;
+      });
+      // Also pause/resume bullet despawn timers
+this.bulletGroup.getChildren().forEach(bullet => {
+  const timer = bullet.getData('despawnTimer');
+  if (timer) timer.paused = this.isPaused;
+});
+
     });
+  
+
   // 🔁 Restart Button
   const restartBtn = this.add.text(0, 0, '⟳ Restart', {
     fontSize: '16px',
@@ -593,7 +622,8 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
   this.playPewSound();
 
   // 💨 Auto-destroy after timeout
-  this.time.delayedCall(1500, () => bullet.destroy());
+  const bulletTimer = this.time.delayedCall(1500, () => bullet.destroy(), [], this);
+bullet.setData('despawnTimer', bulletTimer);
 }
   // ---------------------------------------------------------------------------
   // 🧱 placeTowerAt(): Places a tower on a buildable tile
