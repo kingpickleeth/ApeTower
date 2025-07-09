@@ -1063,7 +1063,7 @@ this.towers = []; // Clear tower references
     x = tower.x - panelWidth / 2 - padding;
   }
   const y = tower.y;
-  const panel = this.add.container(x, y).setName('upgradePanel');
+  const panel = this.add.container(x, y).setName('upgradePanel').setDepth(1000);
   // 🧱 Panel background
   const bg = this.add.rectangle(0, 0, panelWidth, 110, 0x333333)
     .setOrigin(0.5)
