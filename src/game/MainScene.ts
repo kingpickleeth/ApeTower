@@ -161,10 +161,7 @@ this.load.start();
       
     }
   }
-  // 🎵 Music Toggle Button
-
-// 🔊 SFX Toggle Button
-
+ 
   // 👾 Create enemy and bullet groups
   this.enemyGroup = this.add.group();
   this.bulletGroup = this.add.group();
@@ -976,6 +973,10 @@ update(_: number, delta: number) {
       }
     });    
   });
+// 🛑 Clear previous enemy spawn loop
+if (this.enemySpawnEvent) {
+  this.enemySpawnEvent.remove(false);
+}
   this.enemyGroup.clear(true, true);
   // 🔥 Extra health bar cleanup
   this.children.getAll().forEach(child => {
@@ -1016,7 +1017,7 @@ this.towers = []; // Clear tower references
   }
   // 🔁 Reset game values
   this.waveNumber = 0;
-  this.vineBalance = 20;
+  this.vineBalance = 50;
   this.lives = 10;
   this.gameOver = false;
   // 🧾 Reset HUD
