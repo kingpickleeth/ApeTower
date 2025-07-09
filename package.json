@@ -10,9 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@rainbow-me/rainbowkit": "^2.2.8",
     "phaser": "^3.90.0",
+    "qr": "^0.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "viem": "^2.31.7",
+    "wagmi": "^2.15.6",
     "webfontloader": "^1.6.28"
   },
   "devDependencies": {
