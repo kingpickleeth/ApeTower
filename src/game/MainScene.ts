@@ -432,31 +432,42 @@ createStyledButton(
     align: 'center',
   }).setOrigin(0.5);
 
-  const bg = this.add.graphics();
   const width = text.width + paddingX * 2;
   const height = text.height + paddingY * 2;
 
+  // 🔲 Add invisible hitbox rectangle
+  const hitbox = this.add.rectangle(0, 0, width, height)
+    .setOrigin(0.5)
+    .setVisible(false);
+
+  // 🎨 Draw button background
+  const bg = this.add.graphics();
   bg.fillStyle(bgColor, 1);
   bg.fillRoundedRect(-width / 2, -height / 2, width, height, borderRadius);
 
-  const button = this.add.container(x, y, [bg, text])
-    .setSize(width, height)
-    .setDepth(1010)
-    .setInteractive(new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height), Phaser.Geom.Rectangle.Contains)
+  // 📦 Container
+  const button = this.add.container(x, y, [hitbox, bg, text])
+    .setSize(width, height) // Defines bounds for default hit area
+    .setDepth(1020)
+    .setInteractive() // ✅ No custom geometry here!
     .on('pointerdown', onClick)
     .on('pointerover', () => {
       bg.clear();
       bg.fillStyle(bgColor + 0x202020, 1);
       bg.fillRoundedRect(-width / 2, -height / 2, width, height, borderRadius);
+      this.input.setDefaultCursor('pointer');
     })
     .on('pointerout', () => {
       bg.clear();
       bg.fillStyle(bgColor, 1);
       bg.fillRoundedRect(-width / 2, -height / 2, width, height, borderRadius);
+      this.input.setDefaultCursor('default');
     });
 
   return button;
 }
+
+
 
 
 loadAudio(key: string, url: string): Promise<void> {
