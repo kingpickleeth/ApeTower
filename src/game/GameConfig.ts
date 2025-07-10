@@ -1,18 +1,25 @@
 import Phaser from 'phaser';
 import MainScene from './MainScene';
 
-const GameConfig: Phaser.Types.Core.GameConfig = {
+const scale = window.devicePixelRatio || 1;
+
+// Extend GameConfig to allow 'resolution'
+interface HighResGameConfig extends Phaser.Types.Core.GameConfig {
+  resolution?: number;
+}
+
+const GameConfig: HighResGameConfig = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
   backgroundColor: '#1e1e1e',
   parent: 'game-container',
+  resolution: scale, // 👈 this makes your canvas crisp!
   render: {
-    pixelArt: true, // disables antialiasing
-    antialias: false,
-    antialiasGL: false,
-    transparent: true
-  },  
+    pixelArt: false,
+    antialias: true,
+    roundPixels: false,
+  },
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,

@@ -127,13 +127,15 @@ this.load.start();
   // 💬 HUD Text
   const hudY = 10;
   const textStyle = {
-    fontSize: '18px',
+    fontSize: '36px', // 2x original size
     fontFamily: 'Orbitron',
     color: '#eeeeee',
+    resolution: window.devicePixelRatio || 1 // 🔍 High DPI support
   };
-  this.vineText = this.add.text(40, hudY, '$VINE: 50', textStyle);
-  this.waveText = this.add.text(220, hudY, 'Wave: 1', textStyle).setDepth(20);
-  this.livesText = this.add.text(400, hudY, 'Lives: 10', textStyle);
+  
+  this.vineText = this.add.text(40, hudY, '$VINE: 50', textStyle).setScale(0.5);
+  this.waveText = this.add.text(220, hudY, 'Wave: 1', textStyle).setScale(0.5).setDepth(20);
+  this.livesText = this.add.text(400, hudY, 'Lives: 10', textStyle).setScale(0.5);  
   // 🧱 Initialize tile map (1 = buildable, 0 = path)
   this.tileMap = Array.from({ length: this.mapRows }, () => Array(this.mapCols).fill(1));
   for (const [col, row] of pathTiles) this.tileMap[row][col] = 0;
@@ -235,11 +237,19 @@ pauseBg.lineStyle(2, 0xe2e619, 1);
 pauseBg.strokeRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
 
 // Add text on top
-const pauseBtnText = this.add.text(pauseX + pauseWidth / 2, pauseY + pauseHeight / 2, '⏸ Pause', {
-  fontSize: '16px',
-  fontFamily: 'Orbitron',
-  color: '#e2e619',
-}).setOrigin(0.5).setInteractive({ useHandCursor: true });
+const pauseBtnText = this.add.text(
+  pauseX + pauseWidth / 2,
+  pauseY + pauseHeight / 2,
+  '⏸ Pause',
+  {
+    fontSize: '32px',
+    fontFamily: 'Orbitron',
+    color: '#e2e619',
+    resolution: window.devicePixelRatio || 1 // 👈 makes it crisp
+  }
+).setOrigin(0.5).setScale(0.5)
+ .setInteractive({ useHandCursor: true });
+
 
 // Hover effect
 pauseBtnText.on('pointerover', () => {
@@ -300,11 +310,14 @@ restartBg.lineStyle(2, 0xeb4034, 1); // Red border
 restartBg.strokeRoundedRect(restartX, restartY, restartWidth, restartHeight, restartRadius);
 
 // Add Restart button text
-const restartBtnText = this.add.text(restartX + restartWidth / 2, restartY + restartHeight / 2, '⟳ Restart', {
-  fontSize: '16px',
-  fontFamily: 'Orbitron',
-  color: '#eb4034',
-}).setOrigin(0.5).setInteractive({ useHandCursor: true });
+const restartBtnText = this.add.text(restartX + restartWidth / 2, restartY + restartHeight / 2, '⟳ Restart',  {
+    fontSize: '32px',
+    fontFamily: 'Orbitron',
+    color: '#eb4034',
+    resolution: window.devicePixelRatio || 1 // 👈 makes it crisp
+  }
+).setOrigin(0.5).setScale(0.5)
+ .setInteractive({ useHandCursor: true });
 
 // Hover effect
 restartBtnText.on('pointerover', () => {
@@ -328,54 +341,71 @@ restartBtnText.on('pointerdown', () => this.restartGame());
   // 📍 Position top-right
  
   this.assetsLoaded = true;
-  const buttonStyle = {
-    fontSize: '28px',
-    fontFamily: 'Orbitron',
-    color: '#ffffff',
-    backgroundColor: '#2a2a2a',
-    padding: { left: 12, right: 12, top: 8, bottom: 8 },
+  
+  const buttonRadius = 24;
+  const marginX = 20 + buttonRadius;
+  const marginY = this.scale.height - 90;
+  const spacingY = 60;
+  
+  // Helper to create a circular button
+  const createCircleButton = (
+    x: number,
+    y: number,
+    emoji: string,
+    onClick: () => void
+  ) => {
+    const circle = this.add.circle(0, 0, buttonRadius, 0x2a2a2a)
+      .setStrokeStyle(2, 0x2aff84)
+      .setDepth(1000);
+  
+    const icon = this.add.text(0, 0, emoji, {
+      fontSize: '20px',
+      fontFamily: 'Orbitron',
+      color: '#ffffff',
+      resolution: window.devicePixelRatio || 1
+    }).setOrigin(0.5)
+      .setDepth(1000);
+  
+    const container = this.add.container(x, y, [circle, icon])
+      .setSize(buttonRadius * 2, buttonRadius * 2)
+      .setDepth(1000)
+      .setScrollFactor(0)
+      .setInteractive(
+        new Phaser.Geom.Circle(20, 20, buttonRadius), // Hit area centered
+        Phaser.Geom.Circle.Contains
+      )
+      .on('pointerdown', onClick);
+  
+    // ✅ DO NOT use `.setOrigin()` on the container
+    return { container, icon };
   };
-  
-  
-  const marginX = 20;
-  const marginY = this.scale.height - 90; // Top button Y
-  const spacingY = 40;
-  
   // 🎵 Music Toggle Button
-  const musicButton = this.add.text(marginX, marginY, '🔈', buttonStyle)
-    .setOrigin(0, 0.5)
-    .setInteractive()
-    .setScrollFactor(0)
-    .setDepth(1000);
-  
-    musicButton.on('pointerdown', async () => {
-    this.isMusicMuted = !this.isMusicMuted;
-    musicButton.setText(this.isMusicMuted ? '🔇' : '🔈');
+  let isMusicMuted = this.isMusicMuted;
+  const { icon: musicIcon } = createCircleButton(marginX, marginY, '🔈', async () => {
+    isMusicMuted = !isMusicMuted;
+    this.isMusicMuted = isMusicMuted;
+    musicIcon.setText(isMusicMuted ? '🔇' : '🔈');
   
     const existingMusic = this.sound.get('bgMusic');
-    if (this.isMusicMuted && existingMusic) {
+    if (isMusicMuted && existingMusic) {
       existingMusic.pause();
-    } else if (!this.isMusicMuted && existingMusic) {
+    } else if (!isMusicMuted && existingMusic) {
       existingMusic.resume();
     } else if (!existingMusic) {
       await this.loadAudio('bgMusic', 'https://admin.demwitches.xyz/assets/music.mp3');
-      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.4 });
-      if (!this.isMusicMuted) this.bgMusic.play();
+      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 });
+      if (!isMusicMuted) this.bgMusic.play();
     }
   });
   
   // 🔊 SFX Toggle Button
-  const sfxButton = this.add.text(marginX, marginY + spacingY, '🔔', buttonStyle)
-    .setOrigin(0, 0.5)
-    .setInteractive()
-    .setScrollFactor(0)
-    .setDepth(1000);
-  
-  sfxButton.on('pointerdown', () => {
-    this.isSfxMuted = !this.isSfxMuted;
-    sfxButton.setText(this.isSfxMuted ? '🔕' : '🔔');
+  let isSfxMuted = this.isSfxMuted;
+  const { icon: sfxIcon } = createCircleButton(marginX, marginY + spacingY, '🔔', () => {
+    isSfxMuted = !isSfxMuted;
+    this.isSfxMuted = isSfxMuted;
+    sfxIcon.setText(isSfxMuted ? '🔕' : '🔔');
   });
-  
+
 }
 
 loadAudio(key: string, url: string): Promise<void> {
@@ -791,7 +821,7 @@ playPewSound() {
 
   if (this.sound.get('pew')) {
     this.sound.play('pew', {
-      volume: 0.4,
+      volume: 0.8,
       rate: Phaser.Math.FloatBetween(0.95, 1.05),
     });
   } else {
@@ -799,7 +829,7 @@ playPewSound() {
     this.load.once('complete', () => {
       const pew = this.sound.add('pew');
       pew.play({
-        volume: 0.4,
+        volume: 0.8,
         rate: Phaser.Math.FloatBetween(0.95, 1.05),
       });
     });
