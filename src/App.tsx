@@ -42,9 +42,13 @@ const wallet = new Wallet(privateKey, provider);
         
         const transferFn = token.getFunction("transfer");
         const txRequest = await transferFn.populateTransaction(getAddress(String(address)), parsedAmount);
+        txRequest.gasLimit = 70_000n;
+        txRequest.maxFeePerGas = parseUnits("30", "gwei"); // ~0.0000007 APE per claim
         
         const sentTx = await wallet.sendTransaction(txRequest);
-        await sentTx.wait();        
+        await sentTx.wait();
+        
+           
         
         alert(`✅ Claimed ${amount} $VINE! Tx: ${sentTx.hash}`);
       } catch (err: any) {
