@@ -19,6 +19,7 @@ export default class MainScene extends Phaser.Scene {
   towerSelectHighlight?: Phaser.GameObjects.Rectangle;
   canSelectTile: boolean = true;
   claimButton?: Phaser.GameObjects.Container;
+  canSpawnEnemies: boolean = false;
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
@@ -626,6 +627,7 @@ handleBulletHit(
 // 🧟 spawnEnemy(): Spawns one enemy with stats based on type
 // ---------------------------------------------------------------------------
 spawnEnemy() {
+  if (!this.canSpawnEnemies) return;
   if (this.enemiesSpawned >= this.enemyQueue.length) return;
   const type = this.enemyQueue[this.enemiesSpawned];
   const start = this.path.getStartPoint();
@@ -1114,6 +1116,8 @@ this.currentEnemyReward = config.reward;
     0x222222,
     0.85
   ).setOrigin(0.5).setDepth(1005).setStrokeStyle(2, 0xffff00);
+  this.canSelectTile = false;
+  this.canSpawnEnemies = false;
   const bannerText = this.add.text(
     bannerBg.x, bannerBg.y,
     `🌊 Wave ${this.waveNumber}`,
@@ -1139,7 +1143,9 @@ this.currentEnemyReward = config.reward;
   this.time.delayedCall(2000, () => {
     bannerBg.destroy();
     bannerText.destroy();
-  });
+    this.canSelectTile = true;
+    this.canSpawnEnemies = true; // ✅ Allow enemies to spawn now
+  });  
   console.log(`🚨 Wave ${this.waveNumber} starting...`);
 }
   // ---------------------------------------------------------------------------
