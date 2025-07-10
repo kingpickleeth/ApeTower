@@ -21,7 +21,9 @@ export default class MainScene extends Phaser.Scene {
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
-  vineBalance: number = 50; // Starting VINE
+  vineBalance: number = 40; // Starting VINE
+  currentEnemyHP: Partial<Record<string, number>> = {};
+  currentEnemyReward: Partial<Record<string, number>> = {};  
   vineText!: Phaser.GameObjects.Text;
   waveText!: Phaser.GameObjects.Text;
   livesText!: Phaser.GameObjects.Text;
@@ -133,7 +135,7 @@ this.load.start();
     resolution: window.devicePixelRatio || 1 // 🔍 High DPI support
   };
   
-  this.vineText = this.add.text(40, hudY, '$VINE: 50', textStyle).setScale(0.5);
+  this.vineText = this.add.text(40, hudY, '$VINE: 40', textStyle).setScale(0.5);
   this.waveText = this.add.text(220, hudY, 'Wave: 1', textStyle).setScale(0.5).setDepth(20);
   this.livesText = this.add.text(400, hudY, 'Lives: 10', textStyle).setScale(0.5);  
   // 🧱 Initialize tile map (1 = buildable, 0 = path)
@@ -316,7 +318,7 @@ const restartBtnText = this.add.text(restartX + restartWidth / 2, restartY + res
     color: '#eb4034',
     resolution: window.devicePixelRatio || 1 // 👈 makes it crisp
   }
-).setOrigin(0.5).setScale(0.5)
+).setOrigin(0.5).setScale(0.5).setDepth(1008)
  .setInteractive({ useHandCursor: true });
 
 // Hover effect
@@ -427,9 +429,9 @@ showTowerSelectPanel(col: number, row: number) {
   });
 
   const towerCosts: Record<string, number> = {
-    basic: 10,
-    cannon: 15,
-    rapid: 12,
+    basic: 20,
+    rapid: 15,
+    cannon: 35,
   };
 
   const screenX = this.mapOffsetX + col * this.tileSize + this.tileSize / 2;
@@ -466,7 +468,7 @@ showTowerSelectPanel(col: number, row: number) {
     .setOrigin(0.5);
   container.add(background);
 
-  const towerTypes = ['basic', 'cannon', 'rapid'];
+  const towerTypes = ['basic', 'rapid', 'cannon'];
   const buttonWidth = 100;
   const buttonHeight = 36;
   const buttonSpacing = 10;
@@ -575,21 +577,16 @@ body.setSize(enemy.displayWidth, enemy.displayHeight);
 body.setOffset(-enemy.displayWidth / 2, -enemy.displayHeight / 2);
   // 🎯 Set enemy stats by type
   let speed = 1 / 8000;
-  let hp = 2 + this.waveNumber;
-  let reward = 5;
   if (type === 'fast') {
     speed = 1 / 5000;
-    hp = 1 + this.waveNumber * 0.8;
-    reward = 3;
   } else if (type === 'tank') {
     speed = 1 / 12000;
-    hp = 4 + this.waveNumber * 1.5;
-    reward = 8;
   }
   enemy.setData('type', type);
-  enemy.setData('hp', hp);
-  enemy.setData('maxHp', hp);
-  enemy.setData('reward', reward);
+  enemy.setData('hp', this.currentEnemyHP[type]);
+  enemy.setData('maxHp', this.currentEnemyHP[type]);
+  enemy.setData('reward', this.currentEnemyReward[type]);
+  
   enemy.setData('speed', speed);
   // 🩸 Health bar UI
   const barBg = this.add.rectangle(enemy.x, enemy.y - 16, 20, 4, 0x222222);
@@ -681,14 +678,14 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
       bullet.setFillStyle(0xffff00); // Yellow
       bullet.setScale(1);
       break;
-    case 'cannon':
-      bullet.setFillStyle(0xff3300); // Orange-red
-      bullet.setScale(1.4);
-      break;
     case 'rapid':
       bullet.setFillStyle(0x00ffff); // Cyan
       bullet.setScale(0.75);
       break;
+    case 'cannon':
+        bullet.setFillStyle(0xff3300); // Orange-red
+        bullet.setScale(1.4);
+        break;
   }
   this.physics.add.existing(bullet);
   const velocity = this.physics.velocityFromRotation(
@@ -714,9 +711,9 @@ bullet.setData('despawnTimer', bulletTimer);
     if (this.upgradePanelOpen) return;
     if (this.tileMap[row][col] !== 1) return;
   // 💰 Set tower cost based on type
-  let cost = 10;
-  if (this.currentTowerType === 'cannon') cost = 15;
-  if (this.currentTowerType === 'rapid') cost = 12;
+  let cost = 20;
+  if (this.currentTowerType === 'rapid') cost = 15;
+  if (this.currentTowerType === 'cannon') cost = 35;
   if (this.vineBalance < cost) {
     const warning = this.add.text(Number(this.game.config.width) / 2, 40, '❌ Not enough $VINE', {
       fontSize: '16px',
@@ -739,11 +736,13 @@ if (this.currentTowerType === 'basic') {
   fireRate = 700;
   range = 200;
   damage = 1;
-} else if (this.currentTowerType === 'cannon') {
+} else if 
+
+(this.currentTowerType === 'cannon') {
   imageKey = 'cannonTowerRight';
   fireRate = 1200;
   range = 250;
-  damage = 3;
+  damage = 2;
 } else if (this.currentTowerType === 'rapid') {
   imageKey = 'rapidTowerRight';
   fireRate = 400;
@@ -886,7 +885,7 @@ update(_: number, delta: number) {
 
         const popupBg = this.add.rectangle(centerX, centerY, 320, 140, 0x000000, 0.8)
           .setOrigin(0.5)
-          .setStrokeStyle(2, 0xff3333);
+          .setStrokeStyle(2, 0xff3333).setDepth(1006);
 
         const gameOverText = this.add.text(centerX, centerY - 30, '💀 Game Over', {
           fontSize: '40px',
@@ -894,7 +893,7 @@ update(_: number, delta: number) {
           fontStyle: 'bold',
           align: 'center',
           color: '#ff3333'
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setDepth(1006);
 
         const restartBtn = this.add.text(centerX, centerY + 30, '🔁 Restart', {
           fontSize: '20px',
@@ -903,7 +902,7 @@ update(_: number, delta: number) {
           color: '#ffffff'
         })
           .setOrigin(0.5)
-          .setInteractive()
+          .setInteractive().setDepth(1008)
           .on('pointerdown', () => {
             popupBg.destroy();
             gameOverText.destroy();
@@ -1008,22 +1007,39 @@ update(_: number, delta: number) {
   this.enemiesSpawned = 0;
   this.enemiesKilled = 0;
   // 📦 Generate enemy queue
-  const count = 5 + this.waveNumber * 2;
-  const queue: string[] = [];
+  // 📦 Use explicit wave config
+const waveConfig = [
+  { total: 5,  mix: { normal: 1.0 },                           hp: { normal: 5 },       reward: { normal: 4 } },
+  { total: 6,  mix: { normal: 1.0 },                           hp: { normal: 5 },       reward: { normal: 5 } },
+  { total: 8,  mix: { normal: 0.75, fast: 0.25 },              hp: { normal: 5, fast: 4 }, reward: { normal: 5, fast: 6 } },
+  { total: 9,  mix: { normal: 0.6, fast: 0.4 },                hp: { normal: 5, fast: 4 }, reward: { normal: 6, fast: 7 } },
+  { total: 10, mix: { normal: 0.6, fast: 0.3, tank: 0.1 },     hp: { normal: 5, fast: 4, tank: 18 }, reward: { normal: 6, fast: 7, tank: 12 } },
+  { total: 12, mix: { normal: 0.5, fast: 0.3, tank: 0.2 },     hp: { normal: 5, fast: 4, tank: 18 }, reward: { normal: 7, fast: 8, tank: 14 } },
+  { total: 14, mix: { normal: 0.4, fast: 0.3, tank: 0.3 },     hp: { normal: 5, fast: 4, tank: 18 }, reward: { normal: 8, fast: 8, tank: 15 } },
+  { total: 16, mix: { normal: 0.3, fast: 0.3, tank: 0.4 },     hp: { normal: 5, fast: 4, tank: 18 }, reward: { normal: 8, fast: 9, tank: 16 } },
+  { total: 18, mix: { normal: 0.2, fast: 0.4, tank: 0.4 },     hp: { normal: 5, fast: 4, tank: 18 }, reward: { normal: 9, fast: 10, tank: 18 } },
+  { total: 20, mix: { fast: 0.2, tank: 0.8 },                  hp: { fast: 4, tank: 18 }, reward: { fast: 10, tank: 20 } }
+];
+
+
+const config = waveConfig[this.waveNumber - 1] ?? waveConfig[waveConfig.length - 1];
+const queue: string[] = [];
+
+for (const [type, ratio] of Object.entries(config.mix)) {
+  const count = Math.round(ratio * config.total);
   for (let i = 0; i < count; i++) {
-    if (this.waveNumber < 3) {
-      queue.push('normal');
-    } else if (this.waveNumber < 6) {
-      queue.push(Math.random() < 0.8 ? 'normal' : 'fast');
-    } else {
-      const r = Math.random();
-      if (r < 0.6) queue.push('normal');
-      else if (r < 0.85) queue.push('fast');
-      else queue.push('tank');
-    }
+    queue.push(type);
   }
-  this.enemyQueue = queue;
-  this.enemiesPerWave = queue.length;
+}
+
+Phaser.Utils.Array.Shuffle(queue); // Optional: mix it up
+this.enemyQueue = queue;
+this.enemiesPerWave = queue.length;
+
+// Set current HP and rewards for spawnEnemy()
+this.currentEnemyHP = config.hp;
+this.currentEnemyReward = config.reward;
+
   // 🪧 Wave banner
   const bannerBg = this.add.rectangle(
     Number(this.game.config.width) / 2,
@@ -1108,7 +1124,7 @@ this.towers.forEach(tower => {
 // 🔨 Extra brute-force cleanup for debug
 this.children.getAll().forEach(child => {
   if (child instanceof Phaser.GameObjects.Image &&
-      ['basicTowerRight', 'cannonTower', 'machineTower'].includes(child.texture.key)) {
+      ['basicTowerRight','machineTower', 'cannonTower'].includes(child.texture.key)) {
     child.destroy();
   }
 });
@@ -1126,7 +1142,7 @@ this.towers = []; // Clear tower references
   }
   // 🔁 Reset game values
   this.waveNumber = 0;
-  this.vineBalance = 50;
+  this.vineBalance = 40;
   this.lives = 10;
   this.gameOver = false;
   // 🧾 Reset HUD
@@ -1180,8 +1196,8 @@ this.towers = []; // Clear tower references
   const dmg = tower.getData('damage');
   const rng = tower.getData('range');
   const level = tower.getData('level') ?? 1;
-  const baseCost = 20;
-  const upgradeCost = Math.floor(baseCost * Math.pow(1.3, level - 1));
+  const baseCost = 25;
+  const upgradeCost = Math.floor(baseCost * Math.pow(1.4, level - 1));
   const nextDmg = dmg + 1;
   const nextRng = rng + 20;
   // 🔵 Current & next range indicators

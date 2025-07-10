@@ -22,7 +22,7 @@ const apechain: Chain = {
 const config = getDefaultConfig({
     appName: 'Ape Tower',
     chains: [apechain],
-    projectId: 'WALLET_CONNECT_PROJECT_ID', // replace this
+    projectId: 'ec846cc8cfaadc7743c39b5bbe99ade5', // replace this
   });
   
 
