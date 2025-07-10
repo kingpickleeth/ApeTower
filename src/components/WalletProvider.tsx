@@ -1,6 +1,6 @@
 // src/components/WalletProvider.tsx
 import '@rainbow-me/rainbowkit/styles.css';
-import { getDefaultConfig, RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
+import { getDefaultConfig, RainbowKitProvider, lightTheme } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Chain } from 'viem';
@@ -32,7 +32,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-      <RainbowKitProvider theme={darkTheme()} modalSize="compact">
+      <RainbowKitProvider theme={lightTheme()} modalSize="compact">
           {children}
         </RainbowKitProvider>
       </QueryClientProvider>
