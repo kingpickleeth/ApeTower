@@ -18,6 +18,7 @@ export default class MainScene extends Phaser.Scene {
   towerSelectPanel?: Phaser.GameObjects.Container;
   towerSelectHighlight?: Phaser.GameObjects.Rectangle;
   canSelectTile: boolean = true;
+  claimButton?: Phaser.GameObjects.Text;
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
@@ -905,10 +906,36 @@ update(_: number, delta: number) {
           .setInteractive().setDepth(1008)
           .on('pointerdown', () => {
             popupBg.destroy();
+            this.claimButton?.destroy(); // 💥 Destroy the claim button too
             gameOverText.destroy();
             restartBtn.destroy();
             this.restartGame();
           });
+// 🎯 Add this after restartBtn in Game Over UI
+this.claimButton = this.add.text(centerX, centerY + 70, '🌿 Claim $VINE', {
+  fontSize: '20px',
+  backgroundColor: '#228b22',
+  padding: { x: 10, y: 6 },
+  color: '#ffffff'
+})
+  .setOrigin(0.5)
+  .setInteractive()
+  .setDepth(1008)
+  .on('pointerdown', () => {
+    // 🧹 Destroy popup UI
+    popupBg.destroy();
+    gameOverText.destroy();
+    restartBtn.destroy();
+    this.claimButton?.destroy();
+    this.restartGame();
+
+    // 📦 Trigger claim event to React
+    window.dispatchEvent(new CustomEvent('claim-vine', {
+      detail: { amount: this.vineBalance }
+    }));
+  });
+
+
 
         return;
       }
