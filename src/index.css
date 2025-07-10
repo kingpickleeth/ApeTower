@@ -21,7 +21,7 @@ div[data-rk] {
 
 
 title {
-  font-family: Orbitron;
+  font-family: Outfit;
 }
 
 a {
@@ -48,7 +48,7 @@ body {
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
-  font-family: Orbitron;
+  font-family: Outfit;
   color: #f9f9f9;
 }
 
@@ -116,7 +116,7 @@ button:focus-visible {
 
 #game-title {
   font-size: 3.2em;
-  font-family: Orbitron;
+  font-family: Outfit;
   color: #f9f9f9;
   margin-bottom: 24px; /* 👈 space between title and canvas */
   text-shadow: 0 0 12px rgba(42, 255, 132, 0.5);
@@ -202,7 +202,7 @@ html, body, #root {
   height: 100vh;
   background: rgba(8, 12, 8, 0.95);
   color: #ffffff;
-  font-family: Orbitron, sans-serif;
+  font-family: Outfit, sans-serif;
   font-size: 1.6em;
   display: none; /* toggled by JS */
   align-items: center;
@@ -219,7 +219,7 @@ html, body, #root {
 
 .rotate-message {
   font-size: 2rem;
-  font-family: Orbitron;
+  font-family: Outfit;
 }
 #connect-screen {
   position: fixed;
@@ -232,7 +232,7 @@ html, body, #root {
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  font-family: Orbitron, sans-serif;
+  font-family: Outfit, sans-serif;
 }
 
 #connect-modal {
@@ -313,7 +313,7 @@ html, body, #root {
   left: 50%;
   transform: translateX(-50%);
   font-size: 1.6rem;
-  font-family: Orbitron;
+  font-family: Outfit;
   color: #2aff84;
   text-shadow: 0 0 8px rgba(42, 255, 132, 0.4);
   pointer-events: none;

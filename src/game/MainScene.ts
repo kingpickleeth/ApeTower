@@ -133,8 +133,8 @@ this.load.start();
   // 💬 HUD Text
   const hudY = 10;
   const textStyle = {
-    fontSize: '36px', // 2x original size
-    fontFamily: 'Orbitron',
+    fontSize: '45px', // 2x original size
+    fontFamily: 'Outfit',
     color: '#eeeeee',
     resolution: window.devicePixelRatio || 1 // 🔍 High DPI support
   };
@@ -248,8 +248,8 @@ const pauseBtnText = this.add.text(
   pauseY + pauseHeight / 2,
   '⏸ Pause',
   {
-    fontSize: '32px',
-    fontFamily: 'Orbitron',
+    fontSize: '40px',
+    fontFamily: 'Outfit',
     color: '#e2e619',
     resolution: window.devicePixelRatio || 1 // 👈 makes it crisp
   }
@@ -317,8 +317,8 @@ restartBg.strokeRoundedRect(restartX, restartY, restartWidth, restartHeight, res
 
 // Add Restart button text
 const restartBtnText = this.add.text(restartX + restartWidth / 2, restartY + restartHeight / 2, '⟳ Restart',  {
-    fontSize: '32px',
-    fontFamily: 'Orbitron',
+    fontSize: '40px',
+    fontFamily: 'Outfit',
     color: '#eb4034',
     resolution: window.devicePixelRatio || 1 // 👈 makes it crisp
   }
@@ -366,7 +366,7 @@ restartBtnText.on('pointerdown', () => this.restartGame());
   
     const icon = this.add.text(0, 0, emoji, {
       fontSize: '20px',
-      fontFamily: 'Orbitron',
+      fontFamily: 'Outfit',
       color: '#ffffff',
       resolution: window.devicePixelRatio || 1
     }).setOrigin(0.5)
@@ -427,7 +427,7 @@ createStyledButton(
 
   const text = this.add.text(0, 0, label, {
     fontSize: `${fontSize}px`,
-    fontFamily: 'Orbitron',
+    fontFamily: 'Outfit',
     color: '#ffffff',
     align: 'center',
   }).setOrigin(0.5);
@@ -546,14 +546,14 @@ showTowerSelectPanel(col: number, row: number) {
 
     const labelName = this.add.text(0, -8, type.toUpperCase(), {
       fontSize: '14px',
-      fontFamily: 'Orbitron',
+      fontFamily: 'Outfit',
       color: '#ffffff',
       align: 'center',
     }).setOrigin(0.5);
 
     const labelCost = this.add.text(0, 10, `${cost} $VINE`, {
-      fontSize: '12px',
-      fontFamily: 'Orbitron',
+      fontSize: '16px',
+      fontFamily: 'Outfit',
       color: costColor,
       align: 'center',
     }).setOrigin(0.5);
@@ -951,7 +951,7 @@ const popupBg = this.add.rectangle(centerX, centerY, 320, 180, 0x000000, 0.8)
 // 🧠 Game Over Text
 const gameOverText = this.add.text(centerX, centerY - 50, '💀 Game Over', {
   fontSize: '36px',
-  fontFamily: 'Orbitron',
+  fontFamily: 'Outfit',
   fontStyle: 'bold',
   align: 'center',
   color: '#ff3333'
@@ -1119,7 +1119,7 @@ this.currentEnemyReward = config.reward;
     `🌊 Wave ${this.waveNumber}`,
     {
       fontSize: '28px',
-      fontFamily: 'Orbitron',
+      fontFamily: 'Outfit',
       color: '#2aff84',
       fontStyle: 'bold',
       align: 'center',
@@ -1274,10 +1274,10 @@ this.towers = []; // Clear tower references
     .setStrokeStyle(1, 0x88ccff)
     .setDepth(-1);
   const statsText = this.add.text(-panelWidth / 2 + 10, -40,
-    `🔸 DMG: ${dmg} ➡️ ${nextDmg}\n🔹 RNG: ${rng} ➡️ ${nextRng}`,
+    `Damage:${dmg} ➡️ ${nextDmg}\nRange: ${rng}  ➡️ ${nextRng}`,
     {
-      fontSize: '12px',
-      fontFamily: 'Orbitron',
+      fontSize: '16px',
+      fontFamily: 'Outfit',
       color: '#ffffff',
       align: 'left',
       lineSpacing: 6,
@@ -1285,9 +1285,9 @@ this.towers = []; // Clear tower references
   );
   // 🔼 Upgrade button
   const hasEnough = this.vineBalance >= upgradeCost;
-  const upgradeBtn = this.add.text(0, 20, `Upgrade 🔼 (${upgradeCost})`, {
-    fontSize: '12px',
-    fontFamily: 'Orbitron',
+  const upgradeBtn = this.add.text(0, 30, `Upgrade 🔼 (${upgradeCost})`, {
+    fontSize: '16px',
+    fontFamily: 'Outfit',
     backgroundColor: hasEnough ? '#555555' : '#552222',
     padding: { x: 10, y: 6 },
     color: hasEnough ? '#00ff00' : '#ff3333',
