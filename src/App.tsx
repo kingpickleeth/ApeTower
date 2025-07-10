@@ -50,7 +50,7 @@ const wallet = new Wallet(privateKey, provider);
         
            
         
-        alert(`✅ Claimed ${amount} $VINE! Tx: ${sentTx.hash}`);
+        alert(`✅ Look at you go dawg! Big baller, shot caller. You just claimed ${amount} $VINE!\n\nCheck out the transaction: https://apescan.io/tx/${sentTx.hash}\n\n Don't Spend It All In One Place Now 😉`);
       } catch (err: any) {
         console.error(err);
         alert("🚨 Failed to claim $VINE: " + err.message);
