@@ -6,8 +6,9 @@ import { useEffect } from 'react';
 import { JsonRpcProvider } from 'ethers';
 import { Wallet, Contract, parseUnits } from 'ethers';
 import { getAddress } from 'ethers'; // 👈 Add to your import if not already
-
-
+import ProfileEditor from './components/ProfileEditor'; // ⬅️ adjust path if needed
+import { useState } from 'react';
+import { getProfile } from './utils/profile';
 
 
 const VINE_TOKEN = "0xe6027e786e2ef799316afabae84e072ca73aa97f"; // 👈 Replace with real contract address
@@ -18,7 +19,9 @@ const ERC20_ABI = [
 ];
 
 function App() {
+  const [showProfile, setShowProfile] = useState(false);
   const { isConnected, address } = useAccount();
+  const [profile, setProfile] = useState<{ username: string; pfp_url: string } | null>(null);
 
   useEffect(() => {
     const handler = async (e: any) => {
@@ -60,7 +63,16 @@ const wallet = new Wallet(privateKey, provider);
     window.addEventListener("claim-vine", handler);
     return () => window.removeEventListener("claim-vine", handler);
   }, [address]);
-
+  useEffect(() => {
+    async function fetchProfile() {
+      if (address) {
+        const data = await getProfile(address);
+        setProfile(data);
+      }
+    }
+    fetchProfile();
+  }, [address]);
+  
 
   return (
     <div id="app-container">
@@ -77,15 +89,27 @@ const wallet = new Wallet(privateKey, provider);
         </div>
       )}
 
-      {isConnected && (
-        <>
-          {/* 🧠 Top Navbar */}
-          <div id="navbar">
-            <div id="navbar-title">Ape Tower</div>
-            <div id="wallet-button-container">
-              <ConnectButton showBalance={false} accountStatus="address" />
-            </div>
-          </div>
+{isConnected && (
+  <>
+    {/* 🧠 Top Navbar */}
+    <div id="navbar">
+      <div id="navbar-title">Ape Tower</div>
+      <div id="wallet-button-container">
+  <ConnectButton showBalance={false} accountStatus="address" />
+  {profile?.pfp_url ? (
+  <button className="profile-pfp-button" onClick={() => setShowProfile(true)} title={profile?.username || 'Profile'}>
+    <img src={profile.pfp_url} alt="pfp" />
+  </button>
+) : (
+  <button className="profile-btn" onClick={() => setShowProfile(true)}>
+    👤 Profile
+  </button>
+)}
+
+</div>
+
+    </div>
+
 
           {/* 🎮 Game Content */}
           <div id="game-wrapper">
@@ -95,8 +119,24 @@ const wallet = new Wallet(privateKey, provider);
               </div>
             </div>
           </div>
-        </>
-      )}
+          {showProfile && (
+      <div id="profile-modal">
+        <div id="profile-overlay" onClick={() => setShowProfile(false)} />
+        <div id="profile-card">
+        <ProfileEditor
+  walletAddress={address!}
+  onClose={() => setShowProfile(false)}
+  onSave={async () => {
+    setShowProfile(false);
+    const refreshed = await getProfile(address!);
+    setProfile(refreshed);
+  }}
+/>
+</div>
+      </div>
+    )}
+  </>
+)}
     </div>
   );
 }
