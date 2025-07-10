@@ -18,7 +18,7 @@ export default class MainScene extends Phaser.Scene {
   towerSelectPanel?: Phaser.GameObjects.Container;
   towerSelectHighlight?: Phaser.GameObjects.Rectangle;
   canSelectTile: boolean = true;
-  claimButton?: Phaser.GameObjects.Text;
+  claimButton?: Phaser.GameObjects.Container;
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
@@ -89,6 +89,7 @@ export default class MainScene extends Phaser.Scene {
   // 🎮 create(): Setup the map, UI, path, selectors, towers, collisions
   // ---------------------------------------------------------------------------
   create() {
+    
   console.log('✅ MainScene created');
   const screenWidth = Number(this.game.config.width);
   const screenHeight = Number(this.game.config.height);
@@ -102,6 +103,8 @@ this.load.once('complete', () => {
 this.load.start();
   this.mapOffsetX = (screenWidth - mapWidth) / 2;
   this.mapOffsetY = (screenHeight - mapHeight) / 2;
+
+  
   // 🧿 Generate enemy texture as red circle
   const circle = this.add.graphics();
   circle.fillStyle(0xff0000, 1);
@@ -410,6 +413,51 @@ restartBtnText.on('pointerdown', () => this.restartGame());
   });
 
 }
+createStyledButton(
+  x: number,
+  y: number,
+  label: string,
+  bgColor: number,
+  onClick: () => void
+): Phaser.GameObjects.Container {
+  const paddingX = 16;
+  const paddingY = 8;
+  const fontSize = 18;
+  const borderRadius = 12;
+
+  const text = this.add.text(0, 0, label, {
+    fontSize: `${fontSize}px`,
+    fontFamily: 'Orbitron',
+    color: '#ffffff',
+    align: 'center',
+  }).setOrigin(0.5);
+
+  const bg = this.add.graphics();
+  const width = text.width + paddingX * 2;
+  const height = text.height + paddingY * 2;
+
+  bg.fillStyle(bgColor, 1);
+  bg.fillRoundedRect(-width / 2, -height / 2, width, height, borderRadius);
+
+  const button = this.add.container(x, y, [bg, text])
+    .setSize(width, height)
+    .setDepth(1010)
+    .setInteractive(new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height), Phaser.Geom.Rectangle.Contains)
+    .on('pointerdown', onClick)
+    .on('pointerover', () => {
+      bg.clear();
+      bg.fillStyle(bgColor + 0x202020, 1);
+      bg.fillRoundedRect(-width / 2, -height / 2, width, height, borderRadius);
+    })
+    .on('pointerout', () => {
+      bg.clear();
+      bg.fillStyle(bgColor, 1);
+      bg.fillRoundedRect(-width / 2, -height / 2, width, height, borderRadius);
+    });
+
+  return button;
+}
+
 
 loadAudio(key: string, url: string): Promise<void> {
   return new Promise((resolve) => {
@@ -884,66 +932,46 @@ update(_: number, delta: number) {
         const overlay = this.add.rectangle(centerX, centerY, this.game.config.width as number, this.game.config.height as number, 0x000000, 0.4).setOrigin(0.5);
         overlay.setDepth(-1);
 
-        const popupBg = this.add.rectangle(centerX, centerY, 320, 140, 0x000000, 0.8)
-          .setOrigin(0.5)
-          .setStrokeStyle(2, 0xff3333).setDepth(1006);
-
-        const gameOverText = this.add.text(centerX, centerY - 30, '💀 Game Over', {
-          fontSize: '40px',
-          fontFamily: 'Orbitron',
-          fontStyle: 'bold',
-          align: 'center',
-          color: '#ff3333'
-        }).setOrigin(0.5).setDepth(1006);
-
-        const restartBtn = this.add.text(centerX, centerY + 30, '🔁 Restart', {
-          fontSize: '20px',
-          backgroundColor: '#444444',
-          padding: { x: 10, y: 6 },
-          color: '#ffffff'
-        })
-          .setOrigin(0.5)
-          .setInteractive().setDepth(1008)
-          .on('pointerdown', () => {
-            popupBg.destroy();
-            this.claimButton?.destroy(); // 💥 Destroy the claim button too
-            gameOverText.destroy();
-            restartBtn.destroy();
-            this.restartGame();
-          });
-// 🎯 Add this after restartBtn in Game Over UI
-this.claimButton = this.add.text(centerX, centerY + 70, '🌿 Claim $VINE', {
-  fontSize: '20px',
-  backgroundColor: '#228b22',
-  padding: { x: 10, y: 6 },
-  color: '#ffffff'
-})
+      // 🟥 Game Over Background (make taller to fit buttons)
+const popupBg = this.add.rectangle(centerX, centerY, 320, 180, 0x000000, 0.8)
   .setOrigin(0.5)
-  .setInteractive()
-  .setDepth(1008)
-  .on('pointerdown', () => {
-    // 🧹 Destroy popup UI
-    popupBg.destroy();
-    gameOverText.destroy();
-    restartBtn.destroy();
-    this.claimButton?.destroy();
-    this.restartGame();
+  .setStrokeStyle(2, 0xff3333).setDepth(1006);
 
-    // 📦 Trigger claim event to React
-    window.dispatchEvent(new CustomEvent('claim-vine', {
-      detail: { amount: this.vineBalance }
-    }));
-  });
+// 🧠 Game Over Text
+const gameOverText = this.add.text(centerX, centerY - 50, '💀 Game Over', {
+  fontSize: '36px',
+  fontFamily: 'Orbitron',
+  fontStyle: 'bold',
+  align: 'center',
+  color: '#ff3333'
+}).setOrigin(0.5).setDepth(1006);
+// 🟩 Restart Button
+const restartBtn = this.createStyledButton(centerX, centerY + 5, '🔁 Restart', 0x444444, () => {
+  popupBg.destroy();
+  gameOverText.destroy();
+  restartBtn.destroy();
+  this.claimButton?.destroy();
+  this.restartGame();
+});
+
+// 🌿 Claim $VINE Button (spaced lower)
+this.claimButton = this.createStyledButton(centerX, centerY + 52, '🌿 Claim $VINE', 0x2ecc71, () => {
+  popupBg.destroy();
+  gameOverText.destroy();
+  restartBtn.destroy();
+  this.claimButton?.destroy();
 
 
-
+  window.dispatchEvent(new CustomEvent('claim-vine', {
+    detail: { amount: this.vineBalance }
+  }));
+  this.restartGame();
+});
         return;
       }
-
       // ✅ Important: Skip remaining logic for this enemy
       continue;
     }
-
     // 🧭 Move enemy along the path
     const vec = new Phaser.Math.Vector2();
     this.path.getPoint(t, vec);
