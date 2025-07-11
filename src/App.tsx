@@ -102,8 +102,7 @@ const wallet = new Wallet(privateKey, provider);
     <img src={profile.pfp_url} alt="pfp" />
   </button>
 ) : (
-  <button className="profile-btn" onClick={() => setShowProfile(true)}>
-    👤 Profile
+  <button className="profile-btn" onClick={() => setShowProfile(true)}>👤
   </button>
 )}
 
