@@ -89,7 +89,12 @@ console.log('✅ Profile saved, showing modal');
 
       <div id="profile-card">
         <h2>Your Super Sexy Profile Page</h2>
-  
+        {pfpUrl && (
+          <div className="avatar-preview">
+            <img src={pfpUrl} alt="pfp" />
+            <span>{username || 'Your Username'}</span>
+          </div>
+        )}
         <div className="form-group">
           <label htmlFor="username">Username:</label>
           <input
@@ -120,14 +125,6 @@ console.log('✅ Profile saved, showing modal');
           </label>
           <input type="file" id="pfpUpload" accept="image/*" onChange={handleFileUpload} />
         </div>
-  
-        {pfpUrl && (
-          <div className="avatar-preview">
-            <img src={pfpUrl} alt="pfp" />
-            <span>{username || 'Your Username'}</span>
-          </div>
-        )}
-  
         <div className="button-row">
           <button className="save-btn" onClick={saveProfile}>
             💾 Save
