@@ -517,7 +517,7 @@ canvas {
   display: block;
 }
 
-@media (max-width: 750px) {
+@media (min-width: 410px) and (max-width: 749px) {
   #navbar::before {
     content: "";
     display: none !important;
@@ -533,7 +533,7 @@ canvas {
 
   /* 👇 Stronger selector and full override */
   #navbar > #navbar-title {
-    position: relative !important;
+    position: static !important;
     left: auto !important;
     right: auto !important;
     transform: none !important;
@@ -554,5 +554,46 @@ canvas {
     margin-right: 35px !important;
     gap: 8px;
     flex-shrink: 0;
+  }
+}
+
+@media (max-width: 409px) {
+  #navbar::before {
+    content: "";
+    display: none !important;
+  }
+
+  #navbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    
+  }
+
+  /* 👇 Stronger selector and full override */
+  #navbar > #navbar-title {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+   
+    margin-left: 35 px !important;
+    padding: 0 !important;
+    font-size: 2rem;
+    white-space: nowrap;
+    flex-grow: 1;
+    text-align: left;
+  }
+  .profile-pfp-button {
+    margin-right: 35px !important;
+  }
+  #wallet-button-container {
+    display: flex;
+    align-items: center;
+    margin-right: 35px !important;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: 15px;
   }
 }
