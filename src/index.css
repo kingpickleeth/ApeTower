@@ -520,6 +520,13 @@ canvas {
   .profile-btn-mobile {
     display: none !important;
   }
+  .profile-pfp-button-mobile {
+    display: none !important;
+  }
+  
+  .profile-pfp-button-mobile img {
+    display: none !important;
+  }
 }
 @media (min-width: 410px) and (max-width: 749px) {
   #navbar::before {
@@ -612,7 +619,16 @@ canvas {
 }
 
 .profile-pfp-button-mobile {
-  display:none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  background: none;
+  display: inline-block;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 .profile-pfp-button-mobile img {
@@ -622,7 +638,16 @@ canvas {
   display: block;
 }
 .profile-btn-mobile {
-  display:none !important;
+  background-color: white;
+  font-family: Outfit;
+  color: black;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0px 1px 3px rgba(0,0,0,0.1);
 }
 
 .profile-btn-mobile:hover {
