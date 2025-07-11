@@ -14,6 +14,7 @@ interface Props {
   const [pfpUrl, setPfpUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [bio, setBio] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     async function fetch() {
@@ -40,15 +41,23 @@ interface Props {
   };
   
   const saveProfile = async () => {
-    console.log('Current bio before saving:', bio); // 🐞
-    await upsertProfile(walletAddress, username, pfpUrl, bio);
+    setErrorMsg(''); // clear previous errors
+  
+    const { error } = await upsertProfile(walletAddress, username, pfpUrl, bio);
+  
+    if (error) {
+      if (error.message.includes('duplicate key value') || error.code === '23505') {
+        setErrorMsg('That username is already taken. Please try another.');
+      } else {
+        setErrorMsg('Something went wrong while saving. Try again later.');
+      }
+      return;
+    }
     alert('Profile saved!');
     onSave?.();
     onClose();
   };
-  
   if (loading) return <p>Loading profile...</p>;
-
   return (
     <div id="profile-card">
       <h2>Your Super Sexy Profile Page</h2>
@@ -62,6 +71,7 @@ interface Props {
           placeholder="Enter your name"
         />
       </div>
+      {errorMsg && <p style={{ color: '#ff4d4f', fontWeight: 'bold', marginTop: '6px' }}>{errorMsg}</p>}
       <div className="form-group">
   <label htmlFor="bio">Bio:</label>
   <textarea

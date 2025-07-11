@@ -12,22 +12,28 @@ export async function getProfile(walletAddress: string) {
 }
 
 export async function upsertProfile(walletAddress: string, username: string, pfpUrl: string, bio: string) {
-  console.log('Upserting profile:', { walletAddress, username, pfpUrl, bio });
-
-  const { data, error } = await supabase.from('profiles').upsert(
-    [
+    console.log('Upserting profile:', { walletAddress, username, pfpUrl, bio });
+  
+    const { data, error } = await supabase.from('profiles').upsert(
+      [
+        {
+          wallet_address: walletAddress,
+          username,
+          pfp_url: pfpUrl,
+          bio
+        }
+      ],
       {
-        wallet_address: walletAddress,
-        username,
-        pfp_url: pfpUrl,
-        bio
+        onConflict: 'wallet_address'
       }
-    ],
-    {
-      onConflict: 'wallet_address' // ✅ this is what was missing
+    );
+  
+    if (error) {
+      console.error('Error saving profile:', error);
+      return { error }; // ✅ return the error to caller
     }
-  );
-
-  if (error) console.error('Error saving profile:', error);
-  else console.log('Upsert succeeded:', data); // ✅ Optional success log
-}
+  
+    console.log('Upsert succeeded:', data);
+    return { data }; // ✅ optional but useful
+  }
+  
