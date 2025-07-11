@@ -21,7 +21,6 @@ body {
   display: flex;
   background-color: #0d130f;
   overflow-x: hidden; /* ✅ Ensure horizontal overflow doesn't cause cutoff */
-  overflow-y: hidden; /* ✅ Ensure vertical overflow doesn't cause cutoff */
 }
 div[data-rk] {
   z-index: 2000 !important;
