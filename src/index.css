@@ -516,7 +516,11 @@ canvas {
   object-fit: cover;
   display: block;
 }
-
+@media (min-width: 750px) {
+  .profile-btn-mobile {
+    display: none !important;
+  }
+}
 @media (min-width: 410px) and (max-width: 749px) {
   #navbar::before {
     content: "";
@@ -546,7 +550,11 @@ canvas {
     text-align: left;
   }
   .profile-pfp-button {
-    margin-right: 25px !important;
+    margin-right: 35px !important;
+    display:none !important;
+  }
+  .profile-btn {
+    display: none !important;
   }
   #wallet-button-container {
     display: flex;
@@ -560,6 +568,10 @@ canvas {
 @media (max-width: 409px) {
   #navbar::before {
     content: "";
+    display: none !important;
+  }
+ 
+  .profile-btn {
     display: none !important;
   }
 
@@ -587,6 +599,7 @@ canvas {
   }
   .profile-pfp-button {
     margin-right: 35px !important;
+    display:none !important;
   }
   #wallet-button-container {
     display: flex;
@@ -596,4 +609,41 @@ canvas {
     flex-shrink: 0;
     margin-left: 15px;
   }
+}
+
+.profile-pfp-button-mobile {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  background: none;
+  display: inline-block;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.profile-pfp-button-mobile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.profile-btn-mobile {
+  background-color: white;
+  font-family: Outfit;
+  color: black;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0px 1px 3px rgba(0,0,0,0.1);
+}
+
+.profile-btn-mobile:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-1px);
 }
