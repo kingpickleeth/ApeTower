@@ -545,7 +545,9 @@ canvas {
     flex-grow: 1;
     text-align: left;
   }
-
+  .profile-pfp-button {
+    margin-right: 25px !important;
+  }
   #wallet-button-container {
     display: flex;
     align-items: center;
