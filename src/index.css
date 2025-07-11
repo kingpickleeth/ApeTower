@@ -21,6 +21,7 @@ body {
   display: flex;
   background-color: #0d130f;
   overflow-x: hidden; /* ✅ Ensure horizontal overflow doesn't cause cutoff */
+  overflow-y: hidden; /* ✅ Ensure vertical overflow doesn't cause cutoff */
 }
 div[data-rk] {
   z-index: 2000 !important;
@@ -127,7 +128,7 @@ html, body, #root {
   width: 100vw;
   height: 100vh;
   overflow-x: hidden; /* ✅ restrict only horizontal scroll */
-  overflow-y: hidden; /* ✅ allow dropdowns and modals to extend */
+  overflow-y: auto; /* ✅ allow dropdowns and modals to extend */
 }
 #game-frame {
   width: 90vw;
