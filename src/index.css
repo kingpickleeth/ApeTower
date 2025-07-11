@@ -305,8 +305,10 @@ canvas {
   flex-direction: column;
   gap: 12px;
   padding: 24px;
-  min-width: 320px;
+  width: 100%;
   max-width: 90vw;
+  min-width: 0; /* ✅ Let it shrink below 320px if needed */
+  box-sizing: border-box;
   z-index: 10;
   background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
   color: #fff;
@@ -339,7 +341,7 @@ canvas {
   font-size: 1rem;
   border-radius: 8px;
   font-family: Outfit;
-  background-color: #2b2b2b;
+  background-color: #1a1a1a;
   color: white;
 }
 #profile-card img {
@@ -349,6 +351,21 @@ canvas {
   border-radius: 50%;
   object-fit: cover;
   align-self: center;
+}
+input,
+textarea {
+  background-color: #1a1a1a;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 0.6em 1em;
+  font-family: inherit;
+  font-size: 1em;
+  width: 100%;
+  box-sizing: border-box;
+}
+textarea {
+  resize: none;
 }
 /* === Avatar Preview === */
 .avatar-preview {

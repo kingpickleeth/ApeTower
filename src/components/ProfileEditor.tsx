@@ -13,6 +13,7 @@ interface Props {
   const [username, setUsername] = useState('');
   const [pfpUrl, setPfpUrl] = useState('');
   const [loading, setLoading] = useState(true);
+  const [bio, setBio] = useState('');
 
   useEffect(() => {
     async function fetch() {
@@ -20,6 +21,7 @@ interface Props {
       if (profile) {
         setUsername(profile.username);
         setPfpUrl(profile.pfp_url);
+        setBio(profile.bio || '');
       }
       setLoading(false);
     }
@@ -38,11 +40,13 @@ interface Props {
   };
   
   const saveProfile = async () => {
-    await upsertProfile(walletAddress, username, pfpUrl);
+    console.log('Current bio before saving:', bio); // 🐞
+    await upsertProfile(walletAddress, username, pfpUrl, bio);
     alert('Profile saved!');
-    onSave?.();     // 🔄 Trigger profile refresh in App
-    onClose();      // ✅ Close the modal
+    onSave?.();
+    onClose();
   };
+  
   if (loading) return <p>Loading profile...</p>;
 
   return (
@@ -58,10 +62,22 @@ interface Props {
           placeholder="Enter your name"
         />
       </div>
-  
+      <div className="form-group">
+  <label htmlFor="bio">Bio:</label>
+  <textarea
+  id="bio"
+  className="styled-input" // 👈 match your input class
+  value={bio}
+  onChange={(e) => setBio(e.target.value.slice(0, 100))}
+  placeholder="Write something cool (max 100 characters)"
+  rows={3}
+/>
+  <small style={{ color: '#ccc' }}>{bio.length}/100 characters</small>
+</div>
+
       <div className="form-group">
  
-  <label htmlFor="pfpUpload" style={{ marginTop: '3px' }}>Upload Image:</label>
+  <label htmlFor="pfpUpload" style={{ marginTop: '3px' }}>Upload Your PFP:</label>
   <input type="file" id="pfpUpload" accept="image/*" onChange={handleFileUpload} />
 </div>
       {pfpUrl && (
