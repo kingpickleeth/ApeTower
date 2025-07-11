@@ -1280,7 +1280,7 @@ this.towers = []; // Clear tower references
     .setStrokeStyle(1, 0x88ccff)
     .setDepth(-1);
   const statsText = this.add.text(-panelWidth / 2 + 10, -40,
-    `Damage:${dmg} ➡️ ${nextDmg}\nRange: ${rng}  ➡️ ${nextRng}`,
+    `Damage: ${dmg} ➡️ ${nextDmg}\nRange: ${rng}  ➡️ ${nextRng}`,
     {
       fontSize: '16px',
       fontFamily: 'Outfit',
