@@ -306,7 +306,7 @@ canvas {
   gap: 12px;
   padding: 24px;
   width: 100%;
-  max-width: 90vw;
+  max-width: 500px;
   min-width: 0; /* ✅ Let it shrink below 320px if needed */
   box-sizing: border-box;
   z-index: 10;
