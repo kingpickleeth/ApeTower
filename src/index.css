@@ -245,7 +245,6 @@ html, body, #root {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
   border-bottom: 2px solid #2aff84;
   box-shadow: 0 2px 12px rgba(0, 255, 128, 0.1);
   overflow: visible;
@@ -512,7 +511,7 @@ textarea {
   #navbar > #navbar-title {
     position: static !important;
     transform: none !important;
-    margin-left: 35px !important;
+    margin-left: 5px !important;
     font-size: 2rem;
     white-space: nowrap;
     flex-grow: 1;
@@ -549,7 +548,7 @@ textarea {
   #navbar > #navbar-title {
     position: static !important;
     transform: none !important;
-    margin-left: 35px !important;
+    margin-left: 5px !important;
     font-size: 2rem;
     white-space: nowrap;
     flex-grow: 1;
