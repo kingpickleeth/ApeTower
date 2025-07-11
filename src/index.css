@@ -71,18 +71,6 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
 
 /* ===== Modern Animated Background for Game Wrapper ===== */
 
@@ -110,7 +98,7 @@ button:focus-visible {
   transform-origin: top center; /* 🔥 Key line */
 
   /* ✅ Shifts visual center up slightly */
-  transform: translateY(-4vh);
+
 }
 
 
@@ -171,7 +159,7 @@ html, body, #root {
 
 #game-frame {
   width: 90vw;
-  max-width: 800px;
+  max-width: 90%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -309,14 +297,16 @@ html, body, #root {
 }
 
 #navbar-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   font-size: 3rem;
   font-family: Outfit;
   color: #2aff84;
   text-shadow: 0 0 8px rgba(42, 255, 132, 0.4);
   pointer-events: none;
+  margin-left: auto;
+  margin-right: auto;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 
@@ -326,6 +316,7 @@ html, body, #root {
   align-items: center;
   z-index: 1001;
   margin-right: 35px; /* ✅ no shift if spacer is same width */
+  margin-left:35px;
 }
 canvas {
   width: 100% !important;
@@ -524,4 +515,42 @@ canvas {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+@media (max-width: 750px) {
+  #navbar::before {
+    content: "";
+    display: none !important;
+  }
+
+  #navbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 35px;
+  }
+
+  /* 👇 Stronger selector and full override */
+  #navbar > #navbar-title {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+   
+    margin-left: 35 px !important;
+    padding: 0 !important;
+    font-size: 2rem;
+    white-space: nowrap;
+    flex-grow: 1;
+    text-align: left;
+  }
+
+  #wallet-button-container {
+    display: flex;
+    align-items: center;
+    margin-right: 35px !important;
+    gap: 8px;
+    flex-shrink: 0;
+  }
 }

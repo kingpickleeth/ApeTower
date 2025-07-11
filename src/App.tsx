@@ -94,6 +94,7 @@ const wallet = new Wallet(privateKey, provider);
     {/* 🧠 Top Navbar */}
     <div id="navbar">
       <div id="navbar-title">Ape Tower</div>
+      <div id="spacer"></div>
       <div id="wallet-button-container">
   <ConnectButton showBalance={false} accountStatus="address" />
   {profile?.pfp_url ? (
