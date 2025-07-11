@@ -555,8 +555,6 @@ textarea {
     text-align: left;
   }
   #wallet-button-container {
-    margin-right: 35px !important;
-    margin-left: 15px;
     gap: 8px;
     flex-shrink: 0;
   }
