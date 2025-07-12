@@ -49,7 +49,6 @@ interface Props {
   
     const timeout = setTimeout(async () => {
       setCheckingUsername(true);
-      const profile = await getProfile(walletAddress);
       const otherProfile = await getProfileByUsername(username); // 👈 You'll add this helper
       if (otherProfile && otherProfile.wallet_address !== walletAddress) {
         setUsernameTaken(true);
