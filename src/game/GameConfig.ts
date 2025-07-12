@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import MainScene from './MainScene';
+import MainMenuScene from './MainMenuScene';
 
 const scale = window.devicePixelRatio || 1;
 
@@ -26,13 +27,14 @@ const GameConfig: HighResGameConfig = {
     width: 800,
     height: 600
   },
-  scene: [MainScene],
+  scene: [MainMenuScene, MainScene],
   physics: {
     default: 'arcade',
     arcade: {
       debug: false
     }
   }
+  
 };
 
 export default GameConfig;
