@@ -54,6 +54,15 @@ function App() {
     return () => window.removeEventListener("claim-vine", handler);
   }, [address]);
   useEffect(() => {
+    const handler = (e: any) => {
+      setModalMessage(e.detail.message);
+      setModalType('success');
+    };
+    window.addEventListener("show-success-modal", handler);
+    return () => window.removeEventListener("show-success-modal", handler);
+  }, []);
+  
+  useEffect(() => {
     if (!address) return;
     getProfile(address).then(setProfile);
   }, [address]);

@@ -17,7 +17,7 @@ interface Props {
   const [loading, setLoading] = useState(true);
   const [bio, setBio] = useState('');
 
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
   const [showErrorModal, setShowErrorModal] = useState<string | null>(null);
 
 
@@ -59,7 +59,12 @@ interface Props {
         return;
       }
       
-    setShowSuccessModal(true);
+      window.dispatchEvent(new CustomEvent("show-success-modal", {
+        detail: { message: "Profile saved successfully!" }
+      }));
+      onSave?.();
+      onClose();
+      
 console.log('✅ Profile saved, showing modal');
 
   };
@@ -67,18 +72,6 @@ console.log('✅ Profile saved, showing modal');
 
   return (
     <>
-     {showSuccessModal && (
-  <GameModal
-    message="Profile saved successfully!"
-    type="success"
-    onClose={() => {
-      setShowSuccessModal(false);
-      onSave?.();
-      onClose();
-    }}
-  />
-)}
-
 {showErrorModal && (
   <GameModal
     message="That username is already taken. Please try another."
@@ -88,13 +81,15 @@ console.log('✅ Profile saved, showing modal');
 )}
 
       <div id="profile-card">
-        <h2>Your Super Sexy Profile</h2>
+        <h2>Your Super Sexy Profile Page</h2>
+    
         {pfpUrl && (
           <div className="avatar-preview">
             <img src={pfpUrl} alt="pfp" />
             <span>{username || 'Your Username'}</span>
           </div>
         )}
+  
         <div className="form-group">
           <label htmlFor="username">Username:</label>
           <input
