@@ -71,8 +71,9 @@ button:focus-visible {
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  padding: 0;
+
   margin: 0;
+
 }
 #game-content {
   width: 100% !important;
@@ -376,7 +377,7 @@ textarea {
   flex-direction: column;
   align-items: center;
   margin: 12px 0;
-  max-width: 100%;
+   max-width: 100%;
   height: auto;
 }
 .avatar-preview img {
@@ -502,6 +503,10 @@ textarea {
   .profile-pfp-button-mobile,
   .profile-pfp-button-mobile img {
     display: none !important;
+  }
+  #game-wrapper {
+    padding-top: 90px; /* 👈 matches #navbar height */
+    box-sizing: border-box; /* 👈 ensures padding doesn’t overflow container */
   }
 }
 @media (min-width: 410px) and (max-width: 749px) {
