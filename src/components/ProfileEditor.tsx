@@ -21,6 +21,7 @@ interface Props {
   const [loading, setLoading] = useState(true);
   const [bio, setBio] = useState('');
   const [vineBalance, setVineBalance] = useState<number>(0);
+  const [profile, setProfile] = useState<any | null>(null);
 
 
   const [showErrorModal, setShowErrorModal] = useState<string | null>(null);
@@ -35,6 +36,7 @@ interface Props {
         setPfpUrl(profile.pfp_url);
         setBio(profile.bio || '');
         setVineBalance(profile.total_vine || 0);
+        setProfile(profile); // ✅ Add this
       }
       setLoading(false);
     }
@@ -50,11 +52,17 @@ interface Props {
     const timeout = setTimeout(async () => {
       setCheckingUsername(true);
       const otherProfile = await getProfileByUsername(username); // 👈 You'll add this helper
-      if (otherProfile && otherProfile.wallet_address !== walletAddress) {
-        setUsernameTaken(true);
+      if (otherProfile) {
+        if (otherProfile.wallet_address !== walletAddress) {
+          setUsernameTaken(true); // Taken by someone else
+        } else {
+          // It's your own username — neither taken nor available
+          setUsernameTaken(false);
+        }
       } else {
-        setUsernameTaken(false);
+        setUsernameTaken(false); // Available
       }
+      
       setCheckingUsername(false);
     }, 500); // debounce
   
@@ -190,11 +198,12 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
   <div style={{ color: '#ff4444', marginTop: '4px' }}>
     That username is already taken.
   </div>
-) : (
+) : profile?.username === username.trim() ? null : (
   <div style={{ color: '#2aff84', marginTop: '4px' }}>
-    Username available!
+    ✅ That username is available!
   </div>
 )}
+
 
         </div>
   
