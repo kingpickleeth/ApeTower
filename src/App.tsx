@@ -111,18 +111,47 @@ function App() {
               {isConnected && (
   profile?.pfp_url ? (
     <>
-      <button className="profile-pfp-button" onClick={() => setShowProfile(true)} title={profile?.username || 'Profile'}>
-        <img src={profile.pfp_url} alt="pfp" />
-      </button>
-      <button className="profile-pfp-button-mobile" onClick={() => setShowProfile(true)} title={profile?.username || 'Profile'}>
-        <img src={profile.pfp_url} alt="pfp" />
-      </button>
+       <button
+      className="profile-pfp-button"
+      onClick={() => {
+        setShowProfile(true);
+        if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
+      }}
+      title={profile?.username || 'Profile'}
+    >
+      <img src={profile.pfp_url} alt="pfp" />
+    </button>
+    <button
+      className="profile-pfp-button-mobile"
+      onClick={() => {
+        setShowProfile(true);
+        if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
+      }}
+      title={profile?.username || 'Profile'}
+    >
+      <img src={profile.pfp_url} alt="pfp" />
+    </button>
     </>
   ) : (
     <>
-      <button className="profile-btn" onClick={() => setShowProfile(true)}>👤 Profile</button>
-      <button className="profile-btn-mobile" onClick={() => setShowProfile(true)}>👤</button>
-    </>
+     <button
+      className="profile-btn"
+      onClick={() => {
+        setShowProfile(true);
+        if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
+      }}
+    >
+      👤 Profile
+    </button>
+    <button
+      className="profile-btn-mobile"
+      onClick={() => {
+        setShowProfile(true);
+        if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
+      }}
+    >
+      👤
+    </button></>
   )
 )}
 
@@ -137,28 +166,42 @@ function App() {
           </div>
           {showProfile && (
             <div id="profile-modal">
-              <div id="profile-overlay" onClick={() => setShowProfile(false)} />
-              <div id="profile-card">
-                <ProfileEditor
-                  walletAddress={address!}
-                  onClose={() => setShowProfile(false)}
-                  onSave={async () => {
-                    setShowProfile(false);
-                    setProfile(await getProfile(address!));
-                  }}
-                />
+            <div
+  id="profile-overlay"
+  onClick={() => {
+    setShowProfile(false);
+    if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
+  }}
+/>
+<div id="profile-card">
+<ProfileEditor
+  walletAddress={address!}
+  onClose={() => {
+    setShowProfile(false);
+    if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
+  }}
+  onSave={async () => {
+    setShowProfile(false);
+    setProfile(await getProfile(address!));
+  }}
+/>
+
               </div>
             </div>
           )}
         </>
       )}
-      {modalMessage && (
+     {modalMessage && (
   <GameModal
     message={modalMessage}
     type={modalType}
-    onClose={() => setModalMessage(null)}
+    onClose={() => {
+      setModalMessage(null);
+      if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
+    }}
   />
 )}
+
     </div>
   );
 }

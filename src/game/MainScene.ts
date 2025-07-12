@@ -105,6 +105,46 @@ this.load.start();
   this.mapOffsetX = (screenWidth - mapWidth) / 2;
   this.mapOffsetY = (screenHeight - mapHeight) / 2;
 
+  // External Pause Function from UI
+  (window as any).pauseGameFromUI = () => {
+    this.isPaused = true;
+    this.canSelectTile = false; // ⛔ Disable tile selection
+  
+    this.physics.pause();
+  
+    if (this.enemySpawnEvent) {
+      this.enemySpawnEvent.paused = true;
+    }
+  
+    this.towers.forEach(t => {
+      const timer = t.getData('shootTimer');
+      if (timer) timer.paused = true;
+    });
+  
+    this.bulletGroup.getChildren().forEach(b => {
+      const timer = b.getData('despawnTimer');
+      if (timer) timer.paused = true;
+    });
+  };
+  // EXTERNAL RESUME FUNCTION
+  (window as any).resumeGameFromUI = () => {
+    this.isPaused = false;
+    this.canSelectTile = true; // Enable tile selection
+    this.physics.resume();
+  
+    if (this.enemySpawnEvent) this.enemySpawnEvent.paused = false;
+  
+    this.towers.forEach(t => {
+      const timer = t.getData('shootTimer');
+      if (timer) timer.paused = false;
+    });
+  
+    this.bulletGroup.getChildren().forEach(b => {
+      const timer = b.getData('despawnTimer');
+      if (timer) timer.paused = false;
+    });
+  };
+  
   
   // 🧿 Generate enemy texture as red circle
   const circle = this.add.graphics();

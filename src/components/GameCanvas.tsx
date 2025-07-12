@@ -6,21 +6,34 @@ import WebFont from 'webfontloader';
 let game: Phaser.Game | null = null;
 
 const GameCanvas = () => {
-  // 🎮 Load game with Orbitron font
   useEffect(() => {
+    const startGame = () => {
+      console.log('🚀 Initializing Phaser...');
+      game = new Phaser.Game(GameConfig);
+
+      // Wait a tick for scene manager to register scenes
+      setTimeout(() => {
+        const mainScene = game?.scene.keys['MainScene']; // 👈 Match your scene key
+        if (mainScene) {
+          (window as any).mainScene = mainScene;
+          console.log('🧠 mainScene attached to window.mainScene');
+        } else {
+          console.warn('⚠️ mainScene not found!');
+        }
+      }, 500); // Give Phaser time to register scenes
+    };
+
     if (!game) {
       console.log('🔤 Loading Orbitron font...');
       WebFont.load({
-        google: {
-          families: ['Orbitron']
-        },
+        google: { families: ['Orbitron'] },
         active: () => {
-          console.log('✅ Font loaded, starting Phaser...');
-          game = new Phaser.Game(GameConfig);
+          console.log('✅ Font loaded');
+          startGame();
         },
         inactive: () => {
           console.warn('⚠️ Failed to load font, starting anyway...');
-          game = new Phaser.Game(GameConfig);
+          startGame();
         }
       });
     }
@@ -31,21 +44,18 @@ const GameCanvas = () => {
     };
   }, []);
 
-  // 🔄 Step 2: Add orientation check overlay logic here
   useEffect(() => {
     const checkOrientation = () => {
-      const isTooSmall = window.innerWidth < 500; // 🟡 Adjust breakpoint as needed
+      const isTooSmall = window.innerWidth < 500;
       const isPortrait = window.innerHeight > window.innerWidth;
       const overlay = document.getElementById('rotate-overlay');
-    
       if (overlay) {
         overlay.classList.toggle('active', isPortrait || isTooSmall);
       }
     };
-    
 
     window.addEventListener('resize', checkOrientation);
-    checkOrientation(); // initial check
+    checkOrientation();
 
     return () => window.removeEventListener('resize', checkOrientation);
   }, []);
