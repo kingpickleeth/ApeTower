@@ -81,7 +81,7 @@ console.log('✅ Profile saved, showing modal');
 )}
 
       <div id="profile-card">
-        <h2>Your Super Sexy Profile Page</h2>
+        <h2>Your Super Sexy Profile</h2>
     
         {pfpUrl && (
           <div className="avatar-preview">
