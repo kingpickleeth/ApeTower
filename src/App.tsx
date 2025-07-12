@@ -84,8 +84,9 @@ function App() {
 
           <div id="game-wrapper">
             <div id="game-content">
+            <div id="game-scaler">
               <div id="game-frame"><GameCanvas /></div>
-            </div>
+            </div></div>
           </div>
           {showProfile && (
             <div id="profile-modal">

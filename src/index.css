@@ -62,27 +62,27 @@ button:focus-visible {
 }
 /* ===== Modern Animated Background for Game Wrapper ===== */
 #game-wrapper {
-  position: absolute;
-  top: 0;
   left: 0;
   width: 100vw;
-  height: 100dvh;
+  height: calc(100dvh - 68px); /* 60px nav + 8px gap */
   display: flex;
   justify-content: center;
-  align-items: center;
-  overflow: hidden;
+  align-items: flex-start; /* 👈 align to top instead of center */
 
-  margin: 0;
+  overflow: hidden;
+  margin-top: 68px; /* ✅ push content below navbar */
+  margin-bottom: auto;
 
 }
 #game-content {
   width: 100% !important;
-  height: auto !important;
-  display: block;
+  height: 100% !important;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   transform-origin: top center; /* 🔥 Key line */
+  margin-bottom: 0 auto;
 }
 #game-title {
   font-size: 3.2em;
@@ -95,6 +95,8 @@ button:focus-visible {
 canvas {
   width: 100% !important;
   height: auto !important;
+  max-height: 100%;
+  aspect-ratio: 4 / 3;
   display: block;
 }
 #background-visual {
@@ -131,8 +133,14 @@ html, body, #root {
   overflow-y: auto; /* ✅ allow dropdowns and modals to extend */
 }
 #game-frame {
-  width: 90vw;
-  max-width: 90%;
+  width: min(90vw, calc((100dvh - 68px) * (4 / 3))); /* include navbar + gap */
+  aspect-ratio: 4 / 3; /* ⬅️ Match your canvas! */
+  max-height: calc(100dvh - 68px); /* Keep it under navbar */
+  height: auto;
+  overflow: hidden;
+  transform-origin: top center;
+
+  /* existing visual styles (keep these!) */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -148,6 +156,7 @@ html, body, #root {
   margin: 0 auto;
   box-sizing: border-box;
 }
+
 *, *::before, *::after {
   box-sizing: inherit;
 }
@@ -236,7 +245,7 @@ html, body, #root {
   width: 100px; /* same or similar width as your wallet button */
 }
 #navbar {
-  position: relative;
+  position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
@@ -567,4 +576,12 @@ textarea {
     gap: 8px;
     flex-shrink: 0;
   }
+}
+#game-scaler {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: calc(100dvh - 68px); /* subtract navbar height */
+  box-sizing: border-box;
 }
