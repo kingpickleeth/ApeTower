@@ -120,7 +120,7 @@ const modalBlocker = this.add.rectangle(0, 0, this.scale.width, this.scale.heigh
 
 
     // 4. 🧾 Rules Modal (initially hidden)
-    const modalBg = this.add.rectangle(centerX, centerY, 500, 300, 0x0d130f, 0.95)
+    const modalBg = this.add.rectangle(centerX, centerY, 500, 300, 0x0d130f, .98)
       .setStrokeStyle(2, 0x00ff88)
       .setOrigin(0.5)
       .setVisible(false);
