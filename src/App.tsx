@@ -178,8 +178,9 @@ function App() {
   walletAddress={address!}
   onClose={() => {
     setShowProfile(false);
-    if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
+    // ⛔️ Do not resume the game yet — wait for GameModal to close
   }}
+  
   onSave={async () => {
     setShowProfile(false);
     setProfile(await getProfile(address!));
