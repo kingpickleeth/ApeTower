@@ -19,6 +19,30 @@ function App() {
   const [profile, setProfile] = useState<{ username: string; pfp_url: string } | null>(null);
   const [modalMessage, setModalMessage] = useState<string | null>(null);
   const [modalType, setModalType] = useState<'success' | 'error'>('success');
+  const [bypassWallet, setBypassWallet] = useState(false);
+  useEffect(() => {
+    const secretCode = [
+      'ArrowUp','ArrowUp','ArrowDown','ArrowDown',
+      'ArrowLeft','ArrowRight','ArrowLeft','ArrowRight',
+      'b','a'
+    ];
+    let inputBuffer: string[] = [];
+  
+    const handleKeyDown = (e: KeyboardEvent) => {
+      inputBuffer.push(e.key);
+      if (inputBuffer.length > secretCode.length) {
+        inputBuffer.shift(); // Maintain fixed buffer size
+      }
+      if (inputBuffer.join(',') === secretCode.join(',')) {
+        console.log("🕹️ Konami Code activated! Bypassing wallet...");
+        setBypassWallet(true);
+      }
+    };
+  
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+  
   useEffect(() => {
     const handler = async (e: any) => {
       const amount = e.detail.amount;
@@ -68,7 +92,7 @@ function App() {
   }, [address]);
   return (
     <div id="app-container">
-      {!isConnected ? (
+      {!isConnected && !bypassWallet ? (
         <div id="connect-screen">
           <div id="background-visual" />
           <div id="connect-modal">
@@ -84,28 +108,31 @@ function App() {
             <div id="spacer" />
             <div id="wallet-button-container">
               <ConnectButton showBalance={false} accountStatus="address" />
-              {profile?.pfp_url ? (
-                <>
-                  <button className="profile-pfp-button" onClick={() => setShowProfile(true)} title={profile?.username || 'Profile'}>
-                    <img src={profile.pfp_url} alt="pfp" />
-                  </button>
-                  <button className="profile-pfp-button-mobile" onClick={() => setShowProfile(true)} title={profile?.username || 'Profile'}>
-                    <img src={profile.pfp_url} alt="pfp" />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button className="profile-btn" onClick={() => setShowProfile(true)}>👤 Profile</button>
-                  <button className="profile-btn-mobile" onClick={() => setShowProfile(true)}>👤</button>
-                </>
-              )}
+              {isConnected && (
+  profile?.pfp_url ? (
+    <>
+      <button className="profile-pfp-button" onClick={() => setShowProfile(true)} title={profile?.username || 'Profile'}>
+        <img src={profile.pfp_url} alt="pfp" />
+      </button>
+      <button className="profile-pfp-button-mobile" onClick={() => setShowProfile(true)} title={profile?.username || 'Profile'}>
+        <img src={profile.pfp_url} alt="pfp" />
+      </button>
+    </>
+  ) : (
+    <>
+      <button className="profile-btn" onClick={() => setShowProfile(true)}>👤 Profile</button>
+      <button className="profile-btn-mobile" onClick={() => setShowProfile(true)}>👤</button>
+    </>
+  )
+)}
+
             </div>
           </div>
 
           <div id="game-wrapper">
             <div id="game-content">
             <div id="game-scaler">
-              <div id="game-frame"><GameCanvas /></div>
+            <div id="game-frame">{(isConnected || bypassWallet) && <GameCanvas />}</div>
             </div></div>
           </div>
           {showProfile && (

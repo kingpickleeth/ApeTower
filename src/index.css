@@ -209,17 +209,20 @@ html, body, #root {
   text-align: center;
   color: #f9f9f9;
   animation: fadeIn 0.8s ease-out;
+  font-family: Outfit !important;
 }
 #connect-modal h1 {
   font-size: 3rem;
   margin-bottom: 16px;
   color: #2aff84;
   text-shadow: 0 0 20px rgba(42, 255, 132, 0.6);
+  font-family: Outfit !important;
 }
 #connect-modal p {
   font-size: 1.1em;
   margin-bottom: 24px;
   color: #ccc;
+  font-family: Outfit !important;
 }
 @keyframes fadeIn {
   from {
@@ -303,6 +306,7 @@ canvas {
   align-items: center;
   padding: 16px; /* ✅ this prevents edge overflow on small screens */
   box-sizing: border-box;
+  font-family: Outfit !important;
 }
 #profile-overlay {
   position: absolute;
@@ -331,11 +335,13 @@ canvas {
   backdrop-filter: blur(8px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   animation: popupFade 0.3s ease-out;
+  font-family: Outfit !important;
 }
 #profile-card a {
   color: #2ecc71;
   text-decoration: underline;
   word-break: break-word;
+  font-family: Outfit !important;
 }
 #profile-card h2 {
   display: inline;
@@ -389,6 +395,7 @@ textarea {
 }
 textarea {
   resize: none;
+  font-family: Outfit !important;
 }
 /* === Avatar Preview === */
 .avatar-preview {
