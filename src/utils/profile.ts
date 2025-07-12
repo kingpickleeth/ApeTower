@@ -51,7 +51,8 @@ export async function upsertProfile(walletAddress: string, username: string, pfp
       }
   
       const currentBalance = Number(profile?.total_vine ?? 0);
-      const newBalance = currentBalance + vineEarned;
+      const newBalance = vineEarned;
+
   
       // 💾 Step 2: Update total_vine
       const { error: updateError } = await supabase
