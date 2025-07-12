@@ -6,6 +6,7 @@ import { useAccount } from 'wagmi';
 import { useEffect, useState } from 'react';
 import { JsonRpcProvider, Wallet, Contract, parseUnits, getAddress } from 'ethers';
 import { getProfile } from './utils/profile';
+import GameModal from './components/GameModal';
 const VINE_TOKEN = "0xe6027e786e2ef799316afabae84e072ca73aa97f";
 const APECHAIN_RPC = "https://apechain.calderachain.xyz/http";
 const ERC20_ABI = [
@@ -16,10 +17,16 @@ function App() {
   const { isConnected, address } = useAccount();
   const [showProfile, setShowProfile] = useState(false);
   const [profile, setProfile] = useState<{ username: string; pfp_url: string } | null>(null);
+  const [modalMessage, setModalMessage] = useState<string | null>(null);
+  const [modalType, setModalType] = useState<'success' | 'error'>('success');
   useEffect(() => {
     const handler = async (e: any) => {
       const amount = e.detail.amount;
-      if (!address) return alert("Wallet not connected.");
+      if (!address) {
+        setModalMessage("Wallet not connected.");
+        setModalType('error');
+        return;
+      }      
       try {
         const provider = new JsonRpcProvider(APECHAIN_RPC);
         const privateKey = import.meta.env.VITE_VINE_SENDER_KEY;
@@ -33,10 +40,14 @@ function App() {
         txRequest.maxFeePerGas = parseUnits("30", "gwei");
         const sentTx = await wallet.sendTransaction(txRequest);
         await sentTx.wait();
-        alert(`✅ Look at you go dawg! Big baller, shot caller. You just claimed ${amount} $VINE!\n\nCheck out the transaction: https://apescan.io/tx/${sentTx.hash}\n\nDon't Spend It All In One Place Now 😉`);
-      } catch (err: any) {
+        setModalMessage(
+          `Nice work Big Dawg!You just claimed ${amount} $VINE!<br /><a href="https://apescan.io/tx/${sentTx.hash}" target="_blank" style="color:#2ecc71;text-decoration:underline;">View on ApeScan</a><br /><br />Don't spend it all in one place 😉`
+        );        
+        setModalType('success');
+} catch (err: any) {
         console.error(err);
-        alert("🚨 Failed to claim $VINE: " + err.message);
+        setModalMessage("Failed to claim $VINE: " + err.message);
+        setModalType('error');        
       }
     };
     window.addEventListener("claim-vine", handler);
@@ -105,6 +116,13 @@ function App() {
           )}
         </>
       )}
+      {modalMessage && (
+  <GameModal
+    message={modalMessage}
+    type={modalType}
+    onClose={() => setModalMessage(null)}
+  />
+)}
     </div>
   );
 }

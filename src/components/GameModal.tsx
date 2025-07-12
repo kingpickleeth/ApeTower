@@ -39,9 +39,20 @@ interface Props {
   <span>{isSuccess ? '💾 Success' : '❌ Error'}</span>
 </h2>
 
-          <p style={{ fontSize: '1rem', color: '#ccc', marginBottom: '20px' }}>
-            {message}
-          </p>
+<p
+  style={{
+    fontSize: '1rem',
+    color: '#ccc',
+    marginBottom: '20px',
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
+    maxWidth: '100%',
+  }}
+  dangerouslySetInnerHTML={{ __html: message }}
+/>
+
+
           <div className="button-row" style={{ justifyContent: 'center' }}>
             <button className="save-btn" onClick={onClose}>
               OK
