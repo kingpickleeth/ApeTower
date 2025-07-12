@@ -5,24 +5,25 @@ import WebFont from 'webfontloader';
 
 let game: Phaser.Game | null = null;
 
-const GameCanvas = () => {
+const GameCanvas = ({ walletAddress }: { walletAddress: string }) => {
   useEffect(() => {
     const startGame = () => {
       console.log('🚀 Initializing Phaser...');
       game = new Phaser.Game(GameConfig);
-
-      // Wait a tick for scene manager to register scenes
+    
+      // Wait for scene manager to register scenes
       setTimeout(() => {
-        const mainScene = game?.scene.keys['MainScene']; // 👈 Match your scene key
+        const mainScene = game?.scene.keys['MainScene'];
         if (mainScene) {
+          (mainScene as any).walletAddress = walletAddress; // ✅ Inject it manually after scene load
           (window as any).mainScene = mainScene;
           console.log('🧠 mainScene attached to window.mainScene');
         } else {
           console.warn('⚠️ mainScene not found!');
         }
-      }, 500); // Give Phaser time to register scenes
+      }, 500);
     };
-
+    
     if (!game) {
       console.log('🔤 Loading Orbitron font...');
       WebFont.load({

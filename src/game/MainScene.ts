@@ -22,6 +22,8 @@ export default class MainScene extends Phaser.Scene {
   claimButton?: Phaser.GameObjects.Container;
   canSpawnEnemies: boolean = false;
   MAX_WAVE: number = 10;
+  walletAddress: string = '';
+
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
@@ -963,62 +965,77 @@ update(_: number, delta: number) {
       }
 
       // 💀 Game Over condition
-      if (this.lives <= 0 && !this.gameOver) {
-        this.gameOver = true;
-        this.enemySpawnEvent.remove(false);
-        this.isPaused = true;
-        this.physics.pause();
+      // 💀 Game Over condition
+if (this.lives <= 0 && !this.gameOver) {
+  this.gameOver = true;
+  this.enemySpawnEvent.remove(false);
+  this.isPaused = true;
+  this.physics.pause();
+  this.canSelectTile = false;
 
-        // ⛔ Stop towers from firing
-        this.towers.forEach(tower => {
-          const timer = tower.getData('shootTimer');
-          timer?.remove(false);
-        });
+  // ⛔ Stop towers from firing
+  this.towers.forEach(tower => {
+    const timer = tower.getData('shootTimer');
+    timer?.remove(false);
+  });
 
-        // 🚨 Display Game Over popup
-        const centerX = Number(this.game.config.width) / 2;
-        const centerY = Number(this.game.config.height) / 2;
+  // 🖼️ Display Game Over popup
+  const centerX = Number(this.game.config.width) / 2;
+  const centerY = Number(this.game.config.height) / 2;
 
-        const overlay = this.add.rectangle(centerX, centerY, this.game.config.width as number, this.game.config.height as number, 0x000000, 0.4).setOrigin(0.5);
-        overlay.setDepth(-1);
+  const overlay = this.add.rectangle(centerX, centerY, this.game.config.width as number, this.game.config.height as number, 0x000000, 0.4).setOrigin(0.5).setDepth(1005);
 
-      // 🟥 Game Over Background (make taller to fit buttons)
-const popupBg = this.add.rectangle(centerX, centerY, 320, 180, 0x000000, 0.8)
-  .setOrigin(0.5)
-  .setStrokeStyle(2, 0xff3333).setDepth(1006);
+  // 🟥 Popup Background
+  const popupBg = this.add.rectangle(centerX, centerY, 340, 230, 0x000000, 0.8)
+    .setOrigin(0.5)
+    .setStrokeStyle(2, 0xff3333)
+    .setDepth(1006);
 
-// 🧠 Game Over Text
-const gameOverText = this.add.text(centerX, centerY - 50, '💀 Game Over 💀', {
-  fontSize: '36px',
-  fontFamily: 'Outfit',
-  fontStyle: 'bold',
-  align: 'center',
-  color: '#ff3333'
-}).setOrigin(0.5).setDepth(1006);
-// 🟩 Restart Button
-const restartBtn = this.createStyledButton(centerX, centerY + 5, '🔁 Restart', 0x444444, () => {
-  popupBg.destroy();
-  gameOverText.destroy();
-  restartBtn.destroy();
-  this.claimButton?.destroy();
-  this.restartGame();
+  // 🧠 Title
+  const gameOverText = this.add.text(centerX, centerY - 60, '💀 Game Over 💀', {
+    fontSize: '36px',
+    fontFamily: 'Outfit',
+    fontStyle: 'bold',
+    color: '#ff3333'
+  }).setOrigin(0.5).setDepth(1006);
+
+  // 🌿 Vine Earned
+  const vineText = this.add.text(centerX, centerY - 20, `You earned ${this.vineBalance} $VINE`, {
+    fontSize: '20px',
+    fontFamily: 'Outfit',
+    color: '#00ff88'
+  }).setOrigin(0.5).setDepth(1006);
+
+  // 🔁 Play Again
+  const restartBtn = this.createStyledButton(centerX, centerY + 25, '🔁 Play Again', 0x444444, () => {
+    popupBg.destroy();
+    gameOverText.destroy();
+    vineText.destroy();
+    restartBtn.destroy();
+    mainMenuBtn.destroy();
+    overlay.destroy();
+    this.restartGame();
+  });
+
+  // 🏠 Main Menu
+const mainMenuBtn = this.createStyledButton(centerX, centerY + 75, '🏠 Main Menu', 0x555555, () => {
+  window.location.reload();
 });
 
-// 🌿 Claim $VINE Button (spaced lower)
-this.claimButton = this.createStyledButton(centerX, centerY + 52, '🌿 Claim $VINE', 0x2ecc71, () => {
-  popupBg.destroy();
-  gameOverText.destroy();
-  restartBtn.destroy();
-  this.claimButton?.destroy();
 
+  // 💾 Save vine to Supabase
+  console.log('📦 Attempting to save vine...');
+console.log('🌿 vineBalance:', this.vineBalance);
+console.log('👛 walletAddress:', this.walletAddress);
+  if (this.walletAddress && this.vineBalance > 0) {
+    window.dispatchEvent(new CustomEvent('save-vine', {
+      detail: { amount: this.vineBalance }
+    }));
+  }
 
-  window.dispatchEvent(new CustomEvent('claim-vine', {
-    detail: { amount: this.vineBalance }
-  }));
-  this.restartGame();
-});
-        return;
-      }
+  return;
+}
+
       // ✅ Important: Skip remaining logic for this enemy
       continue;
     }
@@ -1466,6 +1483,14 @@ const vineMessage = this.add.text(cx, cy + 10, `was added to your profile`, {
   align: 'center',
   color: '#ffffff',
 }).setOrigin(0.5).setDepth(1006);
+// 💾 Save vine to Supabase
+console.log('🏆 Saving vine from victory:', this.vineBalance, this.walletAddress);
+if (this.walletAddress && this.vineBalance > 0) {
+  window.dispatchEvent(new CustomEvent('save-vine', {
+    detail: { amount: this.vineBalance }
+  }));
+}
+
 
 // 🔁 Play Again (Amber with hover)
 const playAgainBtn = this.createStyledButton(

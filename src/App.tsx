@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { JsonRpcProvider, Wallet, Contract, parseUnits, getAddress } from 'ethers';
 import { getProfile } from './utils/profile';
 import GameModal from './components/GameModal';
+import { updateVineBalance } from './utils/profile'; // ✅ Make sure this is at the top
 const VINE_TOKEN = "0xe6027e786e2ef799316afabae84e072ca73aa97f";
 const APECHAIN_RPC = "https://apechain.calderachain.xyz/http";
 const ERC20_ABI = [
@@ -87,6 +88,28 @@ function App() {
     window.addEventListener("show-success-modal", handler);
     return () => window.removeEventListener("show-success-modal", handler);
   }, []);
+  useEffect(() => {
+    const handleSaveVine = async (e: any) => {
+      const amount = e.detail.amount;
+      if (!address) {
+        console.warn('⚠️ Cannot save vine — no connected wallet');
+        return;
+      }
+  
+      try {
+        console.log(`💾 Triggered vine save: ${amount} for ${address}`);
+        const result = await updateVineBalance(address, amount);
+        if (result?.error) {
+          console.error('❌ Failed to update vine balance:', result.error);
+        }
+      } catch (err) {
+        console.error('🔥 Error in save-vine handler:', err);
+      }
+    };
+  
+    window.addEventListener('save-vine', handleSaveVine);
+    return () => window.removeEventListener('save-vine', handleSaveVine);
+  }, [address]);
   
   useEffect(() => {
     if (!address) return;
@@ -162,7 +185,8 @@ function App() {
           <div id="game-wrapper">
             <div id="game-content">
             <div id="game-scaler">
-            <div id="game-frame">{(isConnected || bypassWallet) && <GameCanvas />}</div>
+            <div id="game-frame">{(isConnected || bypassWallet) && <GameCanvas walletAddress={address ?? ''} />
+          }</div>
             </div></div>
           </div>
           {showProfile && (
@@ -186,11 +210,7 @@ function App() {
     setShowProfile(false); // ✅ Hide profile modal immediately after save
     setProfileSaved(true); // 🟢 Resume game later after success modal OK
   }}
-  
-  
 />
-
-
               </div>
             </div>
           )}

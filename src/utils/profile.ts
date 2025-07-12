@@ -36,4 +36,39 @@ export async function upsertProfile(walletAddress: string, username: string, pfp
     console.log('Upsert succeeded:', data);
     return { data }; // ✅ optional but useful
   }
+  export async function updateVineBalance(walletAddress: string, vineEarned: number) {
+    try {
+      // 🧠 Step 1: Fetch current total_vine
+      const { data: profile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('total_vine')
+        .eq('wallet_address', walletAddress)
+        .single();
+  
+      if (fetchError) {
+        console.error('❌ Error fetching profile for vine update:', fetchError);
+        return { error: fetchError };
+      }
+  
+      const currentBalance = Number(profile?.total_vine ?? 0);
+      const newBalance = currentBalance + vineEarned;
+  
+      // 💾 Step 2: Update total_vine
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ total_vine: newBalance })
+        .eq('wallet_address', walletAddress);
+  
+      if (updateError) {
+        console.error('❌ Error updating vine balance:', updateError);
+        return { error: updateError };
+      }
+  
+      console.log(`🌿 $VINE updated: ${currentBalance} ➡️ ${newBalance}`);
+      return { data: newBalance };
+    } catch (e) {
+      console.error('🔥 Exception in updateVineBalance:', e);
+      return { error: e };
+    }
+  }
   
