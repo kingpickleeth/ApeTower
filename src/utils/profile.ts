@@ -72,4 +72,18 @@ export async function upsertProfile(walletAddress: string, username: string, pfp
       return { error: e };
     }
   }
+  export async function getProfileByUsername(username: string) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('username', username)
+      .single();
+  
+    if (error) {
+      console.error("🔍 Error checking username:", error);
+      return null;
+    }
+    return data;
+  }
+  
   

@@ -3,6 +3,7 @@ import { getProfile, upsertProfile } from '../utils/profile';
 import { uploadPfp } from '../utils/storage';
 import GameModal from './GameModal'; // 👈 Add this at the top
 import { updateVineBalance } from '../utils/profile'; // ⬅️ Make sure this exists
+import { getProfileByUsername } from '../utils/profile';
 
 const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/PFP.svg';
 
@@ -23,7 +24,8 @@ interface Props {
 
 
   const [showErrorModal, setShowErrorModal] = useState<string | null>(null);
-
+  const [usernameTaken, setUsernameTaken] = useState(false);
+  const [checkingUsername, setCheckingUsername] = useState(false);  
 
   useEffect(() => {
     async function fetch() {
@@ -38,6 +40,29 @@ interface Props {
     }
     fetch();
   }, [walletAddress]);
+
+  useEffect(() => {
+    if (!username || username.trim().length === 0) {
+      setUsernameTaken(false); // Reset when field is empty
+      return;
+    }
+  
+    const timeout = setTimeout(async () => {
+      setCheckingUsername(true);
+      const profile = await getProfile(walletAddress);
+      const otherProfile = await getProfileByUsername(username); // 👈 You'll add this helper
+      if (otherProfile && otherProfile.wallet_address !== walletAddress) {
+        setUsernameTaken(true);
+      } else {
+        setUsernameTaken(false);
+      }
+      setCheckingUsername(false);
+    }, 500); // debounce
+  
+    return () => clearTimeout(timeout);
+  }, [username, walletAddress]);
+  
+  
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -154,6 +179,24 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Enter your name"
           />
+{!username.trim() ? (
+  <div style={{ color: '#ff4444', marginTop: '4px' }}>
+    Username is required.
+  </div>
+) : checkingUsername ? (
+  <div style={{ color: '#ffaa00', marginTop: '4px' }}>
+    Checking availability...
+  </div>
+) : usernameTaken ? (
+  <div style={{ color: '#ff4444', marginTop: '4px' }}>
+    That username is already taken.
+  </div>
+) : (
+  <div style={{ color: '#2aff84', marginTop: '4px' }}>
+    Username available!
+  </div>
+)}
+
         </div>
   
   
