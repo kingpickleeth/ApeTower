@@ -44,30 +44,27 @@ interface Props {
       alert('Failed to upload image.');
     }
   };
-  
   const saveProfile = async () => {
- 
-  
     const { error } = await upsertProfile(walletAddress, username, pfpUrl, bio);
   
     if (error) {
-        if (error.message.includes('duplicate key value') || error.code === '23505') {
-          setShowErrorModal('That username is already taken. Please try another.');
-        } else {
-          setShowErrorModal('Something went wrong while saving. Try again later.');
-        }
-        return;
+      if (error.message.includes('duplicate key value') || error.code === '23505') {
+        setShowErrorModal('That username is already taken. Please try another.');
+      } else {
+        setShowErrorModal('Something went wrong while saving. Try again later.');
       }
-      
-      window.dispatchEvent(new CustomEvent("show-success-modal", {
-        detail: { message: "Profile saved successfully!" }
-      }));
-      onSave?.();
-      onClose();
-      
-console.log('✅ Profile saved, showing modal');
-
+      return;
+    }
+  
+    // Dispatch a global event — App.tsx listens to this and shows the success modal
+    window.dispatchEvent(new CustomEvent("show-success-modal", {
+      detail: { message: "Profile saved successfully!" }
+    }));
+  
+    onSave?.(); // 🔥 Let the parent know we saved — but do NOT close modal here
+    console.log('✅ Profile saved, showing modal');
   };
+  
   if (loading) return <p>Loading profile...</p>;
 
   return (

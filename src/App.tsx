@@ -20,6 +20,8 @@ function App() {
   const [modalMessage, setModalMessage] = useState<string | null>(null);
   const [modalType, setModalType] = useState<'success' | 'error'>('success');
   const [bypassWallet, setBypassWallet] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
+
   useEffect(() => {
     const secretCode = [
       'ArrowUp','ArrowUp','ArrowDown','ArrowDown',
@@ -177,14 +179,17 @@ function App() {
   walletAddress={address!}
   onClose={() => {
     setShowProfile(false);
-    // ⛔️ Do not resume the game yet — wait for GameModal to close
+    if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI(); // ✅ only here
+  }}
+  onSave={async () => {
+    setProfile(await getProfile(address!));
+    setShowProfile(false); // ✅ Hide profile modal immediately after save
+    setProfileSaved(true); // 🟢 Resume game later after success modal OK
   }}
   
-  onSave={async () => {
-    setShowProfile(false);
-    setProfile(await getProfile(address!));
-  }}
+  
 />
+
 
               </div>
             </div>
@@ -197,8 +202,12 @@ function App() {
     type={modalType}
     onClose={() => {
       setModalMessage(null);
+      if (profileSaved) {
+        setShowProfile(false);      // ✅ finally hide the profile modal
+        setProfileSaved(false);     // 🔁 reset flag
+      }
       if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
-    }}
+    }}    
   />
 )}
 
