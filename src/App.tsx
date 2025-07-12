@@ -150,6 +150,7 @@ function App() {
       onClick={() => {
         setShowProfile(true);
         if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
+        if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
       }}
       title={profile?.username || 'Profile'}
     >
@@ -160,6 +161,7 @@ function App() {
       onClick={() => {
         setShowProfile(true);
         if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
+        if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
       }}
       title={profile?.username || 'Profile'}
     >
@@ -173,6 +175,7 @@ function App() {
       onClick={() => {
         setShowProfile(true);
         if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
+        if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
       }}
     >
       👤 Profile
@@ -182,6 +185,7 @@ function App() {
       onClick={() => {
         setShowProfile(true);
         if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
+        if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
       }}
     >
       👤
@@ -206,6 +210,7 @@ function App() {
     if (!mustCompleteProfile) {
       setShowProfile(false);
       if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
+      if ((window as any).enableMainMenuInput) (window as any).enableMainMenuInput(); // ✅ restore input
     }
   }}
 />
@@ -217,6 +222,7 @@ function App() {
     if (!mustCompleteProfile) {
       setShowProfile(false);
       if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
+      if ((window as any).enableMainMenuInput) (window as any).enableMainMenuInput(); // ✅ restore input
     }
   }}
   
@@ -243,6 +249,7 @@ function App() {
         setProfileSaved(false);     // 🔁 reset flag
       }
       if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
+      if ((window as any).enableMainMenuInput) (window as any).enableMainMenuInput(); // ✅ restore input
     }}    
   />
 )}

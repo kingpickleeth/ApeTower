@@ -178,5 +178,15 @@ closeButtonText.setColor('#000000');
         closeButtonText.setVisible(false);
       });
       
+      // ⛔ Disable input when profile modal is open
+(window as any).disableMainMenuInput = () => {
+    this.input.enabled = false;
+  };
+  
+  // ✅ Re-enable it when modal is closed
+  (window as any).enableMainMenuInput = () => {
+    this.input.enabled = true;
+  };
+  
   }
 }
