@@ -504,10 +504,7 @@ textarea {
   .profile-pfp-button-mobile img {
     display: none !important;
   }
-  #game-wrapper {
-    padding-top: 90px; /* 👈 matches #navbar height */
-    box-sizing: border-box; /* 👈 ensures padding doesn’t overflow container */
-  }
+
 }
 @media (min-width: 410px) and (max-width: 749px) {
   #navbar::before {
