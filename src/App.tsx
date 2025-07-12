@@ -22,6 +22,7 @@ function App() {
   const [modalType, setModalType] = useState<'success' | 'error'>('success');
   const [bypassWallet, setBypassWallet] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
+  const [mustCompleteProfile, setMustCompleteProfile] = useState(false);
 
   useEffect(() => {
     const secretCode = [
@@ -113,8 +114,16 @@ function App() {
   
   useEffect(() => {
     if (!address) return;
-    getProfile(address).then(setProfile);
+    getProfile(address).then((profileData) => {
+      setProfile(profileData);
+      if (!profileData?.username) {
+        setMustCompleteProfile(true); // 🛑 Force profile editor
+        setShowProfile(true);
+      }
+    });
   }, [address]);
+  
+  
   return (
     <div id="app-container">
       {!isConnected && !bypassWallet ? (
@@ -191,24 +200,31 @@ function App() {
           </div>
           {showProfile && (
             <div id="profile-modal">
-            <div
+           <div
   id="profile-overlay"
   onClick={() => {
-    setShowProfile(false);
-    if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
+    if (!mustCompleteProfile) {
+      setShowProfile(false);
+      if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
+    }
   }}
 />
+
 <div id="profile-card">
 <ProfileEditor
   walletAddress={address!}
   onClose={() => {
-    setShowProfile(false);
-    if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI(); // ✅ only here
+    if (!mustCompleteProfile) {
+      setShowProfile(false);
+      if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
+    }
   }}
+  
   onSave={async () => {
     setProfile(await getProfile(address!));
     setShowProfile(false); // ✅ Hide profile modal immediately after save
     setProfileSaved(true); // 🟢 Resume game later after success modal OK
+    setMustCompleteProfile(false); // ✅ User is good to go now
   }}
 />
               </div>

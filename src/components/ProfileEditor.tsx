@@ -4,12 +4,14 @@ import { uploadPfp } from '../utils/storage';
 import GameModal from './GameModal'; // 👈 Add this at the top
 import { updateVineBalance } from '../utils/profile'; // ⬅️ Make sure this exists
 
+const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/PFP.svg';
 
 interface Props {
-    walletAddress: string;
-    onClose: () => void;
-    onSave?: () => void; // 👈 new optional callback
-  }  
+  walletAddress: string;
+  onClose?: () => void; // ✅ now optional
+  onSave?: () => void;
+}
+
   export default function ProfileEditor({ walletAddress, onClose, onSave }: Props) {
 
   
@@ -47,8 +49,16 @@ interface Props {
       alert('Failed to upload image.');
     }
   };
+
   const saveProfile = async () => {
-    const { error } = await upsertProfile(walletAddress, username, pfpUrl, bio);
+    if (!username.trim()) {
+      setShowErrorModal("Username is required!");
+      return;
+    }
+    const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/PFP.svg'; // ✅ Use your actual default image path
+const finalPfp = pfpUrl || DEFAULT_PFP_URL;
+const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
+
   
     if (error) {
       if (error.message.includes('duplicate key value') || error.code === '23505') {
@@ -103,7 +113,7 @@ interface Props {
         {pfpUrl && (
   <>
     <div className="avatar-preview">
-      <img src={pfpUrl} alt="pfp" />
+      <img src={pfpUrl || DEFAULT_PFP_URL} alt="pfp" />
       <span>{username || 'Your Username'}</span>
     </div>
 
@@ -170,9 +180,11 @@ interface Props {
           <button className="save-btn" onClick={saveProfile}>
             💾 Save
           </button>
-          <button className="close-btn" onClick={onClose}>
-            ❌ Close
-          </button>
+          {onClose && (
+  <button className="close-btn" onClick={onClose}>
+    ❌ Close
+  </button>
+)}
         </div>
       </div>
     </>
