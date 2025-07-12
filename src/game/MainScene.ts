@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 export default class MainScene extends Phaser.Scene {
+
   // ---------------------------------------------------------------------------
   // 📦 Core Game Objects
   // ---------------------------------------------------------------------------
@@ -20,6 +21,7 @@ export default class MainScene extends Phaser.Scene {
   canSelectTile: boolean = true;
   claimButton?: Phaser.GameObjects.Container;
   canSpawnEnemies: boolean = false;
+  MAX_WAVE: number = 10;
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
@@ -280,7 +282,7 @@ const pauseY = this.mapOffsetY / 8;
 
 pauseBg.fillStyle(0x2a2a2a, 1);
 pauseBg.fillRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
-pauseBg.lineStyle(2, 0xe2e619, 1);
+pauseBg.lineStyle(2, 0xffaa44, 1);
 pauseBg.strokeRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
 
 // Add text on top
@@ -291,7 +293,7 @@ const pauseBtnText = this.add.text(
   {
     fontSize: '40px',
     fontFamily: 'Outfit',
-    color: '#e2e619',
+    color: '#ffaa44',
     resolution: window.devicePixelRatio || 1 // 👈 makes it crisp
   }
 ).setOrigin(0.5).setScale(0.5)
@@ -303,14 +305,14 @@ pauseBtnText.on('pointerover', () => {
   pauseBg.clear();
   pauseBg.fillStyle(0x3a3a3a, 1);
   pauseBg.fillRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
-  pauseBg.lineStyle(2, 0xe2e619, 1);
+  pauseBg.lineStyle(2, 0xffaa66, 1);
   pauseBg.strokeRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
 });
 pauseBtnText.on('pointerout', () => {
   pauseBg.clear();
   pauseBg.fillStyle(0x2a2a2a, 1);
   pauseBg.fillRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
-  pauseBg.lineStyle(2, 0xe2e619, 1);
+  pauseBg.lineStyle(2, 0xffaa66, 1);
   pauseBg.strokeRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
 });
 
@@ -402,7 +404,7 @@ restartBtnText.on('pointerdown', () => this.restartGame());
     onClick: () => void
   ) => {
     const circle = this.add.circle(0, 0, buttonRadius, 0x2a2a2a)
-      .setStrokeStyle(2, 0x2aff84)
+      .setStrokeStyle(2, 0xffaa44)
       .setDepth(1000);
   
     const icon = this.add.text(0, 0, emoji, {
@@ -459,7 +461,8 @@ createStyledButton(
   y: number,
   label: string,
   bgColor: number,
-  onClick: () => void
+  onClick: () => void,
+  hoverColor?: number // 🟡 New optional param
 ): Phaser.GameObjects.Container {
   const paddingX = 16;
   const paddingY = 8;
@@ -476,25 +479,23 @@ createStyledButton(
   const width = text.width + paddingX * 2;
   const height = text.height + paddingY * 2;
 
-  // 🔲 Add invisible hitbox rectangle
   const hitbox = this.add.rectangle(0, 0, width, height)
     .setOrigin(0.5)
     .setVisible(false);
 
-  // 🎨 Draw button background
   const bg = this.add.graphics();
   bg.fillStyle(bgColor, 1);
   bg.fillRoundedRect(-width / 2, -height / 2, width, height, borderRadius);
 
-  // 📦 Container
   const button = this.add.container(x, y, [hitbox, bg, text])
-    .setSize(width, height) // Defines bounds for default hit area
+    .setSize(width, height)
     .setDepth(1020)
-    .setInteractive() // ✅ No custom geometry here!
+    .setInteractive()
     .on('pointerdown', onClick)
     .on('pointerover', () => {
       bg.clear();
-      bg.fillStyle(bgColor + 0x202020, 1);
+      const fill = hoverColor ?? (bgColor + 0x202020); // Use custom if provided
+      bg.fillStyle(fill, 1);
       bg.fillRoundedRect(-width / 2, -height / 2, width, height, borderRadius);
       this.input.setDefaultCursor('pointer');
     })
@@ -507,10 +508,6 @@ createStyledButton(
 
   return button;
 }
-
-
-
-
 loadAudio(key: string, url: string): Promise<void> {
   return new Promise((resolve) => {
     if (this.sound.get(key)) {
@@ -991,7 +988,7 @@ const popupBg = this.add.rectangle(centerX, centerY, 320, 180, 0x000000, 0.8)
   .setStrokeStyle(2, 0xff3333).setDepth(1006);
 
 // 🧠 Game Over Text
-const gameOverText = this.add.text(centerX, centerY - 50, '💀 Game Over', {
+const gameOverText = this.add.text(centerX, centerY - 50, '💀 Game Over 💀', {
   fontSize: '36px',
   fontFamily: 'Outfit',
   fontStyle: 'bold',
@@ -1099,18 +1096,24 @@ this.claimButton = this.createStyledButton(centerX, centerY + 52, '🌿 Claim $V
   // 🔁 checkWaveOver(): Ends wave and starts next if ready
   // ---------------------------------------------------------------------------
   checkWaveOver() {
-  const activeEnemies = this.enemyGroup.getChildren().filter(enemy => enemy.active);
-  const allSpawned = this.enemiesSpawned >= this.enemiesPerWave;
-  if (allSpawned && activeEnemies.length === 0 && !this.gameOver) {
-    this.time.delayedCall(1000, () => this.startNextWave());
+    const activeEnemies = this.enemyGroup.getChildren().filter(enemy => enemy.active);
+    const allSpawned = this.enemiesSpawned >= this.enemiesPerWave;
+  
+    if (allSpawned && activeEnemies.length === 0 && !this.gameOver) {
+      this.time.delayedCall(1000, () => this.startNextWave());
+    }  
   }
-  }
+  
   // ---------------------------------------------------------------------------
   // 🌊 startNextWave(): Sets up the enemy queue and wave banner
   // ---------------------------------------------------------------------------
   startNextWave() {
   this.enemiesEscaped = 0;
   this.waveNumber++;
+  if (this.waveNumber > this.MAX_WAVE) {
+    this.triggerVictory();
+    return;
+  }  
   this.waveText.setText(`Wave: ${this.waveNumber}`);
   this.enemiesSpawned = 0;
   this.enemiesKilled = 0;
@@ -1277,7 +1280,8 @@ this.towers = []; // Clear tower references
   // 🔼 showUpgradePanel(): Displays tower upgrade UI
   // ---------------------------------------------------------------------------
   showUpgradePanel(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform & { getData: Function }) {
-  const existing = this.children.getByName('upgradePanel');
+    if (this.gameOver) return;
+    const existing = this.children.getByName('upgradePanel');
   if (existing) existing.destroy();
   this.upgradePanelOpen = true;
   this.isPaused = true;
@@ -1408,4 +1412,87 @@ blocker.once('pointerdown', () => {
   });
 });
 }
+triggerVictory() {
+  if (this.towerSelectPanel) {
+    this.towerSelectPanel.destroy();
+    this.towerSelectPanel = undefined;
+  }
+  this.canSelectTile = false;
+  this.gameOver = true;
+  this.enemySpawnEvent.remove(false);
+  this.isPaused = true;
+  this.physics.pause();
+  // ⛔ Stop towers
+  this.towers.forEach(tower => {
+    const timer = tower.getData('shootTimer');
+    timer?.remove(false);
+  });
+  this.towers.forEach(tower => tower.disableInteractive());
+  const cx = Number(this.game.config.width) / 2;
+  const cy = Number(this.game.config.height) / 2;
+  
+// 🔲 Dim background
+const victoryOverlay = this.add.rectangle(cx, cy, this.game.config.width as number, this.game.config.height as number, 0x000000, 0.4)
+  .setOrigin(0.5)
+  .setDepth(-1);
+
+// 🎉 Popup Background
+const victoryPopupBg = this.add.rectangle(cx, cy, 340, 240, 0x000000, 0.8)
+  .setOrigin(0.5)
+  .setStrokeStyle(2, 0x2aff84)
+  .setDepth(1006);
+
+// 🏆 Title
+const victoryText = this.add.text(cx, cy - 64, '🏆 You Win 🏆', {
+  fontSize: '36px',
+  fontFamily: 'Outfit',
+  fontStyle: 'bold',
+  align: 'center',
+  color: '#ffaa44', // 🟠 Amber
+}).setOrigin(0.5).setDepth(1006);
+
+// 💰 Earnings Message
+const vineAmount = this.add.text(cx, cy - 14, `${this.vineBalance} $VINE`, {
+  fontSize: '22px',
+  fontFamily: 'Outfit',
+  fontStyle: 'bold',
+  align: 'center',
+   color: '#ffaa44', // 🟠 Amber
+}).setOrigin(0.5).setDepth(1006);
+
+const vineMessage = this.add.text(cx, cy + 10, `was added to your profile`, {
+  fontSize: '18px',
+  fontFamily: 'Outfit',
+  align: 'center',
+  color: '#ffffff',
+}).setOrigin(0.5).setDepth(1006);
+
+// 🔁 Play Again (Amber with hover)
+const playAgainBtn = this.createStyledButton(
+  cx,
+  cy + 48,
+  'Play Again',
+  0x2aff85,
+  () => {
+    [victoryOverlay, victoryPopupBg, victoryText, vineAmount, vineMessage, playAgainBtn, mainMenuBtn].forEach(e => e.destroy());this.canSelectTile = true;this.towers.forEach(tower => tower.setInteractive());
+
+    this.restartGame();
+  },
+  0x5effa4 // 🟡 Hover green
+);
+
+// 🏠 Main Menu (same amber)
+const mainMenuBtn = this.createStyledButton(
+  cx,
+  cy + 94,
+  'Main Menu',
+  0xffaa44,
+  () => {
+    window.location.reload();
+  },
+  0xffbb66
+);
+
+}  
+
 }
