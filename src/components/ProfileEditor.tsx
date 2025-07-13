@@ -144,18 +144,40 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
         <h2>Your Super Sexy Profile</h2>
         {pfpUrl && (
   <>
-    <div className="avatar-preview">
-      <img src={pfpUrl || DEFAULT_PFP_URL} alt="pfp" />
-      <span>{username || 'Your Username'}</span>
-    </div>
+  {/* 🖼️ Clickable Avatar */}
+  <label htmlFor="pfp-upload" className="avatar-upload">
+    <img
+      src={pfpUrl || DEFAULT_PFP_URL}
+      alt="pfp"
+      className="avatar-img"
+    />
+    <input
+      id="pfp-upload"
+      type="file"
+      accept="image/*"
+      onChange={handleFileUpload}
+      style={{ display: 'none' }}
+    />
+    <div className="edit-overlay">✏️</div>
+  </label>
 
+  <span  style={{
+    display: 'block',
+    textAlign: 'center',
+    fontSize: '24px',
+    color: '#fff',
+    fontWeight: '600' // ← Add this
+  }}
+>
+    {username || 'Your Username'}
+  </span>
     {/* 🌿 VINE Balance + Claim */}
     <div className="vine-balance-row" style={{
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
       gap: '12px',
-      margin: '10px 0'
+      margin: '0'
     }}>
       <div style={{ fontSize: '16px', color: '#5CFFA3' }}>
         🌿 {vineBalance} $VINE
@@ -220,22 +242,15 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
           />
           <small style={{ color: '#DFFBFF' }}>{bio.length}/100 characters</small>
         </div>
-  
-        <div className="form-group">
-          <label htmlFor="pfpUpload" style={{ marginTop: '3px' }}>
-            Upload Your PFP:
-          </label>
-          <input type="file" id="pfpUpload" accept="image/*" onChange={handleFileUpload} />
-        </div>
         <div className="button-row">
-          <button className="save-btn" onClick={saveProfile}>
-            💾 Save
-          </button>
           {onClose && (
   <button className="close-btn" onClick={onClose}>
     ❌ Close
   </button>
 )}
+<button className="save-btn" onClick={saveProfile}>
+            💾 Save
+          </button>
         </div>
       </div>
     </>

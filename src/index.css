@@ -426,12 +426,62 @@ textarea {
   text-shadow: 0 0 4px rgba(0, 179, 255, 0.4);
   font-family: Outfit !important;
 }
+.avatar-upload {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+.avatar-img {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 3px solid #00B3FF;
+  object-fit: cover;
+  display: block;
+  transition: 0.3s ease;
+}
+
+.avatar-upload:hover .avatar-img {
+  box-shadow: 0 0 12px #00B3FF;
+}
+
+
+/* 🔧 Perfectly center the overlay and icon */
+.edit-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: white;
+  font-size: 20px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  margin-top: 4px; 
+}
+
+.avatar-upload:hover .edit-overlay {
+  opacity: 1;
+}
+
 /* === Buttons === */
 .button-row {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  margin-top: 12px;
+  margin:0 50px;
   flex-wrap:wrap;
   font-family: Outfit !important;
 }
