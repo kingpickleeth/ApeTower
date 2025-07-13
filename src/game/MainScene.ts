@@ -1233,7 +1233,7 @@ this.currentEnemyReward = config.reward;
     250, 80,
     0x222222,
     0.85
-  ).setOrigin(0.5).setDepth(1005).setStrokeStyle(2, 0xffff00);
+  ).setOrigin(0.5).setDepth(1005).setStrokeStyle(2, 0xFF914D);
   this.canSelectTile = false;
   this.canSpawnEnemies = false;
   const bannerText = this.add.text(
