@@ -17,7 +17,7 @@ interface Props {
             margin: '0 auto',
             padding: '24px',
             textAlign: 'center',
-            border: `2px solid ${isSuccess ? '#2ecc71' : '#e74c3c'}`,
+            border: `2px solid ${isSuccess ? '#2ecc71' : '#FF3C75'}`,
             backgroundColor: isSuccess ? '#1e2b1e' : '#2b1e1e',
             borderRadius: '16px',
             boxShadow: '0 0 20px rgba(0,0,0,0.4)',
@@ -29,7 +29,7 @@ interface Props {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '0.5rem',
-    color: isSuccess ? '#2ecc71' : '#e74c3c',
+    color: isSuccess ? '#2ecc71' : '#FF3C75',
     fontSize: '1.5rem',
     fontWeight: '600',
     marginBottom: '12px',
@@ -42,7 +42,7 @@ interface Props {
 <p
   style={{
     fontSize: '1rem',
-    color: '#ccc',
+    color: '#DFFBFF',
     marginBottom: '20px',
     whiteSpace: 'pre-wrap',
     wordBreak: 'break-word',

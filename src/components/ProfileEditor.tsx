@@ -157,14 +157,14 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
       gap: '12px',
       margin: '10px 0'
     }}>
-      <div style={{ fontSize: '16px', color: '#2aff84' }}>
+      <div style={{ fontSize: '16px', color: '#5CFFA3' }}>
         🌿 {vineBalance} $VINE
       </div>
       <button
         onClick={handleClaim}
         style={{
-          background: '#2aff84',
-          color: '#000',
+          background: '#5CFFA3',
+          color: '#1A1F2B',
           padding: '6px 12px',
           borderRadius: '6px',
           fontWeight: 'bold',
@@ -187,19 +187,19 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
             placeholder="Enter your name"
           />
 {!username.trim() ? (
-  <div style={{ color: '#ff4444', marginTop: '4px' }}>
+  <div style={{ color: '#1A1F2B', marginTop: '4px' }}>
     Username is required.
   </div>
 ) : checkingUsername ? (
-  <div style={{ color: '#ffaa00', marginTop: '4px' }}>
+  <div style={{ color: '#3CDFFF', marginTop: '4px' }}>
     Checking availability...
   </div>
 ) : usernameTaken ? (
-  <div style={{ color: '#ff4444', marginTop: '4px' }}>
+  <div style={{ color: '#1A1F2B', marginTop: '4px' }}>
     That username is already taken.
   </div>
 ) : profile?.username === username.trim() ? null : (
-  <div style={{ color: '#2aff84', marginTop: '4px' }}>
+  <div style={{ color: '#00B3FF', marginTop: '4px' }}>
     ✅ That username is available!
   </div>
 )}
@@ -218,7 +218,7 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
             placeholder="Write something cool (max 100 characters)"
             rows={3}
           />
-          <small style={{ color: '#ccc' }}>{bio.length}/100 characters</small>
+          <small style={{ color: '#DFFBFF' }}>{bio.length}/100 characters</small>
         </div>
   
         <div className="form-group">

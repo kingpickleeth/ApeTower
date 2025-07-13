@@ -6,7 +6,7 @@
   padding: 0 !important;
   color: rgba(255, 255, 255, 0.87);
   color-scheme: light dark;
-  background-color: #242424;
+  background-color: #1A1F2B;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -19,7 +19,7 @@ body {
   width: 100%;
   height: 100%;
   display: flex;
-  background-color: #0d130f;
+  background-color: #1A1F2B;
   overflow-x: hidden; /* ✅ Ensure horizontal overflow doesn't cause cutoff */
 }
 div[data-rk] {
@@ -32,7 +32,7 @@ h1 {
   font-size: 3.2em;
   line-height: 1.1;
   font-family: Outfit;
-  color: #f9f9f9;
+  color: #DFFBFF;
 }
 a {
   font-weight: 500;
@@ -41,7 +41,7 @@ a {
   font-family: Outfit !important;
 }
 a:hover {
-  color: #535bf2;
+  color: #3CDFFF;
 }
 button {
   font-family: Outfit !important;
@@ -50,7 +50,7 @@ button {
   padding: 0.6em 1.2em;
   border-radius: 8px;
   border: 1px solid transparent;
-  background-color: #1a1a1a;
+  background-color: #1A1F2B;
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -88,9 +88,9 @@ button:focus-visible {
 #game-title {
   font-size: 3.2em;
   font-family: Outfit;
-  color: #f9f9f9;
+  color: #DFFBFF;
   margin-bottom: 24px; /* 👈 space between title and canvas */
-  text-shadow: 0 0 12px rgba(42, 255, 132, 0.5);
+  text-shadow: 0 0 12px rgba(0, 179, 255, 0.5);
   text-align: center;
 }
 canvas {
@@ -105,7 +105,7 @@ canvas {
   width: 100%;
   height: 100%;
   z-index: 0;
-  background: linear-gradient(-45deg, #0d130f, #1c2a1d, #122f22, #0e1913);
+  background: linear-gradient(-45deg, #1A1F2B, #1c2a1d, #122f22, #0e1913);
   background-size: 400% 400%;
   animation: gradientShift 14s ease infinite;
 }
@@ -120,9 +120,9 @@ canvas {
   height: 100%;
   max-width: 100%;
   max-height: 100%;
-  background-color: #1e1e1e;
+  background-color: #1A1F2B;
   border-radius: 18px;
-  box-shadow: 0 0 40px rgba(0, 255, 128, 0.12);
+  box-shadow: 0 0 40px rgba(0, 179, 255, 0.12);
   overflow: hidden;
 }
 html, body, #root {
@@ -149,9 +149,9 @@ html, body, #root {
   z-index: 1;
   padding: 1.5vw;
   border-radius: 24px;
-  background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
-  box-shadow: 0 0 20px rgba(0, 255, 128, 0.12), 0 0 60px rgba(42, 255, 132, 0.08);
-  border: 2px solid #2aff84;
+  background: linear-gradient(145deg, #1A1F2B, #1A1F2B);
+  box-shadow: 0 0 20px rgba(0, 179, 255, 0.12), 0 0 60px rgba(0, 179, 255, 0.08);
+  border: 2px solid #00B3FF;
   backdrop-filter: blur(8px);
   transition: all 0.3s ease;
   margin: 0 auto;
@@ -168,7 +168,7 @@ html, body, #root {
   width: 100vw;
   height: 100dvh;
   background: rgba(8, 12, 8, 0.95);
-  color: #ffffff;
+  color: #DFFBFF;
   font-family: Outfit, sans-serif;
   font-size: 1.6em;
   display: none; /* toggled by JS */
@@ -200,28 +200,28 @@ html, body, #root {
 }
 #connect-modal {
   z-index: 2;
-  background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
-  border: 2px solid #2aff84;
+  background: linear-gradient(145deg, #1A1F2B, #1A1F2B);
+  border: 2px solid #00B3FF;
   border-radius: 24px;
   padding: 48px 60px;
-  box-shadow: 0 0 30px rgba(42, 255, 132, 0.15), 0 0 80px rgba(0, 255, 128, 0.1);
+  box-shadow: 0 0 30px rgba(42, 255, 132, 0.15), 0 0 80px rgba(0, 179, 255, 0.1);
   backdrop-filter: blur(10px);
   text-align: center;
-  color: #f9f9f9;
+  color: #DFFBFF;
   animation: fadeIn 0.8s ease-out;
   font-family: Outfit !important;
 }
 #connect-modal h1 {
   font-size: 3rem;
   margin-bottom: 16px;
-  color: #2aff84;
-  text-shadow: 0 0 20px rgba(42, 255, 132, 0.6);
+  color: #00B3FF;
+  text-shadow: 0 0 20px rgba(0, 179, 255, 0.6);
   font-family: Outfit !important;
 }
 #connect-modal p {
   font-size: 1.1em;
   margin-bottom: 24px;
-  color: #ccc;
+  color: #DFFBFF;
   font-family: Outfit !important;
 }
 @keyframes fadeIn {
@@ -255,19 +255,21 @@ html, body, #root {
   z-index: 1000;
   width: 100%;
   height: 60px;
-  background: linear-gradient(90deg, #0d130f, #1c2a1d);
+  background: linear-gradient(90deg, #1A1F2B, #1c2a1d);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid #2aff84;
-  box-shadow: 0 2px 12px rgba(0, 255, 128, 0.1);
+  border-bottom: 2px solid #00B3FF;
+  box-shadow: 0 2px 12px rgba(0, 179, 255, 0.1);
   overflow: visible;
-}
-#navbar-title {
-  font-size: 3rem;
+}#navbar-title {
+  font-size: 2.9rem;
   font-family: Outfit;
-  color: #2aff84;
-  text-shadow: 0 0 8px rgba(42, 255, 132, 0.4);
+  color: #00B3FF;
+  text-shadow:
+  0 0 2px #00B3FF,
+  0 0 4px #00B3FF;
+  font-weight: 600;
   pointer-events: none;
   margin-left: auto;
   margin-right: auto;
@@ -275,6 +277,7 @@ html, body, #root {
   left: 50%;
   transform: translateX(-50%);
 }
+
 /* === Wallet Button Container === */
 #wallet-button-container {
   display: flex;
@@ -328,9 +331,9 @@ canvas {
   overflow-y: auto;  /* ✅ enables internal scroll if content exceeds screen */
   box-sizing: border-box;
   z-index: 10;
-  background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
-  color: #fff;
-  border: 2px solid #2aff84;
+  background: linear-gradient(145deg, #1A1F2B, #1A1F2B);
+  color: #DFFBFF;
+  border: 2px solid #00B3FF;
   border-radius: 16px;
   backdrop-filter: blur(8px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
@@ -362,7 +365,7 @@ canvas {
 #profile-card label {
   font-weight: 600;
   font-size: 0.95rem;
-  color: #ccc;
+  color: #DFFBFF;
   font-family: Outfit !important;
 }
 #profile-card input {
@@ -370,7 +373,7 @@ canvas {
   font-size: 1rem;
   border-radius: 8px;
   font-family: Outfit;
-  background-color: #1a1a1a;
+  background-color: #1A1F2B;
   color: white;
 }
 #profile-card img {
@@ -383,8 +386,8 @@ canvas {
 }
 input,
 textarea {
-  background-color: #1a1a1a;
-  color: #fff;
+  background-color: #1A1F2B;
+  color: #DFFBFF;
   border: 1px solid #333;
   border-radius: 8px;
   padding: 0.6em 1em;
@@ -413,14 +416,14 @@ textarea {
   object-fit: cover;
   margin-bottom: 8px;
   box-shadow: 
-    0 0 16px rgba(42, 255, 132, 0.5),
-    0 0 12px rgba(0, 255, 128, 0.3);
+    0 0 16px rgba(0, 179, 255, 0.5),
+    0 0 12px rgba(0, 179, 255, 0.3);
 }
 .avatar-preview span {
   font-size: 1.1rem;
   font-weight: 500;
-  color: #eee;
-  text-shadow: 0 0 4px rgba(42, 255, 132, 0.4);
+  color: #DFFBFF;
+  text-shadow: 0 0 4px rgba(0, 179, 255, 0.4);
   font-family: Outfit !important;
 }
 /* === Buttons === */
@@ -446,11 +449,11 @@ textarea {
 }
 #profile-card .save-btn {
   background: #2ecc71;
-  color: #fff;
+  color: #DFFBFF;
 }
 #profile-card .close-btn {
-  background: #e74c3c;
-  color: #fff;
+  background: #FF3C75;
+  color: #DFFBFF;
 }
 /* === General Button Styles === */
 .profile-btn {

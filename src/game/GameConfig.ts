@@ -13,7 +13,7 @@ const GameConfig: HighResGameConfig = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
-  backgroundColor: '#1e1e1e',
+  backgroundColor: '#1A1F2B',
   parent: 'game-container',
   resolution: scale, // 👈 this makes your canvas crisp!
   render: {

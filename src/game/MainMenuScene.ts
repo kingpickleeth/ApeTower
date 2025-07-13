@@ -13,32 +13,40 @@ export default class MainMenuScene extends Phaser.Scene {
 
     // 1. 🔤 Title
     const title = this.add.text(centerX, centerY - 140, 'Deng Defense', {
-      fontFamily: 'Outfit',
-      fontSize: '64px',
-      color: '#00ff88',
-    })
-      .setOrigin(0.5)
-      .setShadow(4, 4, '#000000', 4, true, true)
-      .setAlpha(0);
-
-    this.tweens.add({
-      targets: title,
-      alpha: 1,
-      duration: 600,
-      ease: 'Power2',
-    });
+        fontFamily: 'Outfit',
+        fontSize: '84px',
+        color: '#00B3FF',
+        padding: {
+          top: 20,
+          bottom: 20,
+          left: 20,
+          right: 20
+        }
+      })
+        .setOrigin(0.5)
+        .setShadow(0, 0, '#00B3FF', 18, true, true) // 🔥 neon glow
+        .setAlpha(0)
+        .setDepth(999); // 🔝 Ensure it's rendered on top just in case
+      
+      this.tweens.add({
+        targets: title,
+        alpha: 1,
+        duration: 600,
+        ease: 'Power2',
+      });
+      
 
     // 2. 🟩 Start Game Button
-    const buttonBg = this.add.rectangle(centerX, centerY + 20, 200, 60, 0x00ff88, 1)
+    const buttonBg = this.add.rectangle(centerX, centerY + 20, 200, 60, 0x00B3FF, 1)
       .setOrigin(0.5)
-      .setStrokeStyle(2, 0xffffff)
+      .setStrokeStyle(2, 0x00B3FF)
       .setInteractive({ useHandCursor: true })
       .setAlpha(0);
 
     const buttonText = this.add.text(centerX, centerY + 20, 'Start Game', {
       fontFamily: 'Outfit',
       fontSize: '28px',
-      color: '#000000'
+      color: '#1A1F2B'
     }).setOrigin(0.5).setAlpha(0);
 
     this.tweens.add({
@@ -52,7 +60,7 @@ export default class MainMenuScene extends Phaser.Scene {
     // 💫 Subtle glow pulse on title
     this.tweens.add({
       targets: title,
-      scale: { from: 1, to: 1.03 },
+      scale: { from: 1, to: 1.04 },
       yoyo: true,
       repeat: -1,
       duration: 1500,
@@ -61,14 +69,14 @@ export default class MainMenuScene extends Phaser.Scene {
 
     // 🧠 Hover Effects
     buttonBg.on('pointerover', () => {
-      buttonBg.setFillStyle(0x00ffaa);
+      buttonBg.setFillStyle(0x3CDFFF);
       buttonBg.setScale(1.05);
-      buttonText.setColor('#111111');
+      buttonText.setColor('#1A1F2B');
     });
     buttonBg.on('pointerout', () => {
-      buttonBg.setFillStyle(0x00ff88);
+      buttonBg.setFillStyle(0x007AC6) // 🔷 deep brand blue);
       buttonBg.setScale(1);
-      buttonText.setColor('#000000');
+      buttonText.setColor('#1A1F2B');
     });
 
     buttonBg.on('pointerdown', () => {
@@ -78,16 +86,16 @@ export default class MainMenuScene extends Phaser.Scene {
     // 3. 📜 Rules Button
  // 📜 Rules Button (now fully matches Start Game style)
 // 📜 Rules Button
-const rulesButtonBg = this.add.rectangle(centerX, centerY + 100, 200, 60, 0xffaa44, 1)
+const rulesButtonBg = this.add.rectangle(centerX, centerY + 100, 200, 60, 0x00B3FF, 1)
   .setOrigin(0.5)
-  .setStrokeStyle(2, 0xffffff)
+  .setStrokeStyle(2, 0x00B3FF)
   .setInteractive({ useHandCursor: true })
   .setAlpha(0); // <== important for fade in
 
 const rulesButtonText = this.add.text(centerX, centerY + 100, 'The Rules', {
   fontFamily: 'Outfit',
   fontSize: '28px',
-  color: '#000000',
+  color: '#1A1F2B',
   resolution: 2 // <== 👈 crisp on HiDPI
 }).setOrigin(0.5).setAlpha(0); // <== important for fade in
 
@@ -103,62 +111,62 @@ this.tweens.add({
 
 // 🎯 Hover Effects — matches Start Game
 rulesButtonBg.on('pointerover', () => {
-rulesButtonBg.setFillStyle(0xffbb66);
+rulesButtonBg.setFillStyle(0x3CDFFF);
 rulesButtonBg.setScale(1.05);
-rulesButtonText.setColor('#111111');
+rulesButtonText.setColor('#1A1F2B');
 });
 rulesButtonBg.on('pointerout', () => {
-rulesButtonBg.setFillStyle(0xffaa44);
+rulesButtonBg.setFillStyle(0x007AC6) // 🔷 deep brand blue);
 rulesButtonBg.setScale(1);
-rulesButtonText.setColor('#000000');
+rulesButtonText.setColor('#1A1F2B');
 });
 // 🔒 Interaction-blocking overlay (initially hidden)
-const modalBlocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0)
+const modalBlocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x1A1F2B, 0)
   .setOrigin(0)
   .setInteractive()
   .setVisible(false);
 
 
     // 4. 🧾 Rules Modal (initially hidden)
-    const modalBg = this.add.rectangle(centerX, centerY, 500, 300, 0x0d130f, .98)
-      .setStrokeStyle(2, 0x00ff88)
-      .setOrigin(0.5)
+    const modalBg = this.add.rectangle(centerX, centerY, 500, 300, 0x1A1F2B, .98)
+      .setStrokeStyle(2, 0x00B3FF)
+      .setOrigin(0.5).setDepth(1000)
       .setVisible(false);
 
     const rulesText = this.add.text(centerX, centerY, `Don't be a pussy. Get in there and get your hands dirty 😈`, {
       fontFamily: 'Outfit',
       fontSize: '16px',
-      color: '#ffffff',
+      color: '#DFFBFF',
       align: 'center',
       wordWrap: { width: 460 }
     })
-      .setOrigin(0.5)
+      .setOrigin(0.5).setDepth(1001)
       .setVisible(false);
 
     // ❌ Close Button (styled like Start Game & Rules)
-    const closeButtonBg = this.add.rectangle(centerX, centerY + 110, 140, 44, 0x111111, 1)
-  .setOrigin(0.5)
-  .setStrokeStyle(2, 0xffffff)
+    const closeButtonBg = this.add.rectangle(centerX, centerY + 110, 140, 44, 0xFF4F66, 1)
+  .setOrigin(0.5).setDepth(1002)
+  .setStrokeStyle(2, 0x00B3FF)
   .setInteractive({ useHandCursor: true })
   .setVisible(false);
 
 const closeButtonText = this.add.text(centerX, centerY + 110, '🆇 Close', {
   fontFamily: 'Outfit',
   fontSize: '22px',
-  color: '#ff4444' // bright red for visibility
-}).setOrigin(0.5).setVisible(false);
+  color: '#1A1F2B' // bright red for visibility
+}).setOrigin(0.5).setDepth(1002).setVisible(false);
 
 
 // Hover Effects (same as other buttons)
 closeButtonBg.on('pointerover', () => {
-closeButtonBg.setFillStyle(0xff6666);
+closeButtonBg.setFillStyle(0xFF6F80);
 closeButtonBg.setScale(1.05);
-closeButtonText.setColor('#111111');
+closeButtonText.setColor('#1A1F2B');
 });
 closeButtonBg.on('pointerout', () => {
-closeButtonBg.setFillStyle(0xff4444);
+closeButtonBg.setFillStyle(0xFF4F66);
 closeButtonBg.setScale(1);
-closeButtonText.setColor('#000000');
+closeButtonText.setColor('#1A1F2B');
 });
 
 

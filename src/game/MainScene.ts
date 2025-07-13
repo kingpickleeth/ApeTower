@@ -21,7 +21,7 @@ export default class MainScene extends Phaser.Scene {
   canSelectTile: boolean = true;
   claimButton?: Phaser.GameObjects.Container;
   canSpawnEnemies: boolean = false;
-  MAX_WAVE: number = 10;
+  MAX_WAVE: number = 1;
   walletAddress: string = '';
   totalEnemiesKilledByPhysics = 0;
   totalEnemiesDestroyed = 0;
@@ -105,8 +105,8 @@ export default class MainScene extends Phaser.Scene {
     fontSize: '18px',
     fontFamily: 'Outfit',
     fontStyle: 'bold',
-    color: '#00ff88',
-    backgroundColor: '#000000',
+    color: '#00B3FF',
+    backgroundColor: '#1A1F2B',
     padding: { left: 6, right: 6, top: 2, bottom: 2 }
   }).setOrigin(0.5).setAlpha(1).setDepth(10000);
 
@@ -222,7 +222,7 @@ const hudY = 10;
 const textStyle = {
   fontSize: '45px',
   fontFamily: 'Outfit',
-  color: '#FF914D',
+  color: '#DFFBFF',
   resolution: window.devicePixelRatio || 1
 };
 
@@ -291,7 +291,7 @@ this.updateLivesDisplay(10); // Or whatever the starting lives count is
       const x = this.mapOffsetX + col * this.tileSize + this.tileSize / 2;
       const y = this.mapOffsetY + row * this.tileSize + this.tileSize / 2;
       const type = this.tileMap[row][col];
-      const color = type === 0 ? 0x555555 : 0x228b22;
+      const color = type === 0 ? 0x00B3FF : 0x00FFE7;
       const tile = this.add.rectangle(x, y, this.tileSize - 2, this.tileSize - 2, color)
         .setInteractive()
         .setAlpha(0.2);
@@ -333,7 +333,7 @@ this.updateLivesDisplay(10); // Or whatever the starting lives count is
       if (typeof damage !== 'number') return;
       hp -= damage;
       // ✨ Hit flash effect
-      const hit = this.add.circle(enemy.x, enemy.y, 10, 0xffffff).setAlpha(0.6);
+      const hit = this.add.circle(enemy.x, enemy.y, 10, 0x00FFE7).setAlpha(0.6);
       this.tweens.add({
         targets: hit,
         alpha: 0,
@@ -356,8 +356,8 @@ if (hp <= 0) {
           fontSize: '18px',
           fontFamily: 'Arial',
           fontStyle: 'bold',
-          color: '#00ff88',
-          backgroundColor: '#000000',
+          color: '#00B3FF',
+          backgroundColor: '#1A1F2B',
           padding: { left: 6, right: 6, top: 2, bottom: 2 }
         }).setOrigin(0.5).setAlpha(1);
         
@@ -392,7 +392,7 @@ if (hp <= 0) {
         if (bar) {
           const percent = hp / maxHp;
           bar.width = 20 * percent;
-          bar.setFillStyle(percent > 0.5 ? 0x00ff00 : percent > 0.25 ? 0xffa500 : 0xff0000);
+          bar.setFillStyle(percent > 0.5 ? 0x00FFE7 : percent > 0.25 ? 0xffa500 : 0xff0000);
         }
       }
     }
@@ -412,8 +412,8 @@ const createCircleButton = (
   onClick: () => void
 ) => {
   const buttonRadius = 24;
-  const circle = this.add.circle(0, 0, buttonRadius, 0x2a2a2a)
-    .setStrokeStyle(2, 0xffaa44)
+  const circle = this.add.circle(0, 0, buttonRadius, 0x1A1F2B)
+    .setStrokeStyle(2, 0x00B3FF)
     .setDepth(1000);
     const xOffset = ['⟳', '🔈', '🔇'].includes(emoji) ? 2 : 0;
     const yOffset = ['⟳'].includes(emoji) ? -2 : 0;
@@ -421,7 +421,7 @@ const createCircleButton = (
   const icon = this.add.text(xOffset, yOffset, emoji, {
     fontSize: emoji === '⟳' ? '35px' : emoji === '⏸' || emoji === '▶️' ? '26px' : '20px',
  fontFamily: 'Outfit',
-    color: '#ffaa44',
+    color: '#00B3FF',
     resolution: window.devicePixelRatio || 1
   }).setOrigin(0.5)
     .setDepth(1000);
@@ -523,7 +523,7 @@ createStyledButton(
   const text = this.add.text(0, 0, label, {
     fontSize: `${fontSize}px`,
     fontFamily: 'Outfit',
-    color: '#ffffff',
+    color: '#DFFBFF',
     align: 'center',
   }).setOrigin(0.5);
 
@@ -635,8 +635,8 @@ showTowerSelectPanel(col: number, row: number) {
   const container = this.add.container(adjustedX, adjustedY);
   
   container.setDepth(1000);
-  const background = this.add.rectangle(0, 0, 120, 140, 0x111a12, 1)
-    .setStrokeStyle(2, 0x2aff84)
+  const background = this.add.rectangle(0, 0, 120, 140, 0x1A1F2B, 1)
+    .setStrokeStyle(2, 0x00B3FF)
     .setOrigin(0.5);
   container.add(background);
 
@@ -649,18 +649,18 @@ showTowerSelectPanel(col: number, row: number) {
 
 
   towerTypes.forEach((type, index) => {
-    const bg = this.add.rectangle(0, 0, buttonWidth, buttonHeight, 0x333333)
+    const bg = this.add.rectangle(0, 0, buttonWidth, buttonHeight, 0x1A1F2B)
       .setStrokeStyle(0)
       .setOrigin(0.5);
 
     const cost = towerCosts[type];
     const canAfford = this.vineBalance >= cost;
-    const costColor = canAfford ? '#00ff00' : '#ff3333';
+    const costColor = canAfford ? '#00FFE7' : '#FF4F66';
 
     const labelName = this.add.text(0, -8, type.toUpperCase(), {
       fontSize: '14px',
       fontFamily: 'Outfit',
-      color: '#ffffff',
+      color: '#DFFBFF',
       align: 'center',
     }).setOrigin(0.5);
 
@@ -701,7 +701,7 @@ showTowerSelectPanel(col: number, row: number) {
   this.towerSelectPanel = container;
 
 // 🛡️ Blocker (must be declared before it's destroyed inside button clicks)
-const blocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.001)
+const blocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x1A1F2B, 0.001)
   .setOrigin(0)
   .setInteractive()
   .setDepth(998);
@@ -765,7 +765,7 @@ body.setOffset(-enemy.displayWidth / 2, -enemy.displayHeight / 2);
   // 🩸 Health bar UI
   const barBg = this.add.rectangle(enemy.x, enemy.y - 16, 20, 4, 0x222222);
   barBg.name = 'hpBarBg';
-  const bar = this.add.rectangle(enemy.x, enemy.y - 16, 20, 4, 0x00ff00);
+  const bar = this.add.rectangle(enemy.x, enemy.y - 16, 20, 4, 0x00FFE7);
   bar.name = 'hpBar';
   enemy.setData('hpBar', bar);
   enemy.setData('hpBarBg', barBg);
@@ -828,7 +828,7 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
   // 🌀 Flash or bounce effect
   if (tower instanceof Phaser.GameObjects.Arc) {
     const originalColor = tower.fillColor;
-    tower.setFillStyle(0xffffff); // Flash white
+    tower.setFillStyle(0x00FFE7); // Flash white
     this.time.delayedCall(80, () => tower.setFillStyle(originalColor));
   } else if (tower instanceof Phaser.GameObjects.Image) {
     const baseScale = tower.getData('baseScale') ?? 0.075;
@@ -842,7 +842,7 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
   }
   // 🎯 Create bullet
   const towerType = tower.getData('type');
-  const bullet = this.add.circle(tower.x, tower.y, 4, 0xffffff);
+  const bullet = this.add.circle(tower.x, tower.y, 4, 0x00FFE7);
   bullet.setData('target', closestEnemy);
   bullet.setData('damage', tower.getData('damage'));
   bullet.setData('towerType', towerType);
@@ -892,7 +892,7 @@ bullet.setData('despawnTimer', bulletTimer);
   if (this.vineBalance < cost) {
     const warning = this.add.text(Number(this.game.config.width) / 2, 40, '❌ Not enough $VINE', {
       fontSize: '16px',
-      color: '#ff3333',
+      color: '#FF4F66',
       fontStyle: 'bold',
     }).setOrigin(0.5);
     this.time.delayedCall(1200, () => warning.destroy());
@@ -939,7 +939,7 @@ if (imageKey !== null) {
 } else {
   // fallback for unknown types
   
-  tower = this.add.circle(x, y, 15, 0xffffff);
+  tower = this.add.circle(x, y, 15, 0x00FFE7);
   this.physics.add.existing(tower);
 }
   tower.setDataEnabled();
@@ -952,7 +952,7 @@ if (imageKey !== null) {
 
   const levelText = this.add.text(x - 2, y + 12, '1', {
     fontSize: '14px',
-    color: '#ffffff',
+    color: '#DFFBFF',
     fontStyle: 'bold'
   }).setOrigin(0.5);
   tower.setData('levelText', levelText);
@@ -974,7 +974,7 @@ if (imageKey !== null) {
   });
   // 🧱 Update tilemap + tile color
   this.tileMap[row][col] = 2;
-  this.tileSprites[row][col].setFillStyle(0x555555).setAlpha(0.3);
+  this.tileSprites[row][col].setFillStyle(0x00B3FF).setAlpha(0.3);
   // 🔁 Fire bullets at interval
   const shootTimer = this.time.addEvent({
     delay: fireRate,
@@ -1061,44 +1061,60 @@ if (this.lives <= 0 && !this.gameOver) {
   const centerX = Number(this.game.config.width) / 2;
   const centerY = Number(this.game.config.height) / 2;
 
-  const overlay = this.add.rectangle(centerX, centerY, this.game.config.width as number, this.game.config.height as number, 0x000000, 0.4).setOrigin(0.5).setDepth(1005);
+  const overlay = this.add.rectangle(centerX, centerY, this.game.config.width as number, this.game.config.height as number, 0x1A1F2B, 0.4).setOrigin(0.5).setDepth(1005);
 
   // 🟥 Popup Background
-  const popupBg = this.add.rectangle(centerX, centerY, 340, 230, 0x000000, 0.8)
-    .setOrigin(0.5)
-    .setStrokeStyle(2, 0xff3333)
-    .setDepth(1006);
+ // 🟥 Popup Background
+const popupBg = this.add.rectangle(centerX, centerY, 340, 230, 0x1A1F2B, 0.8)
+.setOrigin(0.5)
+.setStrokeStyle(2, 0xFF4F66)
+.setDepth(1006);
 
-  // 🧠 Title
-  const gameOverText = this.add.text(centerX, centerY - 60, '💀 Game Over 💀', {
-    fontSize: '36px',
-    fontFamily: 'Outfit',
-    fontStyle: 'bold',
-    color: '#ff3333'
-  }).setOrigin(0.5).setDepth(1006);
+// 🧠 Title
+const gameOverText = this.add.text(centerX, centerY - 60, '💀 Game Over 💀', {
+fontSize: '36px',
+fontFamily: 'Outfit',
+fontStyle: 'bold',
+color: '#FF4F66'
+}).setOrigin(0.5).setDepth(1006);
 
-  // 🌿 Vine Earned
-  const vineText = this.add.text(centerX, centerY - 20, `You still earned ${this.vineBalance} $VINE`, {
-    fontSize: '20px',
-    fontFamily: 'Outfit',
-    color: '#00ff88'
-  }).setOrigin(0.5).setDepth(1006);
+// 🌿 Vine Earned
+const vineText = this.add.text(centerX, centerY - 20, `You still earned ${this.vineBalance} $VINE`, {
+fontSize: '20px',
+fontFamily: 'Outfit',
+color: '#5CFFA3' // ✅ Reward color
+}).setOrigin(0.5).setDepth(1006);
 
-  // 🔁 Play Again
-  const restartBtn = this.createStyledButton(centerX, centerY + 25, '🔁 Play Again', 0x444444, () => {
-    popupBg.destroy();
-    gameOverText.destroy();
-    vineText.destroy();
-    restartBtn.destroy();
-    mainMenuBtn.destroy();
-    overlay.destroy();
-    this.restartGame();
-  });
+// 🔁 Play Again
+const restartBtn = this.createStyledButton(
+centerX,
+centerY + 25,
+'🔁 Play Again',
+0x00B3FF, // ✅ Primary blue
+() => {
+  popupBg.destroy();
+  gameOverText.destroy();
+  vineText.destroy();
+  restartBtn.destroy();
+  mainMenuBtn.destroy();
+  overlay.destroy();
+  this.restartGame();
+},
+0x3CDFFF // ✅ Hover color
+);
 
-  // 🏠 Main Menu
-const mainMenuBtn = this.createStyledButton(centerX, centerY + 75, '🏠 Main Menu', 0x555555, () => {
+// 🏠 Main Menu
+const mainMenuBtn = this.createStyledButton(
+centerX,
+centerY + 75,
+'🏠 Main Menu',
+0x00B3FF, // ✅ Dark panel color (MainMenu style)
+() => {
   window.location.reload();
-});
+},
+0x3CDFFF // Optional: subtle hover or use 0x3CDFFF for consistency
+);
+
 
 
   // 💾 Save vine to Supabase
@@ -1162,7 +1178,7 @@ console.log('👛 walletAddress:', this.walletAddress);
           const popup = this.add.text(target.x, target.y - 20, `+${rewardAmount} $VINE`, {
             fontSize: '16px',
             fontFamily: 'Outfit',
-            color: '#00ff88'
+            color: '#00B3FF'
           }).setOrigin(0.5).setDepth(1000);
     
           this.tweens.add({
@@ -1198,9 +1214,9 @@ console.log('👛 walletAddress:', this.walletAddress);
   // 🔄 Update upgrade button color
   if (this.activeUpgradeButton && this.activeUpgradeCost !== undefined) {
     if (this.vineBalance >= this.activeUpgradeCost) {
-      this.activeUpgradeButton.setColor('#00ff00');
+      this.activeUpgradeButton.setColor('#00FFE7');
     } else {
-      this.activeUpgradeButton.setColor('#ff3333');
+      this.activeUpgradeButton.setColor('#FF4F66');
     }
     this.activeUpgradeButton.setText(`Upgrade 🔼 (${this.activeUpgradeCost})`);
   }
@@ -1272,7 +1288,7 @@ this.currentEnemyReward = config.reward;
     250, 80,
     0x222222,
     0.85
-  ).setOrigin(0.5).setDepth(1005).setStrokeStyle(2, 0xFF914D);
+  ).setOrigin(0.5).setDepth(1005).setStrokeStyle(2, 0xDFFBFF);
   this.canSelectTile = false;
   this.canSpawnEnemies = false;
   const bannerText = this.add.text(
@@ -1281,7 +1297,7 @@ this.currentEnemyReward = config.reward;
     {
       fontSize: '28px',
       fontFamily: 'Outfit',
-      color: '#2aff84',
+      color: '#00B3FF',
       fontStyle: 'bold',
       align: 'center',
     }
@@ -1365,7 +1381,7 @@ this.towers = []; // Clear tower references
     for (let col = 0; col < this.mapCols; col++) {
       if (this.tileMap[row][col] === 2) this.tileMap[row][col] = 1;
       this.tileSprites[row][col].setFillStyle(
-        this.tileMap[row][col] === 0 ? 0x555555 : 0x228b22
+        this.tileMap[row][col] === 0 ? 0x00B3FF : 0x00FFE7
       );
     }
   }
@@ -1419,9 +1435,9 @@ this.towers = []; // Clear tower references
   const y = tower.y;
   const panel = this.add.container(x, y).setName('upgradePanel').setDepth(1000);
   // 🧱 Panel background
-  const bg = this.add.rectangle(0, 0, panelWidth, 110, 0x333333)
+  const bg = this.add.rectangle(0, 0, panelWidth, 110, 0x1A1F2B)
     .setOrigin(0.5)
-    .setStrokeStyle(2, 0xffffff);
+    .setStrokeStyle(2, 0x00FFE7);
   // 🔢 Stats
   const dmg = tower.getData('damage');
   const rng = tower.getData('range');
@@ -1431,18 +1447,18 @@ this.towers = []; // Clear tower references
   const nextDmg = dmg + 1;
   const nextRng = rng + 20;
   // 🔵 Current & next range indicators
-  this.rangeCircle = this.add.circle(tower.x, tower.y, rng, 0x88ccff, 0.2)
-    .setStrokeStyle(1, 0x88ccff)
+  this.rangeCircle = this.add.circle(tower.x, tower.y, rng, 0x00B3FF, 0.2)
+    .setStrokeStyle(1, 0x00B3FF)
     .setDepth(-1);
-  this.nextRangeCircle = this.add.circle(tower.x, tower.y, nextRng, 0x88ccff, 0.15)
-    .setStrokeStyle(1, 0x88ccff)
+  this.nextRangeCircle = this.add.circle(tower.x, tower.y, nextRng, 0x00B3FF, 0.15)
+    .setStrokeStyle(1, 0x00B3FF)
     .setDepth(-1);
   const statsText = this.add.text(-panelWidth / 2 + 10, -40,
     `Damage: ${dmg} ➡️ ${nextDmg}\nRange: ${rng}  ➡️ ${nextRng}`,
     {
       fontSize: '16px',
       fontFamily: 'Outfit',
-      color: '#ffffff',
+      color: '#DFFBFF',
       align: 'left',
       lineSpacing: 6,
     }
@@ -1454,7 +1470,7 @@ this.towers = []; // Clear tower references
     fontFamily: 'Outfit',
     backgroundColor: hasEnough ? '#555555' : '#552222',
     padding: { x: 10, y: 6 },
-    color: hasEnough ? '#00ff00' : '#ff3333',
+    color: hasEnough ? '#00FFE7' : '#FF4F66',
   })
     .setOrigin(0.5)
     .setInteractive()
@@ -1504,7 +1520,7 @@ this.towers = []; // Clear tower references
       this.activeTower = undefined;
     });
   });  
-  const blocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.001)
+  const blocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x1A1F2B, 0.001)
   .setOrigin(0)
   .setInteractive()
   .setDepth(999);
@@ -1546,14 +1562,14 @@ triggerVictory() {
   const cy = Number(this.game.config.height) / 2;
   
 // 🔲 Dim background
-const victoryOverlay = this.add.rectangle(cx, cy, this.game.config.width as number, this.game.config.height as number, 0x000000, 0.4)
+const victoryOverlay = this.add.rectangle(cx, cy, this.game.config.width as number, this.game.config.height as number, 0x1A1F2B, 0.4)
   .setOrigin(0.5)
   .setDepth(-1);
 
 // 🎉 Popup Background
-const victoryPopupBg = this.add.rectangle(cx, cy, 340, 240, 0x000000, 0.8)
+const victoryPopupBg = this.add.rectangle(cx, cy, 340, 240, 0x1A1F2B, 0.8)
   .setOrigin(0.5)
-  .setStrokeStyle(2, 0x2aff84)
+  .setStrokeStyle(2, 0x00B3FF)
   .setDepth(1006);
 
 // 🏆 Title
@@ -1562,23 +1578,23 @@ const victoryText = this.add.text(cx, cy - 64, '🏆 You Win 🏆', {
   fontFamily: 'Outfit',
   fontStyle: 'bold',
   align: 'center',
-  color: '#ffaa44', // 🟠 Amber
+  color: '#5CFFA3', // GREEN
 }).setOrigin(0.5).setDepth(1006);
 
 // 💰 Earnings Message
-const vineAmount = this.add.text(cx, cy - 14, `${this.vineBalance} $VINE`, {
+const vineAmount = this.add.text(cx, cy - 18, `${this.vineBalance} $VINE`, {
   fontSize: '22px',
   fontFamily: 'Outfit',
   fontStyle: 'bold',
   align: 'center',
-   color: '#ffaa44', // 🟠 Amber
+   color: '#5CFFA3', // 🟠 Amber
 }).setOrigin(0.5).setDepth(1006);
 
 const vineMessage = this.add.text(cx, cy + 10, `was added to your profile`, {
   fontSize: '18px',
   fontFamily: 'Outfit',
   align: 'center',
-  color: '#ffffff',
+  color: '#DFFBFF',
 }).setOrigin(0.5).setDepth(1006);
 // 💾 Save vine to Supabase
 console.log('🏆 Saving vine from victory:', this.vineBalance, this.walletAddress);
@@ -1594,13 +1610,13 @@ const playAgainBtn = this.createStyledButton(
   cx,
   cy + 48,
   'Play Again',
-  0x2aff85,
+  0x00B3FF,
   () => {
     [victoryOverlay, victoryPopupBg, victoryText, vineAmount, vineMessage, playAgainBtn, mainMenuBtn].forEach(e => e.destroy());this.canSelectTile = true;this.towers.forEach(tower => tower.setInteractive());
 
     this.restartGame();
   },
-  0x5effa4 // 🟡 Hover green
+  0x3CDFFF // 🟡 Hover green
 );
 
 // 🏠 Main Menu (same amber)
@@ -1608,11 +1624,11 @@ const mainMenuBtn = this.createStyledButton(
   cx,
   cy + 94,
   'Main Menu',
-  0xffaa44,
+  0x00B3FF,
   () => {
     window.location.reload();
   },
-  0xffbb66
+  0x3CDFFF
 );
 
 }  
