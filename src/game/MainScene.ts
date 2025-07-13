@@ -630,8 +630,30 @@ showTowerSelectPanel(col: number, row: number) {
 
   // Clear any existing panel
   this.towerSelectPanel?.destroy();
-
-  const container = this.add.container(screenX + 100, screenY + 60);
+  const panelOffsetX = 100;
+  const panelOffsetY = 60;
+  
+  const panelWidth = 120;
+  const panelHeight = 140;
+  
+  const canvasWidth = this.scale.width;
+  const canvasHeight = this.scale.height;
+  
+  let adjustedX = screenX + panelOffsetX;
+  let adjustedY = screenY + panelOffsetY;
+  
+  // 🔽 Clamp vertically to keep inside canvas
+  if (adjustedY + panelHeight / 2 > canvasHeight) {
+    adjustedY = canvasHeight - panelHeight / 2 - 10; // 10px margin from bottom
+  }
+  
+  // 🔽 Clamp horizontally to keep inside canvas
+  if (adjustedX + panelWidth / 2 > canvasWidth) {
+    adjustedX = canvasWidth - panelWidth / 2 - 10; // 10px margin from right
+  }
+  
+  const container = this.add.container(adjustedX, adjustedY);
+  
   container.setDepth(1000);
   const background = this.add.rectangle(0, 0, 120, 140, 0x111a12, 1)
     .setStrokeStyle(2, 0x2aff84)
