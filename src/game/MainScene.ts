@@ -630,26 +630,27 @@ showTowerSelectPanel(col: number, row: number) {
 
   // Clear any existing panel
   this.towerSelectPanel?.destroy();
-  const panelOffsetX = 100;
-  const panelOffsetY = 60;
-  
   const panelWidth = 120;
   const panelHeight = 140;
   
   const canvasWidth = this.scale.width;
   const canvasHeight = this.scale.height;
   
+  const panelOffsetX = 100;
+  const panelOffsetY = 60;
+  
+  // Default position: to the right and below the tile
   let adjustedX = screenX + panelOffsetX;
   let adjustedY = screenY + panelOffsetY;
   
-  // 🔽 Clamp vertically to keep inside canvas
-  if (adjustedY + panelHeight / 2 > canvasHeight) {
-    adjustedY = canvasHeight - panelHeight / 2 - 10; // 10px margin from bottom
+  // 🔄 Flip to left of tile if too close to right edge
+  if (adjustedX + panelWidth / 2 > canvasWidth) {
+    adjustedX = screenX - panelOffsetX;
   }
   
-  // 🔽 Clamp horizontally to keep inside canvas
-  if (adjustedX + panelWidth / 2 > canvasWidth) {
-    adjustedX = canvasWidth - panelWidth / 2 - 10; // 10px margin from right
+  // 🔽 Clamp Y so panel doesn’t overflow below screen
+  if (adjustedY + panelHeight / 2 > canvasHeight) {
+    adjustedY = canvasHeight - panelHeight / 2 - 10;
   }
   
   const container = this.add.container(adjustedX, adjustedY);
