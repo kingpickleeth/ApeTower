@@ -1178,7 +1178,7 @@ console.log('👛 walletAddress:', this.walletAddress);
           const popup = this.add.text(target.x, target.y - 20, `+${rewardAmount} $VINE`, {
             fontSize: '16px',
             fontFamily: 'Outfit',
-            color: '#00B3FF'
+            color: '#5CFFA3'
           }).setOrigin(0.5).setDepth(1000);
     
           this.tweens.add({
