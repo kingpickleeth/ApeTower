@@ -23,7 +23,9 @@ export default class MainScene extends Phaser.Scene {
   canSpawnEnemies: boolean = false;
   MAX_WAVE: number = 10;
   walletAddress: string = '';
-
+  totalEnemiesKilledByPhysics = 0;
+  totalEnemiesDestroyed = 0;
+  
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
@@ -89,7 +91,42 @@ export default class MainScene extends Phaser.Scene {
   this.load.image('enemyTank', 'https://admin.demwitches.xyz/assets/tankenemy.png');
   
   }
-  
+  killEnemy(enemy: Phaser.GameObjects.Arc) {
+  const reward = enemy.getData('reward') || 0;
+  this.vineBalance += reward;
+
+  const { x, y } = enemy.getCenter();
+  const rewardText = this.add.text(x, y - 12, `+${reward} $VINE`, {
+    fontSize: '18px',
+    fontFamily: 'Outfit',
+    fontStyle: 'bold',
+    color: '#00ff88',
+    backgroundColor: '#000000',
+    padding: { left: 6, right: 6, top: 2, bottom: 2 }
+  }).setOrigin(0.5).setAlpha(1).setDepth(10000);
+
+  this.tweens.add({
+    targets: rewardText,
+    y: rewardText.y - 20,
+    alpha: 0,
+    duration: 1000,
+    ease: 'Cubic.easeOut',
+    onComplete: () => rewardText.destroy()
+  });
+
+  this.vineText.setText(`$VINE: ${this.vineBalance}`);
+
+  const bar = enemy.getData('hpBar') as Phaser.GameObjects.Rectangle;
+  const barBg = enemy.getData('hpBarBg') as Phaser.GameObjects.Rectangle;
+  bar?.destroy();
+  barBg?.destroy();
+  enemy.destroy();
+  this.enemiesKilled++;
+  this.checkWaveOver();
+
+  console.log(`✅ killEnemy() executed at (${x}, ${y}) with reward ${reward}`);
+}
+
   // ---------------------------------------------------------------------------
   // 🎮 create(): Setup the map, UI, path, selectors, towers, collisions
   // ---------------------------------------------------------------------------
@@ -248,15 +285,47 @@ this.load.start();
         onComplete: () => hit.destroy(),
       });
       bullet.destroy();
-      if (hp <= 0) {
+      console.log(`🎯 Bullet hit: enemy HP before = ${hp}, damage = ${damage}`);
+
+if (hp <= 0) {
+  console.log(`✅ Entered kill block at (${enemy.x}, ${enemy.y})`);
+
         const reward = enemy.getData('reward') || 0;
         this.vineBalance += reward;
+        
+        const { x, y } = enemy.getCenter();
+        const vineText = this.add.graphics({ x, y: y - 12 }).setDepth(10000);
+        const rewardText = this.add.text(0, 0, `+${reward} $VINE`, {
+          fontSize: '18px',
+          fontFamily: 'Arial',
+          fontStyle: 'bold',
+          color: '#00ff88',
+          backgroundColor: '#000000',
+          padding: { left: 6, right: 6, top: 2, bottom: 2 }
+        }).setOrigin(0.5).setAlpha(1);
+        
+        const textContainer = this.add.container(x, y - 12, [rewardText])
+          .setDepth(10000)
+          .setAlpha(1)
+          .setScrollFactor(0); // pin to camera view (remove if world-relative)
+          this.children.bringToTop(textContainer);
+
+        this.tweens.add({
+          targets: textContainer,
+          y: textContainer.y - 20,
+          alpha: 0,
+          duration: 1000,
+          ease: 'Cubic.easeOut',
+          onComplete: () => textContainer.destroy()
+        });        
+        console.log('💸 Floating reward text created at', vineText.x, vineText.y);
+
         this.vineText.setText(`$VINE: ${this.vineBalance}`);
         const bar = enemy.getData('hpBar') as Phaser.GameObjects.Rectangle;
         const barBg = enemy.getData('hpBarBg') as Phaser.GameObjects.Rectangle;
         bar?.destroy();
         barBg?.destroy();
-        enemy.destroy();
+     enemy.destroy();
         this.enemiesKilled++;
         this.checkWaveOver();
       } else {
@@ -271,6 +340,7 @@ this.load.start();
       }
     }
   );
+  
   // 🎬 Start wave
   this.startNextWave();
   // ⏸ Pause Button
@@ -954,6 +1024,9 @@ update(_: number, delta: number) {
       // 🛑 Enemy reached the end of the path
       enemy.getData('hpBar')?.destroy();
       enemy.getData('hpBarBg')?.destroy();
+      this.totalEnemiesDestroyed++;
+console.log(`🚫 Non-HP enemy destroy #${this.totalEnemiesDestroyed}`);
+
       enemy.destroy();
       this.lives--;
       this.livesText.setText(`Lives: ${this.lives}`);
@@ -1056,16 +1129,16 @@ console.log('👛 walletAddress:', this.walletAddress);
     this.bulletGroup.getChildren().forEach((bulletObj) => {
       const bullet = bulletObj as Phaser.GameObjects.Arc;
       const target = bullet.getData('target') as Phaser.GameObjects.Image;
-
+    
       if (!target || !target.active || typeof target.x !== 'number' || typeof target.y !== 'number') {
         bullet.destroy(); // cleanup stray bullet
         return;
       }
-
+    
       const angle = Phaser.Math.Angle.Between(bullet.x, bullet.y, target.x, target.y);
       const velocity = this.physics.velocityFromRotation(angle, 500);
       (bullet.body as Phaser.Physics.Arcade.Body).setVelocity(velocity.x, velocity.y);
-
+    
       const dist = Phaser.Math.Distance.Between(bullet.x, bullet.y, target.x, target.y);
       if (dist < 10) {
         // 💥 Hit! Apply damage
@@ -1074,10 +1147,28 @@ console.log('👛 walletAddress:', this.walletAddress);
         const newHp = currentHp - damage;
         target.setData('hp', newHp);
         target.getData('hpBar')?.setScale(newHp / (target.getData('maxHp') || 1), 1);
-
+    
         if (newHp <= 0) {
-          this.vineBalance += target.getData('reward') || 0;
+          const rewardAmount = target.getData('reward') || 0;
+          this.vineBalance += rewardAmount;
           this.vineText.setText(`$VINE: ${this.vineBalance}`);
+    
+          // 💸 Floating reward popup
+          const popup = this.add.text(target.x, target.y - 20, `+${rewardAmount} $VINE`, {
+            fontSize: '16px',
+            fontFamily: 'Outfit',
+            color: '#00ff88'
+          }).setOrigin(0.5).setDepth(1000);
+    
+          this.tweens.add({
+            targets: popup,
+            y: target.y - 50,
+            alpha: 0,
+            duration: 800,
+            ease: 'Power1',
+            onComplete: () => popup.destroy()
+          });
+    
           target.getData('hpBar')?.destroy();
           target.getData('hpBarBg')?.destroy();
           target.destroy();
@@ -1089,6 +1180,7 @@ console.log('👛 walletAddress:', this.walletAddress);
         }
       }
     });
+    
     if (!this.input.enabled && !this.upgradePanelOpen && !this.towerSelectPanel) {
       console.warn('🛠 Auto-reenabling input');
       this.input.enabled = true;
