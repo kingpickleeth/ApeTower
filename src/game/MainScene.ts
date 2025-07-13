@@ -212,18 +212,45 @@ this.load.start();
       this.mapOffsetY + row * this.tileSize + this.tileSize / 2
     );
   }
-  // 💬 HUD Text
-  const hudY = 10;
-  const textStyle = {
-    fontSize: '45px', // 2x original size
-    fontFamily: 'Outfit',
-    color: '#eeeeee',
-    resolution: window.devicePixelRatio || 1 // 🔍 High DPI support
-  };
-  
-  this.vineText = this.add.text(40, hudY, '$VINE: 40', textStyle).setScale(0.5);
-  this.waveText = this.add.text(220, hudY, 'Wave: 1', textStyle).setScale(0.5).setDepth(20);
-  this.livesText = this.add.text(400, hudY, 'Lives: 10', textStyle).setScale(0.5);  
+  // 💬 HUD Text (Centered Group)
+const hudY = 10;
+const textStyle = {
+  fontSize: '45px',
+  fontFamily: 'Outfit',
+  color: '#FF914D',
+  resolution: window.devicePixelRatio || 1
+};
+
+// Temporarily create texts offscreen to measure widths
+const vineText = this.add.text(0, 0, '$VINE: 40', textStyle).setScale(0.5);
+const waveText = this.add.text(0, 0, 'Wave: 1', textStyle).setScale(0.5);
+const livesText = this.add.text(0, 0, 'Lives: 10', textStyle).setScale(0.5);
+
+// Spacing between each
+const padding = 64;
+
+// Total combined width
+const totalWidth =
+  vineText.displayWidth + waveText.displayWidth + livesText.displayWidth + padding * 2;
+
+// Starting X to center all
+const centerX = Number(this.game.config.width) / 2;
+let startX = centerX - totalWidth / 2;
+
+// Position each
+vineText.setPosition(startX, hudY);
+startX += vineText.displayWidth + padding;
+
+waveText.setPosition(startX, hudY);
+startX += waveText.displayWidth + padding;
+
+livesText.setPosition(startX, hudY);
+
+// Assign to scene for later updates
+this.vineText = vineText;
+this.waveText = waveText;
+this.livesText = livesText;
+
   // 🧱 Initialize tile map (1 = buildable, 0 = path)
   this.tileMap = Array.from({ length: this.mapRows }, () => Array(this.mapCols).fill(1));
   for (const [col, row] of pathTiles) this.tileMap[row][col] = 0;
@@ -343,189 +370,105 @@ if (hp <= 0) {
   
   // 🎬 Start wave
   this.startNextWave();
-  // ⏸ Pause Button
-  // Draw rounded rectangle background
-const pauseBg = this.add.graphics();
-const pauseWidth = 104;
-const pauseHeight = 35;
-const pauseRadius = 10;
-const pauseX = Number(this.game.config.width) - 24 - pauseWidth * 2 - 12;
-const pauseY = this.mapOffsetY / 8;
+const buttonRadius = 24;
+const marginX = 20 + buttonRadius;
+const marginY = this.scale.height - 90;
+const spacingY = 60;
+// Helper to create a circular emoji button
+const createCircleButton = (
+  x: number,
+  y: number,
+  emoji: string,
+  onClick: () => void
+) => {
+  const buttonRadius = 24;
+  const circle = this.add.circle(0, 0, buttonRadius, 0x2a2a2a)
+    .setStrokeStyle(2, 0xffaa44)
+    .setDepth(1000);
+    const xOffset = ['⟳', '🔈', '🔇'].includes(emoji) ? 2 : 0;
+    const yOffset = ['⟳'].includes(emoji) ? -2 : 0;
 
-pauseBg.fillStyle(0x2a2a2a, 1);
-pauseBg.fillRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
-pauseBg.lineStyle(2, 0xffaa44, 1);
-pauseBg.strokeRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
-
-// Add text on top
-const pauseBtnText = this.add.text(
-  pauseX + pauseWidth / 2,
-  pauseY + pauseHeight / 2,
-  '⏸ Pause',
-  {
-    fontSize: '40px',
-    fontFamily: 'Outfit',
+  const icon = this.add.text(xOffset, yOffset, emoji, {
+    fontSize: emoji === '⟳' ? '35px' : emoji === '⏸' || emoji === '▶️' ? '26px' : '20px',
+ fontFamily: 'Outfit',
     color: '#ffaa44',
-    resolution: window.devicePixelRatio || 1 // 👈 makes it crisp
-  }
-).setOrigin(0.5).setScale(0.5)
- .setInteractive({ useHandCursor: true });
+    resolution: window.devicePixelRatio || 1
+  }).setOrigin(0.5)
+    .setDepth(1000);
 
+  const container = this.add.container(x, y, [circle, icon])
+    .setSize(buttonRadius * 2, buttonRadius * 2)
+    .setDepth(1000)
+    .setScrollFactor(0)
+    .setInteractive(
+      new Phaser.Geom.Circle(20, 20, buttonRadius),
+      Phaser.Geom.Circle.Contains
+    )
+    .on('pointerdown', onClick);
 
-// Hover effect
-pauseBtnText.on('pointerover', () => {
-  pauseBg.clear();
-  pauseBg.fillStyle(0x3a3a3a, 1);
-  pauseBg.fillRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
-  pauseBg.lineStyle(2, 0xffaa66, 1);
-  pauseBg.strokeRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
-});
-pauseBtnText.on('pointerout', () => {
-  pauseBg.clear();
-  pauseBg.fillStyle(0x2a2a2a, 1);
-  pauseBg.fillRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
-  pauseBg.lineStyle(2, 0xffaa66, 1);
-  pauseBg.strokeRoundedRect(pauseX, pauseY, pauseWidth, pauseHeight, pauseRadius);
-});
+  return { container, icon };
+};
 
-// Click logic
-pauseBtnText.on('pointerdown', () => {
-  this.isPaused = !this.isPaused;
-  pauseBtnText.setText(this.isPaused ? '▶️ Resume' : '⏸ Pause');
+// 🟢 Pause Button (Toggle)
+let isPaused = this.isPaused;
+const { icon: pauseIcon } = createCircleButton(marginX, marginY - spacingY * 2, '⏸', () => {
+  isPaused = !isPaused;
+  this.isPaused = isPaused;
+  pauseIcon.setText(isPaused ? '▶️' : '⏸');
 
-  if (this.isPaused) {
+  if (isPaused) {
     this.physics.pause();
   } else {
     this.physics.resume();
   }
 
   if (this.enemySpawnEvent) {
-    this.enemySpawnEvent.paused = this.isPaused;
+    this.enemySpawnEvent.paused = isPaused;
   }
 
-  this.towers.forEach(tower => {
-    const timer = tower.getData('shootTimer');
-    if (timer) timer.paused = this.isPaused;
+  this.towers.forEach(t => {
+    const timer = t.getData('shootTimer');
+    if (timer) timer.paused = isPaused;
   });
 
-  this.bulletGroup.getChildren().forEach(bullet => {
-    const timer = bullet.getData('despawnTimer');
-    if (timer) timer.paused = this.isPaused;
+  this.bulletGroup.getChildren().forEach(b => {
+    const timer = b.getData('despawnTimer');
+    if (timer) timer.paused = isPaused;
   });
 });
 
-  // 🔁 Restart Button
-  // Draw rounded rectangle background for Restart
-const restartBg = this.add.graphics();
-const restartWidth = 100;
-const restartHeight = 35;
-const restartRadius = 10;
+// 🔁 Restart Button
+createCircleButton(marginX, marginY - spacingY, '⟳', () => {
+  this.restartGame();
+});
 
-// Position: right of pause button
-const restartX = pauseX + pauseWidth + 12;
-const restartY = pauseY;
+// 🎵 Music Toggle Button
+let isMusicMuted = this.isMusicMuted;
+const { icon: musicIcon } = createCircleButton(marginX, marginY, '🔈', async () => {
+  isMusicMuted = !isMusicMuted;
+  this.isMusicMuted = isMusicMuted;
+  musicIcon.setText(isMusicMuted ? '🔇' : '🔈');
 
-restartBg.fillStyle(0x2a2a2a, 1);
-restartBg.fillRoundedRect(restartX, restartY, restartWidth, restartHeight, restartRadius);
-restartBg.lineStyle(2, 0xeb4034, 1); // Red border
-restartBg.strokeRoundedRect(restartX, restartY, restartWidth, restartHeight, restartRadius);
-
-// Add Restart button text
-const restartBtnText = this.add.text(restartX + restartWidth / 2, restartY + restartHeight / 2, '⟳ Restart',  {
-    fontSize: '40px',
-    fontFamily: 'Outfit',
-    color: '#eb4034',
-    resolution: window.devicePixelRatio || 1 // 👈 makes it crisp
+  const existingMusic = this.sound.get('bgMusic');
+  if (isMusicMuted && existingMusic) {
+    existingMusic.pause();
+  } else if (!isMusicMuted && existingMusic) {
+    existingMusic.resume();
+  } else if (!existingMusic) {
+    await this.loadAudio('bgMusic', 'https://admin.demwitches.xyz/assets/music.mp3');
+    this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 });
+    if (!isMusicMuted) this.bgMusic.play();
   }
-).setOrigin(0.5).setScale(0.5).setDepth(1008)
- .setInteractive({ useHandCursor: true });
-
-// Hover effect
-restartBtnText.on('pointerover', () => {
-  restartBg.clear();
-  restartBg.fillStyle(0x3a3a3a, 1);
-  restartBg.fillRoundedRect(restartX, restartY, restartWidth, restartHeight, restartRadius);
-  restartBg.lineStyle(2, 0xeb4034, 1);
-  restartBg.strokeRoundedRect(restartX, restartY, restartWidth, restartHeight, restartRadius);
-});
-restartBtnText.on('pointerout', () => {
-  restartBg.clear();
-  restartBg.fillStyle(0x2a2a2a, 1);
-  restartBg.fillRoundedRect(restartX, restartY, restartWidth, restartHeight, restartRadius);
-  restartBg.lineStyle(2, 0xeb4034, 1);
-  restartBg.strokeRoundedRect(restartX, restartY, restartWidth, restartHeight, restartRadius);
 });
 
-// Click logic
-restartBtnText.on('pointerdown', () => this.restartGame());
+// 🔊 SFX Toggle Button
+let isSfxMuted = this.isSfxMuted;
+const { icon: sfxIcon } = createCircleButton(marginX, marginY + spacingY, '🔔', () => {
+  isSfxMuted = !isSfxMuted;
+  this.isSfxMuted = isSfxMuted;
+  sfxIcon.setText(isSfxMuted ? '🔕' : '🔔');
+});
 
-  // 📍 Position top-right
- 
-  this.assetsLoaded = true;
-  
-  const buttonRadius = 24;
-  const marginX = 20 + buttonRadius;
-  const marginY = this.scale.height - 90;
-  const spacingY = 60;
-  
-  // Helper to create a circular button
-  const createCircleButton = (
-    x: number,
-    y: number,
-    emoji: string,
-    onClick: () => void
-  ) => {
-    const circle = this.add.circle(0, 0, buttonRadius, 0x2a2a2a)
-      .setStrokeStyle(2, 0xffaa44)
-      .setDepth(1000);
-  
-    const icon = this.add.text(0, 0, emoji, {
-      fontSize: '20px',
-      fontFamily: 'Outfit',
-      color: '#ffffff',
-      resolution: window.devicePixelRatio || 1
-    }).setOrigin(0.5)
-      .setDepth(1000);
-  
-    const container = this.add.container(x, y, [circle, icon])
-      .setSize(buttonRadius * 2, buttonRadius * 2)
-      .setDepth(1000)
-      .setScrollFactor(0)
-      .setInteractive(
-        new Phaser.Geom.Circle(20, 20, buttonRadius), // Hit area centered
-        Phaser.Geom.Circle.Contains
-      )
-      .on('pointerdown', onClick);
-  
-    // ✅ DO NOT use `.setOrigin()` on the container
-    return { container, icon };
-  };
-  // 🎵 Music Toggle Button
-  let isMusicMuted = this.isMusicMuted;
-  const { icon: musicIcon } = createCircleButton(marginX, marginY, '🔈', async () => {
-    isMusicMuted = !isMusicMuted;
-    this.isMusicMuted = isMusicMuted;
-    musicIcon.setText(isMusicMuted ? '🔇' : '🔈');
-  
-    const existingMusic = this.sound.get('bgMusic');
-    if (isMusicMuted && existingMusic) {
-      existingMusic.pause();
-    } else if (!isMusicMuted && existingMusic) {
-      existingMusic.resume();
-    } else if (!existingMusic) {
-      await this.loadAudio('bgMusic', 'https://admin.demwitches.xyz/assets/music.mp3');
-      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 });
-      if (!isMusicMuted) this.bgMusic.play();
-    }
-  });
-  
-  // 🔊 SFX Toggle Button
-  let isSfxMuted = this.isSfxMuted;
-  const { icon: sfxIcon } = createCircleButton(marginX, marginY + spacingY, '🔔', () => {
-    isSfxMuted = !isSfxMuted;
-    this.isSfxMuted = isSfxMuted;
-    sfxIcon.setText(isSfxMuted ? '🔕' : '🔔');
-  });
 
 }
 createStyledButton(
@@ -1096,7 +1039,7 @@ if (this.lives <= 0 && !this.gameOver) {
   }).setOrigin(0.5).setDepth(1006);
 
   // 🌿 Vine Earned
-  const vineText = this.add.text(centerX, centerY - 20, `You earned ${this.vineBalance} $VINE`, {
+  const vineText = this.add.text(centerX, centerY - 20, `You still earned ${this.vineBalance} $VINE`, {
     fontSize: '20px',
     fontFamily: 'Outfit',
     color: '#00ff88'
