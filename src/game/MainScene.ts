@@ -25,7 +25,8 @@ export default class MainScene extends Phaser.Scene {
   walletAddress: string = '';
   totalEnemiesKilledByPhysics = 0;
   totalEnemiesDestroyed = 0;
-  
+  heartIcons: Phaser.GameObjects.Text[] = [];
+
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
@@ -216,7 +217,7 @@ this.load.start();
       this.mapOffsetY + row * this.tileSize + this.tileSize / 2
     );
   }
-  // 💬 HUD Text (Centered Group)
+ // 💬 HUD Text (Centered Group)
 const hudY = 10;
 const textStyle = {
   fontSize: '45px',
@@ -228,32 +229,57 @@ const textStyle = {
 // Temporarily create texts offscreen to measure widths
 const vineText = this.add.text(0, 0, '$VINE: 40', textStyle).setScale(0.5);
 const waveText = this.add.text(0, 0, 'Wave: 1', textStyle).setScale(0.5);
-const livesText = this.add.text(0, 0, 'Lives: 10', textStyle).setScale(0.5);
+const livesLabel = this.add.text(0, 0, 'Lives:', textStyle).setScale(0.5);
 
 // Spacing between each
 const padding = 64;
 
-// Total combined width
-const totalWidth =
-  vineText.displayWidth + waveText.displayWidth + livesText.displayWidth + padding * 2;
+// Measure the heart grid size manually (5 hearts wide, 2 rows)
+const heartSpacing = 22;
+const heartWidth = 5 * heartSpacing;
 
-// Starting X to center all
+// Total width = vine + wave + livesLabel + heart grid + padding
+const totalWidth =
+  vineText.displayWidth +
+  waveText.displayWidth +
+  livesLabel.displayWidth +
+  heartWidth +
+  padding * 3;
+
 const centerX = Number(this.game.config.width) / 2;
 let startX = centerX - totalWidth / 2;
 
-// Position each
+// 🪙 Position VINE
 vineText.setPosition(startX, hudY);
 startX += vineText.displayWidth + padding;
 
+// 🌊 Position Wave
 waveText.setPosition(startX, hudY);
 startX += waveText.displayWidth + padding;
 
-livesText.setPosition(startX, hudY);
+// ❤️ Lives label
+livesLabel.setPosition(startX, hudY);
+startX += livesLabel.displayWidth + 8;
 
-// Assign to scene for later updates
+// ❤️ Heart Icons Grid
+this.heartIcons = [];
+for (let i = 0; i < 10; i++) {
+  const col = i % 5;
+  const row = Math.floor(i / 5);
+  const heart = this.add.text(
+    startX + col * heartSpacing,
+    hudY + row * 18 - 4, // offset Y slightly below the label
+    '❤️',
+    { fontSize: '20px' }
+  );
+  this.heartIcons.push(heart);
+}
+
+// Assign text objects for updates
 this.vineText = vineText;
 this.waveText = waveText;
-this.livesText = livesText;
+this.updateLivesDisplay(10); // Or whatever the starting lives count is
+
 
   // 🧱 Initialize tile map (1 = buildable, 0 = path)
   this.tileMap = Array.from({ length: this.mapRows }, () => Array(this.mapCols).fill(1));
@@ -475,6 +501,12 @@ const { icon: sfxIcon } = createCircleButton(marginX, marginY + spacingY, '🔔'
 
 
 }
+updateLivesDisplay(livesLeft: number) {
+  this.heartIcons.forEach((heart, i) => {
+    heart.setAlpha(i < livesLeft ? 1 : 0.2);
+  });
+}
+
 createStyledButton(
   x: number,
   y: number,
@@ -1001,7 +1033,8 @@ console.log(`🚫 Non-HP enemy destroy #${this.totalEnemiesDestroyed}`);
 
       enemy.destroy();
       this.lives--;
-      this.livesText.setText(`Lives: ${this.lives}`);
+      this.updateLivesDisplay(this.lives);
+
       this.enemiesEscaped++;
 
       // 🧠 If no enemies left, start next wave
@@ -1344,7 +1377,7 @@ this.towers = []; // Clear tower references
   // 🧾 Reset HUD
   this.vineText.setText(`$VINE: ${this.vineBalance}`);
   this.waveText.setText(`Wave: 1`);
-  this.livesText.setText(`Lives: 10`);
+  this.updateLivesDisplay(this.lives);
   this.startNextWave();
   this.isPaused = false;
   this.physics.resume();
