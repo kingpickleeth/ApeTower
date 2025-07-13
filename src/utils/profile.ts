@@ -51,7 +51,8 @@ export async function upsertProfile(walletAddress: string, username: string, pfp
       }
   
       const currentBalance = Number(profile?.total_vine ?? 0);
-      const newBalance = vineEarned;
+      const newBalance = currentBalance + vineEarned;
+
 
   
       // 💾 Step 2: Update total_vine
