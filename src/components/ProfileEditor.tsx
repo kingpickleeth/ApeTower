@@ -118,7 +118,7 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
     }));
   
     // 🧼 Reset vine balance in Supabase directly
-    const result = await updateVineBalance(walletAddress, 0);
+    const result = await updateVineBalance(walletAddress, -vineBalance); // subtract
   
     if (result?.error) {
       console.error("❌ Failed to reset vine in Supabase:", result.error);
