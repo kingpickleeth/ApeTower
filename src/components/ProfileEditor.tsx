@@ -182,19 +182,22 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
       <div style={{ fontSize: '16px', color: '#5CFFA3' }}>
         🌿 {vineBalance} $VINE
       </div>
-      <button
-        onClick={handleClaim}
-        style={{
-          background: '#5CFFA3',
-          color: '#1A1F2B',
-          padding: '6px 12px',
-          borderRadius: '6px',
-          fontWeight: 'bold',
-          cursor: 'pointer'
-        }}
-      >
-        Claim
-      </button>
+      {vineBalance > 0 && (
+  <button
+    onClick={handleClaim}
+    style={{
+      background: '#5CFFA3',
+      color: '#1A1F2B',
+      padding: '6px 12px',
+      borderRadius: '6px',
+      fontWeight: 'bold',
+      cursor: 'pointer'
+    }}
+  >
+    Claim
+  </button>
+)}
+
     </div>
   </>
 )}
