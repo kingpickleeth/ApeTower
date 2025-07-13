@@ -89,7 +89,11 @@ export default class MainScene extends Phaser.Scene {
   this.load.image('enemyNormal', 'https://admin.demwitches.xyz/assets/normalenemy.png');
   this.load.image('enemyFast', 'https://admin.demwitches.xyz/assets/fastenemy.png');
   this.load.image('enemyTank', 'https://admin.demwitches.xyz/assets/tankenemy.png');
-  
+   // 🔁 Then this
+   this.load.once('complete', () => {
+    console.log('✅ All assets loaded.');
+    this.assetsLoaded = true; // ✅ This line is essential
+  });
   }
   killEnemy(enemy: Phaser.GameObjects.Arc) {
   const reward = enemy.getData('reward') || 0;
@@ -611,6 +615,7 @@ showTowerSelectPanel(col: number, row: number) {
   const totalHeight = towerTypes.length * buttonHeight + (towerTypes.length - 1) * buttonSpacing;
   const startY = -totalHeight / 2 + buttonHeight / 2;
 
+
   towerTypes.forEach((type, index) => {
     const bg = this.add.rectangle(0, 0, buttonWidth, buttonHeight, 0x333333)
       .setStrokeStyle(0)
@@ -663,11 +668,11 @@ showTowerSelectPanel(col: number, row: number) {
 
   this.towerSelectPanel = container;
 
-  const blocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.001)
-    .setOrigin(0)
-    .setInteractive()
-    .setDepth(999);
-
+// 🛡️ Blocker (must be declared before it's destroyed inside button clicks)
+const blocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.001)
+  .setOrigin(0)
+  .setInteractive()
+  .setDepth(998);
   blocker.once('pointerdown', () => {
     console.log('[🔴 Blocker clicked]');
     this.towerSelectPanel?.destroy();
@@ -843,6 +848,7 @@ bullet.setData('despawnTimer', bulletTimer);
   placeTowerAt(col: number, row: number) {
     if (!this.assetsLoaded) {
       console.warn('⏳ Assets not fully loaded yet. Skipping tower placement.');
+      console.log('🔍 assetsLoaded:', this.assetsLoaded); // 👈 Add this
       return;
     }
     if (this.upgradePanelOpen) return;
