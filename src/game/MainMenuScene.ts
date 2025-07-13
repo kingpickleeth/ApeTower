@@ -12,7 +12,7 @@ export default class MainMenuScene extends Phaser.Scene {
     
 
     // 1. 🔤 Title
-    const title = this.add.text(centerX, centerY - 140, 'Ape Tower', {
+    const title = this.add.text(centerX, centerY - 140, 'Deng Defense', {
       fontFamily: 'Outfit',
       fontSize: '64px',
       color: '#00ff88',
@@ -180,13 +180,13 @@ closeButtonText.setColor('#000000');
       
       // ⛔ Disable input when profile modal is open
 (window as any).disableMainMenuInput = () => {
-    this.input.enabled = false;
-  };
-  
-  // ✅ Re-enable it when modal is closed
-  (window as any).enableMainMenuInput = () => {
-    this.input.enabled = true;
-  };
-  
+  this.input.enabled = false;
+};
+
+// ✅ Re-enable it when modal is closed
+(window as any).enableMainMenuInput = () => {
+  this.input.enabled = true;
+};
+
   }
 }

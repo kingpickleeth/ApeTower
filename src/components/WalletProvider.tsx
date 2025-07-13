@@ -20,7 +20,7 @@ const apechain: Chain = {
 };
 
 const config = getDefaultConfig({
-    appName: 'Ape Tower',
+    appName: 'Deng Defense',
     chains: [apechain],
     projectId: 'ec846cc8cfaadc7743c39b5bbe99ade5', // replace this
   });

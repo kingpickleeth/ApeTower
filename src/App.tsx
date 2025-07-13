@@ -130,7 +130,7 @@ function App() {
         <div id="connect-screen">
           <div id="background-visual" />
           <div id="connect-modal">
-            <h1>Ape Tower</h1>
+            <h1>Deng Defense</h1>
             <p>Connect your wallet to enter the jungle.</p>
             <div id="wallet-connect-container"><ConnectButton /></div>
           </div>
@@ -138,7 +138,7 @@ function App() {
       ) : (
         <>
           <div id="navbar">
-            <div id="navbar-title">Ape Tower</div>
+            <div id="navbar-title">Deng Defense</div>
             <div id="spacer" />
             <div id="wallet-button-container">
               <ConnectButton showBalance={false} accountStatus="address" />
