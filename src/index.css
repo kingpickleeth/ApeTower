@@ -479,12 +479,13 @@ textarea {
 /* === Buttons === */
 .button-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   gap: 10px;
-  margin:0 50px;
-  flex-wrap:wrap;
+  flex-wrap: wrap;
+  padding: 0 16px;
   font-family: Outfit !important;
 }
+
 #profile-card button {
   padding: 8px 12px;
   border: none;
