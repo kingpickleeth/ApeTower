@@ -218,117 +218,113 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
   };
   
   if (loading) return <p>Loading profile...</p>;
-
   return (
     <>
-{showErrorModal && (
-  <GameModal
-    message="That username is already taken. Please try another."
-    type="error"
-    onClose={() => setShowErrorModal(null)}
-  />
-)}
+      {showErrorModal && (
+        <GameModal
+          message="That username is already taken. Please try another."
+          type="error"
+          onClose={() => setShowErrorModal(null)}
+        />
+      )}
 
       <div id="profile-card">
         <h2>Your Super Sexy Profile</h2>
-      
- <>
- {/* 🖼️ Clickable Avatar */}
- <label htmlFor="pfp-upload" className="avatar-upload">
-   <img
-     src={pfpUrl || DEFAULT_PFP_URL}
-     alt="pfp"
-     className="avatar-img"
-   />
-   <input
-     id="pfp-upload"
-     type="file"
-     accept="image/*"
-     onChange={handleFileUpload}
-     style={{ display: 'none' }}
-   />
-   <div className="edit-overlay">✏️</div>
- </label>
 
- <span style={{
-   display: 'block',
-   textAlign: 'center',
-   fontSize: '24px',
-   color: '#fff',
-   fontWeight: '600'
- }}>
-   {username || 'Your Username'}
- </span>
+        <>
+          {/* 🖼️ Clickable Avatar */}
+          <label htmlFor="pfp-upload" className="avatar-upload">
+            <img
+              src={pfpUrl || DEFAULT_PFP_URL}
+              alt="pfp"
+              className="avatar-img"
+            />
+            <input
+              id="pfp-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              style={{ display: 'none' }}
+            />
+            <div className="edit-overlay">✏️</div>
+          </label>
 
- {/* 🌿 VINE Balance + Claim */}
- <div className="vine-balance-row" style={{
-   display: 'flex',
-   justifyContent: 'center',
-   alignItems: 'center',
-   gap: '12px',
-   margin: '0'
- }}>
-   <div style={{ fontSize: '18px', color: '#5CFFA3' }}>
-     Game Balance: {vineBalance} $VINE
-   </div>
-   {vineBalance > 0 && (
-     <button
-       onClick={handleClaim}
-       style={{
-         background: '#5CFFA3',
-         color: '#1A1F2B',
-         padding: '6px 12px',
-         borderRadius: '6px',
-         fontWeight: 'bold',
-         cursor: 'pointer'
-       }}
-     >
-       Claim
-     </button>
-   )}
- </div>
+          <span style={{
+            display: 'block',
+            textAlign: 'center',
+            fontSize: '24px',
+            color: '#fff',
+            fontWeight: '600'
+          }}>
+            {username || 'Your Username'}
+          </span>
 
- <div style={{ fontSize: '18px', color: '#5CFFA3', textAlign: 'center', marginTop: '4px' }}>
-   Wallet Balance: {Math.floor(walletVineBalance)} $VINE
- </div>
-</>
+          {/* 🌿 Game Balance + Claim (only if > 0) */}
+          {vineBalance > 0 && (
+            <div className="vine-balance-row" style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '12px',
+              margin: '0'
+            }}>
+              <div style={{ fontSize: '18px', color: '#5CFFA3' }}>
+                Game Balance: {vineBalance} $VINE
+              </div>
+              <button
+                onClick={handleClaim}
+                style={{
+                  background: '#5CFFA3',
+                  color: '#1A1F2B',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                Claim
+              </button>
+            </div>
+          )}
 
+          {/* 💼 Wallet Balance (only if > 0) */}
+          {walletVineBalance > 0 && (
+            <div style={{ fontSize: '18px', color: '#5CFFA3', textAlign: 'center', marginTop: '4px' }}>
+              Wallet Balance: {Math.floor(walletVineBalance)} $VINE
+            </div>
+          )}
+        </>
 
-
-  
         <div className="form-group">
           <label htmlFor="username">Username:</label>
           <input
-  id="username"
-  value={username}
-  onChange={(e) => {
-    setUsername(e.target.value);
-    setHasEditedUsername(true); // ✅ User has now typed something
-  }}
-  placeholder="Enter your name"
-/>
-{!username.trim() ? (
-  <div style={{ color: '#1A1F2B', marginTop: '4px' }}>
-    Username is required.
-  </div>
-) : checkingUsername ? (
-  <div style={{ color: '#3CDFFF', marginTop: '4px' }}>
-    Checking availability...
-  </div>
-) : usernameTaken ? (
-  <div style={{ color: '#1A1F2B', marginTop: '4px' }}>
-    That username is already taken.
-  </div>
-) : profile?.username === username.trim() ? null : (
-  <div style={{ color: '#00B3FF', marginTop: '4px' }}>
-    ✅ That username is available!
-  </div>
-)}
-
-
+            id="username"
+            value={username}
+            onChange={(e) => {
+              setUsername(e.target.value);
+              setHasEditedUsername(true);
+            }}
+            placeholder="Enter your name"
+          />
+          {!username.trim() ? (
+            <div style={{ color: '#1A1F2B', marginTop: '4px' }}>
+              Username is required.
+            </div>
+          ) : checkingUsername ? (
+            <div style={{ color: '#3CDFFF', marginTop: '4px' }}>
+              Checking availability...
+            </div>
+          ) : usernameTaken ? (
+            <div style={{ color: '#1A1F2B', marginTop: '4px' }}>
+              That username is already taken.
+            </div>
+          ) : profile?.username === username.trim() ? null : (
+            <div style={{ color: '#00B3FF', marginTop: '4px' }}>
+              ✅ That username is available!
+            </div>
+          )}
         </div>
-  
-  
+
         <div className="form-group">
           <label htmlFor="bio">Bio:</label>
           <textarea
@@ -341,17 +337,19 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
           />
           <small style={{ color: '#DFFBFF' }}>{bio.length}/100 characters</small>
         </div>
+
         <div className="button-row">
           {onClose && (
-  <button className="close-btn" onClick={onClose}>
-    ❌ Close
-  </button>
-)}
-<button className="save-btn" onClick={saveProfile}>
+            <button className="close-btn" onClick={onClose}>
+              ❌ Close
+            </button>
+          )}
+          <button className="save-btn" onClick={saveProfile}>
             💾 Save
           </button>
         </div>
       </div>
     </>
-  );  
+  );
+
 }
