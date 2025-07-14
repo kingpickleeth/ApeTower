@@ -204,7 +204,8 @@ html, body, #root {
   border: 2px solid #00B3FF;
   border-radius: 24px;
   padding: 48px 60px;
-  box-shadow: 0 0 30px rgba(42, 255, 132, 0.15), 0 0 80px rgba(0, 179, 255, 0.1);
+  box-shadow: 0 0 30px rgba(0, 179, 255, 0.15), 0 0 80px rgba(0, 179, 255, 0.1);
+
   backdrop-filter: blur(10px);
   text-align: center;
   color: #DFFBFF;

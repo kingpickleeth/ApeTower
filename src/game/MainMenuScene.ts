@@ -19,22 +19,41 @@ export default class MainMenuScene extends Phaser.Scene {
   create() {
     const centerX = Math.round(this.cameras.main.centerX);
     const centerY = Math.round(this.cameras.main.centerY);
-    
-    if ((window as any).ethereum) {
-        (window as any).ethereum.on('accountsChanged', (accounts: string[]) => {
-          if (accounts.length > 0) {
-            (window as any).connectedWalletAddress = accounts[0];
+    const trySetupWalletListeners = () => {
+        const eth = (window as any).ethereum;
+        if (!eth) return;
+      
+        if (!eth._hasSetupDengListeners) {
+          eth._hasSetupDengListeners = true; // Prevent double-adding
+      
+          eth.on('accountsChanged', (accounts: string[]) => {
+            (window as any).connectedWalletAddress = accounts[0] || null;
             console.log('🔄 Wallet changed to:', accounts[0]);
-          } else {
-            // User fully disconnected their wallet
-            (window as any).connectedWalletAddress = null;
-          }
-        });
-      }
-      (window as any).ethereum.on('chainChanged', (chainId: string) => {
-        console.log('🌐 Chain changed to:', chainId);
-        window.location.reload(); // 🔁 safest fallback to reset app state
-      });
+          });
+      
+          eth.on('chainChanged', (chainId: string) => {
+            console.log('🌐 Chain changed to:', chainId);
+            window.location.reload();
+          });
+      
+          // If already connected, set it
+          eth.request({ method: 'eth_accounts' }).then((accounts: string[]) => {
+            if (accounts.length > 0) {
+              (window as any).connectedWalletAddress = accounts[0];
+              console.log('✅ Wallet pre-connected:', accounts[0]);
+            }
+          }).catch(console.error);
+        }
+      };
+      
+      // 👀 Re-attempt setup until Ethereum is injected
+      const walletCheckInterval = setInterval(() => {
+        if ((window as any).ethereum) {
+          trySetupWalletListeners();
+          clearInterval(walletCheckInterval); // ✅ done
+        }
+      }, 300); // Poll every 300ms until found
+      
       
     // 1. 🔤 Title
     const title = this.add.text(centerX, centerY - 140, 'Deng Defense', {
