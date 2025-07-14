@@ -2,7 +2,7 @@ import './index.css';
 import GameCanvas from './components/GameCanvas';
 import ProfileEditor from './components/ProfileEditor';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount } from 'wagmi';
+import { useAccount, } from 'wagmi';
 import { useEffect, useState } from 'react';
 import { JsonRpcProvider, Wallet, Contract, parseUnits, getAddress } from 'ethers';
 import { getProfile } from './utils/profile';
