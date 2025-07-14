@@ -1612,12 +1612,22 @@ const playAgainBtn = this.createStyledButton(
   'Play Again',
   0x00B3FF,
   () => {
-    [victoryOverlay, victoryPopupBg, victoryText, vineAmount, vineMessage, playAgainBtn, mainMenuBtn].forEach(e => e.destroy());this.canSelectTile = true;this.towers.forEach(tower => tower.setInteractive());
+    // 💾 Save first, like Game Over
+    console.log('📦 Attempting to save vine from victory (play again)...');
+    if (this.walletAddress && this.vineBalance > 0) {
+      window.dispatchEvent(new CustomEvent('save-vine', {
+        detail: { amount: this.vineBalance }
+      }));
+    }
 
+    [victoryOverlay, victoryPopupBg, victoryText, vineAmount, vineMessage, playAgainBtn, mainMenuBtn].forEach(e => e.destroy());
+    this.canSelectTile = true;
+    this.towers.forEach(tower => tower.setInteractive());
     this.restartGame();
   },
-  0x3CDFFF // 🟡 Hover green
+  0x3CDFFF
 );
+
 
 // 🏠 Main Menu (same amber)
 const mainMenuBtn = this.createStyledButton(
@@ -1626,10 +1636,18 @@ const mainMenuBtn = this.createStyledButton(
   'Main Menu',
   0x00B3FF,
   () => {
+    console.log('📦 Attempting to save vine from victory (main menu)...');
+    if (this.walletAddress && this.vineBalance > 0) {
+      window.dispatchEvent(new CustomEvent('save-vine', {
+        detail: { amount: this.vineBalance }
+      }));
+    }
+
     window.location.reload();
   },
   0x3CDFFF
 );
+
 
 }  
 
