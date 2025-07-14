@@ -4,8 +4,7 @@ import { uploadPfp } from '../utils/storage';
 import GameModal from './GameModal'; // 👈 Add this at the top
 import { updateVineBalance } from '../utils/profile'; // ⬅️ Make sure this exists
 import { getProfileByUsername } from '../utils/profile';
-import { BrowserProvider,JsonRpcProvider, Contract, formatUnits } from 'ethers'; // 🔁 Update this import!
-
+import { JsonRpcProvider, Contract, formatUnits } from 'ethers';
 import VINE_ABI from '../abis/VineToken.json'; // create this if needed
 
 
@@ -20,7 +19,7 @@ const retryUntilBalanceUpdates = async (
   retries = 5,
   delay = 7000
 ) => {
-  const provider = new BrowserProvider(window.ethereum);
+  const provider = new JsonRpcProvider(FALLBACK_RPC);
   const contract = new Contract(VINE_CONTRACT, VINE_ABI, provider);
 
   for (let i = 0; i < retries; i++) {
@@ -65,9 +64,7 @@ interface Props {
   const fetchWalletBalance = async () => {
     if (!window.ethereum || !walletAddress) return;
   
-    const provider = window.ethereum
-    ? new BrowserProvider(window.ethereum)
-    : new JsonRpcProvider(FALLBACK_RPC); // 🔁 fallback for mobile
+    const provider = new JsonRpcProvider(FALLBACK_RPC);
     const contract = new Contract(VINE_CONTRACT, VINE_ABI, provider);
   
     try {
