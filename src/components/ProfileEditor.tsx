@@ -11,6 +11,32 @@ import VINE_ABI from '../abis/VineToken.json'; // create this if needed
 
 const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/PFP.svg';
 const VINE_CONTRACT = '0xe6027e786e2Ef799316aFabAE84E072cA73AA97f';
+const retryUntilBalanceUpdates = async (
+  walletAddress: string,
+  prevBalance: number,
+  setWalletVineBalance: (val: number) => void,
+  retries = 5,
+  delay = 7000
+) => {
+  const provider = new BrowserProvider(window.ethereum);
+  const contract = new Contract(VINE_CONTRACT, VINE_ABI, provider);
+
+  for (let i = 0; i < retries; i++) {
+    console.log(`⏳ Retry ${i + 1}/${retries}...`);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    const raw = await contract.balanceOf(walletAddress);
+    const formatted = parseFloat(formatUnits(raw, 18));
+
+    if (formatted !== prevBalance) {
+      console.log(`🎉 Wallet balance updated: ${formatted}`);
+      setWalletVineBalance(formatted);
+      return;
+    } else {
+      console.log(`🕵️ Still stale (${formatted}), retrying...`);
+    }
+  }
+  console.warn("⚠️ Gave up after retries — balance may still be stale.");
+};
 
 interface Props {
   walletAddress: string;
@@ -33,6 +59,7 @@ interface Props {
   const [showErrorModal, setShowErrorModal] = useState<string | null>(null);
   const [usernameTaken, setUsernameTaken] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);  
+  const [hasEditedUsername, setHasEditedUsername] = useState(false);
   const fetchWalletBalance = async () => {
     if (!window.ethereum || !walletAddress) return;
   
@@ -44,11 +71,15 @@ interface Props {
         blockTag: 'latest'
       });
       const formatted = parseFloat(formatUnits(rawBalance, 18));
-      setWalletVineBalance(formatted);
+      console.log("💰 fetched balance:", formatted);
+
+      // 🔁 Force state update even if value doesn't change
+      setWalletVineBalance(prev => (formatted !== prev ? formatted : prev + 0.000001));
     } catch (err) {
       console.error('Error fetching wallet VINE:', err);
     }
   };
+  
   
   useEffect(() => {
     async function fetch() {
@@ -69,30 +100,31 @@ interface Props {
   }, [walletAddress]);
   
   useEffect(() => {
-    if (!username || username.trim().length === 0) {
-      setUsernameTaken(false); // Reset when field is empty
+    if (!hasEditedUsername || !username.trim()) {
+      setUsernameTaken(false);
       return;
     }
   
     const timeout = setTimeout(async () => {
       setCheckingUsername(true);
-      const otherProfile = await getProfileByUsername(username); // 👈 You'll add this helper
+      const otherProfile = await getProfileByUsername(username);
+  
       if (otherProfile) {
         if (otherProfile.wallet_address !== walletAddress) {
-          setUsernameTaken(true); // Taken by someone else
+          setUsernameTaken(true);
         } else {
-          // It's your own username — neither taken nor available
           setUsernameTaken(false);
         }
       } else {
-        setUsernameTaken(false); // Available
+        setUsernameTaken(false);
       }
-      
+  
       setCheckingUsername(false);
-    }, 500); // debounce
+    }, 500);
   
     return () => clearTimeout(timeout);
-  }, [username, walletAddress]);
+  }, [username, walletAddress, hasEditedUsername]);
+  
   useEffect(() => {
     const handler = () => {
       fetchWalletBalance(); // 🔁 Refresh onchain balance after tx confirms
@@ -101,15 +133,17 @@ interface Props {
     window.addEventListener("vine-claimed-onchain", handler);
     return () => window.removeEventListener("vine-claimed-onchain", handler);
   }, []);
-  
   useEffect(() => {
     const onBalanceUpdate = () => {
-      fetchWalletBalance(); // ✅ Updates exactly when tx is confirmed
+      console.log("📥 Received vine-wallet-balance-update");
+      retryUntilBalanceUpdates(walletAddress, walletVineBalance, setWalletVineBalance);
     };
   
     window.addEventListener("vine-wallet-balance-update", onBalanceUpdate);
     return () => window.removeEventListener("vine-wallet-balance-update", onBalanceUpdate);
-  }, []);
+  }, [walletVineBalance, walletAddress]);
+  
+  
   
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -166,8 +200,7 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
     } else {
       setVineBalance(0); // ✅ Update UI immediately
       console.log("✅ Vine claimed and reset");
-      setTimeout(fetchWalletBalance, 6000); // ⏱️ wait 4s to give the chain time to update
-      await fetchWalletBalance(); // ✅ This is what updates the wallet UI
+     await fetchWalletBalance(); // ✅ This is what updates the wallet UI
 
     }
   };
@@ -253,11 +286,14 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
         <div className="form-group">
           <label htmlFor="username">Username:</label>
           <input
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter your name"
-          />
+  id="username"
+  value={username}
+  onChange={(e) => {
+    setUsername(e.target.value);
+    setHasEditedUsername(true); // ✅ User has now typed something
+  }}
+  placeholder="Enter your name"
+/>
 {!username.trim() ? (
   <div style={{ color: '#1A1F2B', marginTop: '4px' }}>
     Username is required.
