@@ -19,23 +19,22 @@ export default class MainMenuScene extends Phaser.Scene {
   create() {
     const centerX = Math.round(this.cameras.main.centerX);
     const centerY = Math.round(this.cameras.main.centerY);
-    window.addEventListener('load', () => {
-        const eth = (window as any).ethereum;
-        if (eth) {
-          eth.on('accountsChanged', (accounts: string[]) => {
-            (window as any).connectedWalletAddress = accounts[0] || null;
+    
+    if ((window as any).ethereum) {
+        (window as any).ethereum.on('accountsChanged', (accounts: string[]) => {
+          if (accounts.length > 0) {
+            (window as any).connectedWalletAddress = accounts[0];
             console.log('🔄 Wallet changed to:', accounts[0]);
-          });
-      
-          eth.on('chainChanged', (chainId: string) => {
-            console.log('🌐 Chain changed to:', chainId);
-            window.location.reload();
-          });
-        } else {
-          console.warn('⚠️ Ethereum provider not found. Are you on a mobile browser without MetaMask?');
-        }
+          } else {
+            // User fully disconnected their wallet
+            (window as any).connectedWalletAddress = null;
+          }
+        });
+      }
+      (window as any).ethereum.on('chainChanged', (chainId: string) => {
+        console.log('🌐 Chain changed to:', chainId);
+        window.location.reload(); // 🔁 safest fallback to reset app state
       });
-      
       
     // 1. 🔤 Title
     const title = this.add.text(centerX, centerY - 140, 'Deng Defense', {
@@ -108,15 +107,11 @@ export default class MainMenuScene extends Phaser.Scene {
         let wallet = (window as any).connectedWalletAddress;
       
         // ⛔ If wallet is undefined, request connection
-        if (!wallet && (window as any).ethereum) { try {
+        if (!wallet && (window as any).ethereum) {
           const provider = new BrowserProvider((window as any).ethereum);
           const accounts = await provider.send('eth_requestAccounts', []);
           wallet = accounts[0];
           (window as any).connectedWalletAddress = wallet; // store for later use
-        }catch (err) {
-            console.warn('❌ Wallet connection failed:', err);
-            return;
-          }
         }
       
         if (!wallet) {
@@ -386,13 +381,13 @@ noThanksButton.on('pointerover', () => {
     });
   });
   noThanksButton.on('pointerout', () => {
-    this.tweens.add({
-      targets: noThanksButton,
-      scale: 1,
-      duration: 150,
-      ease: 'Power2'
-    });
+  this.tweens.add({
+    targets: noThanksButton,
+    scale: 1,
+    duration: 150,
+    ease: 'Power2'
   });
+});
   
 // Hover Effects (same as other buttons)
 closeButtonBg.on('pointerover', () => {
