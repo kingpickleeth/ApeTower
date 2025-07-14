@@ -121,31 +121,37 @@ export default class MainMenuScene extends Phaser.Scene {
       buttonBg.setFillStyle(0x007AC6) // 🔷 deep brand blue);
       buttonBg.setScale(1);
       buttonText.setColor('#1A1F2B');
-    });
-    buttonBg.on('pointerdown', async () => {
-        let wallet = (window as any).connectedWalletAddress;
-      
-        // ⛔ If wallet is undefined, request connection
-        if (!wallet && (window as any).ethereum) {
-          const provider = new BrowserProvider((window as any).ethereum);
-          const accounts = await provider.send('eth_requestAccounts', []);
-          wallet = accounts[0];
-          (window as any).connectedWalletAddress = wallet; // store for later use
-        }
-      
-        if (!wallet) {
-          console.warn('No wallet connected');
+    });buttonBg.on('pointerdown', async () => {
+        const eth = (window as any).ethereum;
+        if (!eth) {
+          alert('Wallet not detected.');
           return;
         }
       
-        const ownsDeng = await this.hasDeng(wallet);
+        try {
+          const provider = new BrowserProvider(eth);
+          const accounts = await provider.send('eth_requestAccounts', []);
+          const wallet = accounts[0];
+          (window as any).connectedWalletAddress = wallet;
       
-        if (!ownsDeng) {
-          showSupportPopup();
-        } else {
-          this.scene.start('MainScene');
+          if (!wallet) {
+            console.warn('⚠️ No wallet returned after request');
+            return;
+          }
+      
+          const ownsDeng = await this.hasDeng(wallet);
+      
+          if (!ownsDeng) {
+            showSupportPopup();
+          } else {
+            this.scene.start('MainScene');
+          }
+        } catch (err) {
+          console.error('❌ Wallet connection failed:', err);
+          alert('Could not connect wallet.');
         }
       });
+      
       
 
     // 3. 📜 Rules Button
