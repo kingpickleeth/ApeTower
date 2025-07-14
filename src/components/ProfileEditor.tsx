@@ -4,8 +4,13 @@ import { uploadPfp } from '../utils/storage';
 import GameModal from './GameModal'; // 👈 Add this at the top
 import { updateVineBalance } from '../utils/profile'; // ⬅️ Make sure this exists
 import { getProfileByUsername } from '../utils/profile';
+import { BrowserProvider, Contract, formatUnits } from 'ethers'; // 🔁 Update this import!
+
+import VINE_ABI from '../abis/VineToken.json'; // create this if needed
+
 
 const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/PFP.svg';
+const VINE_CONTRACT = '0xe6027e786e2Ef799316aFabAE84E072cA73AA97f';
 
 interface Props {
   walletAddress: string;
@@ -22,12 +27,29 @@ interface Props {
   const [bio, setBio] = useState('');
   const [vineBalance, setVineBalance] = useState<number>(0);
   const [profile, setProfile] = useState<any | null>(null);
-
+  
+  const [walletVineBalance, setWalletVineBalance] = useState<number>(0);
 
   const [showErrorModal, setShowErrorModal] = useState<string | null>(null);
   const [usernameTaken, setUsernameTaken] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);  
-
+  const fetchWalletBalance = async () => {
+    if (!window.ethereum || !walletAddress) return;
+  
+    const provider = new BrowserProvider(window.ethereum);
+    const contract = new Contract(VINE_CONTRACT, VINE_ABI, provider);
+  
+    try {
+      const rawBalance = await contract.balanceOf(walletAddress, {
+        blockTag: 'latest'
+      });
+      const formatted = parseFloat(formatUnits(rawBalance, 18));
+      setWalletVineBalance(formatted);
+    } catch (err) {
+      console.error('Error fetching wallet VINE:', err);
+    }
+  };
+  
   useEffect(() => {
     async function fetch() {
       const profile = await getProfile(walletAddress);
@@ -42,7 +64,10 @@ interface Props {
     }
     fetch();
   }, [walletAddress]);
-
+  useEffect(() => {
+    fetchWalletBalance();
+  }, [walletAddress]);
+  
   useEffect(() => {
     if (!username || username.trim().length === 0) {
       setUsernameTaken(false); // Reset when field is empty
@@ -68,7 +93,23 @@ interface Props {
   
     return () => clearTimeout(timeout);
   }, [username, walletAddress]);
+  useEffect(() => {
+    const handler = () => {
+      fetchWalletBalance(); // 🔁 Refresh onchain balance after tx confirms
+    };
   
+    window.addEventListener("vine-claimed-onchain", handler);
+    return () => window.removeEventListener("vine-claimed-onchain", handler);
+  }, []);
+  
+  useEffect(() => {
+    const onBalanceUpdate = () => {
+      fetchWalletBalance(); // ✅ Updates exactly when tx is confirmed
+    };
+  
+    window.addEventListener("vine-wallet-balance-update", onBalanceUpdate);
+    return () => window.removeEventListener("vine-wallet-balance-update", onBalanceUpdate);
+  }, []);
   
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -125,6 +166,9 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
     } else {
       setVineBalance(0); // ✅ Update UI immediately
       console.log("✅ Vine claimed and reset");
+      setTimeout(fetchWalletBalance, 6000); // ⏱️ wait 4s to give the chain time to update
+      await fetchWalletBalance(); // ✅ This is what updates the wallet UI
+
     }
   };
   
@@ -179,8 +223,7 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
       gap: '12px',
       margin: '0'
     }}>
-      <div style={{ fontSize: '16px', color: '#5CFFA3' }}>
-        🌿 {vineBalance} $VINE
+      <div style={{ fontSize: '16px', color: '#5CFFA3' }}>{vineBalance} $VINE
       </div>
       {vineBalance > 0 && (
   <button
@@ -196,9 +239,13 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
   >
     Claim
   </button>
+  
 )}
 
     </div>
+    <div style={{ fontSize: '18px', color: '#5CFFA3', textAlign: 'center', marginTop: '4px' }}>
+    Wallet Balance: {Math.floor(walletVineBalance)} $VINE
+</div>
   </>
 )}
 

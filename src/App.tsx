@@ -67,7 +67,15 @@ function App() {
         txRequest.gasLimit = 70_000n;
         txRequest.maxFeePerGas = parseUnits("30", "gwei");
         const sentTx = await wallet.sendTransaction(txRequest);
-        await sentTx.wait();
+await sentTx.wait();
+setTimeout(() => {
+  window.dispatchEvent(new Event("vine-wallet-balance-update"));
+}, 4000); // wait 3s after mining before querying balance
+window.dispatchEvent(new Event("vine-wallet-balance-update"));
+
+        // ✅ Dispatch wallet update event after tx confirmation
+window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
+
         setModalMessage(
           `Nice work Big Dawg!You just claimed ${amount} $VINE!<br /><a href="https://apescan.io/tx/${sentTx.hash}" target="_blank" style="color:#2ecc71;text-decoration:underline;">View on ApeScan</a><br /><br />Don't spend it all in one place 😉`
         );        
