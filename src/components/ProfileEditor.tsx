@@ -266,7 +266,7 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
       gap: '12px',
       margin: '0'
     }}>
-      <div style={{ fontSize: '16px', color: '#5CFFA3' }}>{vineBalance} $VINE
+      <div style={{ fontSize: '18px', color: '#5CFFA3' }}>Game Balance: {vineBalance} $VINE
       </div>
       {vineBalance > 0 && (
   <button
