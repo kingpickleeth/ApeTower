@@ -4,13 +4,15 @@ import { uploadPfp } from '../utils/storage';
 import GameModal from './GameModal'; // 👈 Add this at the top
 import { updateVineBalance } from '../utils/profile'; // ⬅️ Make sure this exists
 import { getProfileByUsername } from '../utils/profile';
-import { BrowserProvider, Contract, formatUnits } from 'ethers'; // 🔁 Update this import!
+import { BrowserProvider,JsonRpcProvider, Contract, formatUnits } from 'ethers'; // 🔁 Update this import!
 
 import VINE_ABI from '../abis/VineToken.json'; // create this if needed
 
 
 const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/PFP.svg';
 const VINE_CONTRACT = '0xe6027e786e2Ef799316aFabAE84E072cA73AA97f';
+const FALLBACK_RPC = "https://rpc.apechain.com"; // or your custom node
+
 const retryUntilBalanceUpdates = async (
   walletAddress: string,
   prevBalance: number,
@@ -63,7 +65,9 @@ interface Props {
   const fetchWalletBalance = async () => {
     if (!window.ethereum || !walletAddress) return;
   
-    const provider = new BrowserProvider(window.ethereum);
+    const provider = window.ethereum
+    ? new BrowserProvider(window.ethereum)
+    : new JsonRpcProvider(FALLBACK_RPC); // 🔁 fallback for mobile
     const contract = new Contract(VINE_CONTRACT, VINE_ABI, provider);
   
     try {
