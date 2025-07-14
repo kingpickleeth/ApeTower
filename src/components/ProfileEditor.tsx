@@ -99,42 +99,44 @@ interface Props {
   useEffect(() => {
     fetchWalletBalance();
   }, [walletAddress]);
-  
-  useEffect(() => {
-    if (!hasEditedUsername || !username.trim()) {
-      setUsernameTaken(false);
-      return;
-    }
-    useEffect(() => {
-      const handler = () => {
-        console.log("📱 App returned to foreground. Refetching wallet balance...");
-        fetchWalletBalance();
-      };
-    
-      document.addEventListener("visibilitychange", handler);
-      return () => document.removeEventListener("visibilitychange", handler);
-    }, []);
-    
-    const timeout = setTimeout(async () => {
-      setCheckingUsername(true);
-      const otherProfile = await getProfileByUsername(username);
-  
-      if (otherProfile) {
-        if (otherProfile.wallet_address !== walletAddress) {
-          setUsernameTaken(true);
-        } else {
-          setUsernameTaken(false);
-        }
+  // 🌱 Refetch username availability when edited
+useEffect(() => {
+  if (!hasEditedUsername || !username.trim()) {
+    setUsernameTaken(false);
+    return;
+  }
+
+  const timeout = setTimeout(async () => {
+    setCheckingUsername(true);
+    const otherProfile = await getProfileByUsername(username);
+
+    if (otherProfile) {
+      if (otherProfile.wallet_address !== walletAddress) {
+        setUsernameTaken(true);
       } else {
         setUsernameTaken(false);
       }
-  
-      setCheckingUsername(false);
-    }, 500);
-  
-    return () => clearTimeout(timeout);
-  }, [username, walletAddress, hasEditedUsername]);
-  
+    } else {
+      setUsernameTaken(false);
+    }
+
+    setCheckingUsername(false);
+  }, 500);
+
+  return () => clearTimeout(timeout);
+}, [username, walletAddress, hasEditedUsername]);
+
+// ✅ Move this into its own top-level useEffect
+useEffect(() => {
+  const handler = () => {
+    console.log("📱 App returned to foreground. Refetching wallet balance...");
+    fetchWalletBalance();
+  };
+
+  document.addEventListener("visibilitychange", handler);
+  return () => document.removeEventListener("visibilitychange", handler);
+}, []);
+
   useEffect(() => {
     const handler = () => {
       fetchWalletBalance(); // 🔁 Refresh onchain balance after tx confirms
@@ -229,68 +231,69 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
 
       <div id="profile-card">
         <h2>Your Super Sexy Profile</h2>
-        {pfpUrl && (
-  <>
-  {/* 🖼️ Clickable Avatar */}
-  <label htmlFor="pfp-upload" className="avatar-upload">
-    <img
-      src={pfpUrl || DEFAULT_PFP_URL}
-      alt="pfp"
-      className="avatar-img"
-    />
-    <input
-      id="pfp-upload"
-      type="file"
-      accept="image/*"
-      onChange={handleFileUpload}
-      style={{ display: 'none' }}
-    />
-    <div className="edit-overlay">✏️</div>
-  </label>
+      
+ <>
+ {/* 🖼️ Clickable Avatar */}
+ <label htmlFor="pfp-upload" className="avatar-upload">
+   <img
+     src={pfpUrl || DEFAULT_PFP_URL}
+     alt="pfp"
+     className="avatar-img"
+   />
+   <input
+     id="pfp-upload"
+     type="file"
+     accept="image/*"
+     onChange={handleFileUpload}
+     style={{ display: 'none' }}
+   />
+   <div className="edit-overlay">✏️</div>
+ </label>
 
-  <span  style={{
-    display: 'block',
-    textAlign: 'center',
-    fontSize: '24px',
-    color: '#fff',
-    fontWeight: '600' // ← Add this
-  }}
->
-    {username || 'Your Username'}
-  </span>
-    {/* 🌿 VINE Balance + Claim */}
-    <div className="vine-balance-row" style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      gap: '12px',
-      margin: '0'
-    }}>
-      <div style={{ fontSize: '18px', color: '#5CFFA3' }}>Game Balance: {vineBalance} $VINE
-      </div>
-      {vineBalance > 0 && (
-  <button
-    onClick={handleClaim}
-    style={{
-      background: '#5CFFA3',
-      color: '#1A1F2B',
-      padding: '6px 12px',
-      borderRadius: '6px',
-      fontWeight: 'bold',
-      cursor: 'pointer'
-    }}
-  >
-    Claim
-  </button>
-  
-)}
+ <span style={{
+   display: 'block',
+   textAlign: 'center',
+   fontSize: '24px',
+   color: '#fff',
+   fontWeight: '600'
+ }}>
+   {username || 'Your Username'}
+ </span>
 
-    </div>
-    <div style={{ fontSize: '18px', color: '#5CFFA3', textAlign: 'center', marginTop: '4px' }}>
-    Wallet Balance: {Math.floor(walletVineBalance)} $VINE
-</div>
-  </>
-)}
+ {/* 🌿 VINE Balance + Claim */}
+ <div className="vine-balance-row" style={{
+   display: 'flex',
+   justifyContent: 'center',
+   alignItems: 'center',
+   gap: '12px',
+   margin: '0'
+ }}>
+   <div style={{ fontSize: '18px', color: '#5CFFA3' }}>
+     Game Balance: {vineBalance} $VINE
+   </div>
+   {vineBalance > 0 && (
+     <button
+       onClick={handleClaim}
+       style={{
+         background: '#5CFFA3',
+         color: '#1A1F2B',
+         padding: '6px 12px',
+         borderRadius: '6px',
+         fontWeight: 'bold',
+         cursor: 'pointer'
+       }}
+     >
+       Claim
+     </button>
+   )}
+ </div>
+
+ <div style={{ fontSize: '18px', color: '#5CFFA3', textAlign: 'center', marginTop: '4px' }}>
+   Wallet Balance: {Math.floor(walletVineBalance)} $VINE
+ </div>
+</>
+
+
 
   
         <div className="form-group">
