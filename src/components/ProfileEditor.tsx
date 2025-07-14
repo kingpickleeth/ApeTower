@@ -104,7 +104,16 @@ interface Props {
       setUsernameTaken(false);
       return;
     }
-  
+    useEffect(() => {
+      const handler = () => {
+        console.log("📱 App returned to foreground. Refetching wallet balance...");
+        fetchWalletBalance();
+      };
+    
+      document.addEventListener("visibilitychange", handler);
+      return () => document.removeEventListener("visibilitychange", handler);
+    }, []);
+    
     const timeout = setTimeout(async () => {
       setCheckingUsername(true);
       const otherProfile = await getProfileByUsername(username);
