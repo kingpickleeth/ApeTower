@@ -6,7 +6,10 @@ import { BrowserProvider, Contract, parseEther } from 'ethers';
 export default class MainMenuScene extends Phaser.Scene {
   constructor() {
     super('MainMenuScene');
+  }init(data: { walletAddress: string }) {
+    (window as any).connectedWalletAddress = data.walletAddress;
   }
+  
   async hasDeng(wallet: string): Promise<boolean> {
     const DENG_CONTRACT = '0x2cf92fe634909a9cf5e41291f54e5784d234cf8d';
     const DENG_ABI = ['function balanceOf(address) view returns (uint256)'];
@@ -134,11 +137,13 @@ export default class MainMenuScene extends Phaser.Scene {
           const wallet = accounts[0];
           (window as any).connectedWalletAddress = wallet;
       
+
           if (!wallet) {
-            console.warn('⚠️ No wallet returned after request');
+            console.warn('⚠️ No wallet connected');
+            alert('Please connect your wallet before starting.');
             return;
           }
-      
+          
           const ownsDeng = await this.hasDeng(wallet);
       
           if (!ownsDeng) {
