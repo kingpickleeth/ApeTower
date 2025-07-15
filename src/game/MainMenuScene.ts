@@ -128,17 +128,53 @@ export default class MainMenuScene extends Phaser.Scene {
         }
       });
       
+    // 2.5 🚩 Campaign Mode Button
+    const campaignButtonBg = this.add.rectangle(centerX, centerY + 80, 200, 60, 0x00B3FF, 1)
+      .setOrigin(0.5)
+      .setStrokeStyle(2, 0x00B3FF)
+      .setInteractive({ useHandCursor: true })
+      .setAlpha(0);
+
+    const campaignButtonText = this.add.text(centerX, centerY + 80, 'Campaign Mode', {
+      fontFamily: 'Outfit',
+      fontSize: '28px',
+      color: '#1A1F2B'
+    }).setOrigin(0.5).setAlpha(0);
+
+    this.tweens.add({
+      targets: [campaignButtonBg, campaignButtonText],
+      alpha: 1,
+      duration: 500,
+      ease: 'Power2',
+      delay: 400,
+    });
+
+    campaignButtonBg.on('pointerover', () => {
+      campaignButtonBg.setFillStyle(0x3CDFFF);
+      campaignButtonBg.setScale(1.05);
+      campaignButtonText.setColor('#1A1F2B');
+    });
+
+    campaignButtonBg.on('pointerout', () => {
+      campaignButtonBg.setFillStyle(0x007AC6);
+      campaignButtonBg.setScale(1);
+      campaignButtonText.setColor('#1A1F2B');
+    });
+
+    campaignButtonBg.on('pointerdown', () => {
+      this.scene.start('CampaignScene');
+    });
 
     // 3. 📜 Rules Button
  // 📜 Rules Button (now fully matches Start Game style)
 // 📜 Rules Button
-const rulesButtonBg = this.add.rectangle(centerX, centerY + 100, 200, 60, 0x00B3FF, 1)
+const rulesButtonBg = this.add.rectangle(centerX, centerY + 160, 200, 60, 0x00B3FF, 1)
   .setOrigin(0.5)
   .setStrokeStyle(2, 0x00B3FF)
   .setInteractive({ useHandCursor: true })
   .setAlpha(0); // <== important for fade in
 
-const rulesButtonText = this.add.text(centerX, centerY + 100, 'The Rules', {
+const rulesButtonText = this.add.text(centerX, centerY + 160, 'The Rules', {
   fontFamily: 'Outfit',
   fontSize: '28px',
   color: '#1A1F2B',

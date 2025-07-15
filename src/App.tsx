@@ -8,7 +8,7 @@ import { JsonRpcProvider, Wallet, Contract, parseUnits, getAddress } from 'ether
 import { getProfile } from './utils/profile';
 import GameModal from './components/GameModal';
 import { updateVineBalance, upgradeCampaignLevel } from './utils/profile'; // ✅ Make sure this is at the top
-import { supabase } from './lib/supabaseClient';
+
 
 const VINE_TOKEN = "0xe6027e786e2ef799316afabae84e072ca73aa97f";
 const APECHAIN_RPC = "https://apechain.calderachain.xyz/http";
