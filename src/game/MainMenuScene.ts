@@ -6,10 +6,7 @@ import { BrowserProvider, Contract, parseEther } from 'ethers';
 export default class MainMenuScene extends Phaser.Scene {
   constructor() {
     super('MainMenuScene');
-  }init(data: { walletAddress: string }) {
-    (window as any).connectedWalletAddress = data.walletAddress;
   }
-  
   async hasDeng(wallet: string): Promise<boolean> {
     const DENG_CONTRACT = '0x2cf92fe634909a9cf5e41291f54e5784d234cf8d';
     const DENG_ABI = ['function balanceOf(address) view returns (uint256)'];
@@ -22,41 +19,22 @@ export default class MainMenuScene extends Phaser.Scene {
   create() {
     const centerX = Math.round(this.cameras.main.centerX);
     const centerY = Math.round(this.cameras.main.centerY);
-    const trySetupWalletListeners = () => {
-        const eth = (window as any).ethereum;
-        if (!eth) return;
-      
-        if (!eth._hasSetupDengListeners) {
-          eth._hasSetupDengListeners = true; // Prevent double-adding
-      
-          eth.on('accountsChanged', (accounts: string[]) => {
-            (window as any).connectedWalletAddress = accounts[0] || null;
+    
+    if ((window as any).ethereum) {
+        (window as any).ethereum.on('accountsChanged', (accounts: string[]) => {
+          if (accounts.length > 0) {
+            (window as any).connectedWalletAddress = accounts[0];
             console.log('🔄 Wallet changed to:', accounts[0]);
-          });
-      
-          eth.on('chainChanged', (chainId: string) => {
-            console.log('🌐 Chain changed to:', chainId);
-            window.location.reload();
-          });
-      
-          // If already connected, set it
-          eth.request({ method: 'eth_accounts' }).then((accounts: string[]) => {
-            if (accounts.length > 0) {
-              (window as any).connectedWalletAddress = accounts[0];
-              console.log('✅ Wallet pre-connected:', accounts[0]);
-            }
-          }).catch(console.error);
-        }
-      };
-      
-      // 👀 Re-attempt setup until Ethereum is injected
-      const walletCheckInterval = setInterval(() => {
-        if ((window as any).ethereum) {
-          trySetupWalletListeners();
-          clearInterval(walletCheckInterval); // ✅ done
-        }
-      }, 300); // Poll every 300ms until found
-      
+          } else {
+            // User fully disconnected their wallet
+            (window as any).connectedWalletAddress = null;
+          }
+        });
+      }
+      (window as any).ethereum.on('chainChanged', (chainId: string) => {
+        console.log('🌐 Chain changed to:', chainId);
+        window.location.reload(); // 🔁 safest fallback to reset app state
+      });
       
     // 1. 🔤 Title
     const title = this.add.text(centerX, centerY - 140, 'Deng Defense', {
@@ -124,39 +102,31 @@ export default class MainMenuScene extends Phaser.Scene {
       buttonBg.setFillStyle(0x007AC6) // 🔷 deep brand blue);
       buttonBg.setScale(1);
       buttonText.setColor('#1A1F2B');
-    });buttonBg.on('pointerdown', async () => {
-        const eth = (window as any).ethereum;
-        if (!eth) {
-          alert('Wallet not detected.');
+    });
+    buttonBg.on('pointerdown', async () => {
+        let wallet = (window as any).connectedWalletAddress;
+      
+        // ⛔ If wallet is undefined, request connection
+        if (!wallet && (window as any).ethereum) {
+          const provider = new BrowserProvider((window as any).ethereum);
+          const accounts = await provider.send('eth_requestAccounts', []);
+          wallet = accounts[0];
+          (window as any).connectedWalletAddress = wallet; // store for later use
+        }
+      
+        if (!wallet) {
+          console.warn('No wallet connected');
           return;
         }
       
-        try {
-          const provider = new BrowserProvider(eth);
-          const accounts = await provider.send('eth_requestAccounts', []);
-          const wallet = accounts[0];
-          (window as any).connectedWalletAddress = wallet;
+        const ownsDeng = await this.hasDeng(wallet);
       
-
-          if (!wallet) {
-            console.warn('⚠️ No wallet connected');
-            alert('Please connect your wallet before starting.');
-            return;
-          }
-          
-          const ownsDeng = await this.hasDeng(wallet);
-      
-          if (!ownsDeng) {
-            showSupportPopup();
-          } else {
-            this.scene.start('MainScene');
-          }
-        } catch (err) {
-          console.error('❌ Wallet connection failed:', err);
-          alert('Could not connect wallet.');
+        if (!ownsDeng) {
+          showSupportPopup();
+        } else {
+          this.scene.start('MainScene');
         }
       });
-      
       
 
     // 3. 📜 Rules Button
