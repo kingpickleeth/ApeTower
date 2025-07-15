@@ -2,12 +2,14 @@ import './index.css';
 import GameCanvas from './components/GameCanvas';
 import ProfileEditor from './components/ProfileEditor';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { useEffect, useState } from 'react';
 import { JsonRpcProvider, Wallet, Contract, parseUnits, getAddress } from 'ethers';
 import { getProfile } from './utils/profile';
 import GameModal from './components/GameModal';
-import { updateVineBalance } from './utils/profile'; // ✅ Make sure this is at the top
+import { updateVineBalance, upgradeCampaignLevel } from './utils/profile'; // ✅ Make sure this is at the top
+import { supabase } from './lib/supabaseClient';
+
 const VINE_TOKEN = "0xe6027e786e2ef799316afabae84e072ca73aa97f";
 const APECHAIN_RPC = "https://apechain.calderachain.xyz/http";
 const ERC20_ABI = [
@@ -104,21 +106,29 @@ window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
         console.warn('⚠️ Cannot save vine — no connected wallet');
         return;
       }
-  
+    
       try {
         console.log(`💾 Triggered vine save: ${amount} for ${address}`);
         const result = await updateVineBalance(address, amount);
         if (result?.error) {
           console.error('❌ Failed to update vine balance:', result.error);
         }
+    
+        // 🎯 Upgrade campaign level to 2 if needed
+        const levelResult = await upgradeCampaignLevel(address, 2);
+        if (levelResult?.error) {
+          console.error('❌ Failed to update campaign level:', levelResult.error);
+        }
       } catch (err) {
         console.error('🔥 Error in save-vine handler:', err);
       }
     };
+    
   
     window.addEventListener('save-vine', handleSaveVine);
     return () => window.removeEventListener('save-vine', handleSaveVine);
   }, [address]);
+  
   
   useEffect(() => {
     if (!address) return;

@@ -36,6 +36,44 @@ export async function upsertProfile(walletAddress: string, username: string, pfp
     console.log('Upsert succeeded:', data);
     return { data }; // ✅ optional but useful
   }
+  export async function upgradeCampaignLevel(walletAddress: string, targetLevel: number) {
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('profiles')
+        .select('campaign_level')
+        .eq('wallet_address', walletAddress)
+        .single();
+  
+      if (fetchError) {
+        console.error('❌ Error fetching campaign level:', fetchError);
+        return { error: fetchError };
+      }
+  
+      const currentLevel = data?.campaign_level ?? 1;
+  
+      if (currentLevel >= targetLevel) {
+        console.log(`✅ campaign_level already ${currentLevel}, no update needed.`);
+        return { data: currentLevel };
+      }
+  
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ campaign_level: targetLevel })
+        .eq('wallet_address', walletAddress);
+  
+      if (updateError) {
+        console.error('❌ Error updating campaign_level:', updateError);
+        return { error: updateError };
+      }
+  
+      console.log(`🚀 campaign_level upgraded: ${currentLevel} ➡️ ${targetLevel}`);
+      return { data: targetLevel };
+    } catch (e) {
+      console.error('🔥 Exception in upgradeCampaignLevel:', e);
+      return { error: e };
+    }
+  }
+  
   export async function updateVineBalance(walletAddress: string, vineEarned: number) {
     try {
       // 🧠 Step 1: Fetch current total_vine
