@@ -439,9 +439,12 @@ const createCircleButton = (
   return { container, icon };
 };
 
+// Move buttons to the right side
+const buttonX = this.cameras.main.width - marginX;
+
 // 🟢 Pause Button (Toggle)
 let isPaused = this.isPaused;
-const { icon: pauseIcon } = createCircleButton(marginX, marginY - spacingY * 2, '⏸', () => {
+const { icon: pauseIcon } = createCircleButton.call(this, buttonX + 6, marginY - 5 - spacingY * 2, '⏸', () => {
   isPaused = !isPaused;
   this.isPaused = isPaused;
   pauseIcon.setText(isPaused ? '▶️' : '⏸');
@@ -468,13 +471,13 @@ const { icon: pauseIcon } = createCircleButton(marginX, marginY - spacingY * 2, 
 });
 
 // 🔁 Restart Button
-createCircleButton(marginX, marginY - spacingY, '⟳', () => {
+createCircleButton.call(this, buttonX + 6, marginY - 6 - spacingY, '⟳', () => {
   this.restartGame();
 });
 
 // 🎵 Music Toggle Button
 let isMusicMuted = this.isMusicMuted;
-const { icon: musicIcon } = createCircleButton(marginX, marginY, '🔈', async () => {
+const { icon: musicIcon } = createCircleButton.call(this, buttonX + 6, marginY - 6, '🔈', async () => {
   isMusicMuted = !isMusicMuted;
   this.isMusicMuted = isMusicMuted;
   musicIcon.setText(isMusicMuted ? '🔇' : '🔈');
@@ -493,12 +496,11 @@ const { icon: musicIcon } = createCircleButton(marginX, marginY, '🔈', async (
 
 // 🔊 SFX Toggle Button
 let isSfxMuted = this.isSfxMuted;
-const { icon: sfxIcon } = createCircleButton(marginX, marginY + spacingY, '🔔', () => {
+const { icon: sfxIcon } = createCircleButton.call(this, buttonX + 6, marginY - 6 + spacingY, '🔔', () => {
   isSfxMuted = !isSfxMuted;
   this.isSfxMuted = isSfxMuted;
   sfxIcon.setText(isSfxMuted ? '🔕' : '🔔');
 });
-
 
 }
 updateLivesDisplay(livesLeft: number) {
