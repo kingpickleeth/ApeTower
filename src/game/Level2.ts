@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-export default class MainScene extends Phaser.Scene {
+export default class Level2 extends Phaser.Scene {
 
   // ---------------------------------------------------------------------------
   // 📦 Core Game Objects
@@ -21,16 +21,16 @@ export default class MainScene extends Phaser.Scene {
   canSelectTile: boolean = true;
   claimButton?: Phaser.GameObjects.Container;
   canSpawnEnemies: boolean = false;
-  MAX_WAVE: number = 10;
+  MAX_WAVE: number = 15;
   walletAddress: string = '';
   totalEnemiesKilledByPhysics = 0;
   totalEnemiesDestroyed = 0;
   heartIcons: Phaser.GameObjects.Text[] = [];
-  levelNumber: number = 1; // default, can be overridden
+  levelNumber: number = 2; // default, can be overridden
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
-  vineBalance: number = 40; // Starting VINE
+  vineBalance: number = 60; // Starting VINE
   currentEnemyHP: Partial<Record<string, number>> = {};
   currentEnemyReward: Partial<Record<string, number>> = {};  
   vineText!: Phaser.GameObjects.Text;
@@ -74,7 +74,7 @@ export default class MainScene extends Phaser.Scene {
   // 🛠️ Constructor
   // ---------------------------------------------------------------------------
   constructor() {
-    super('MainScene');
+    super('Level2');
   }
  
   // ---------------------------------------------------------------------------
@@ -137,7 +137,7 @@ export default class MainScene extends Phaser.Scene {
   // ---------------------------------------------------------------------------
   create() {
     
-  console.log('✅ MainScene created');
+  console.log('✅ Level2 created');
   const screenWidth = Number(this.game.config.width);
   const screenHeight = Number(this.game.config.height);
   const mapWidth = this.mapCols * this.tileSize;
@@ -200,10 +200,17 @@ this.load.start();
   circle.destroy();
   // 🛤️ Define path through tile grid
   const pathTiles = [
-    [0, 0], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [2, 6], [3, 6],
-    [3, 5], [3, 4], [3, 3], [3, 2], [3, 1], [4, 1], [5, 1], [5, 2], [5, 3], [5, 4],
-    [5, 5], [5, 6], [6, 6], [7, 6], [7, 5], [7, 4], [7, 3], [7, 2], [7, 1], [8, 1], [9, 1]
+    [0, 3], [1, 3], [2, 3], [3, 3], 
+    [3, 2], [3, 1], 
+    [4, 1], [5, 1], [6, 1],
+    [6, 2], [6, 3], 
+    [7, 3], [8, 3], 
+    [8, 4], [8, 5],
+    [7, 5], [6, 5],
+    [6, 6], [6, 7],
+    [7, 7], [8, 7], [9, 7]
   ];
+  
   // 🧭 Create path curve
   const [startCol, startRow] = pathTiles[0];
   this.path = this.add.path(
@@ -227,7 +234,7 @@ const textStyle = {
 };
 
 // Temporarily create texts offscreen to measure widths
-const vineText = this.add.text(0, 0, '$VINE: 40', textStyle).setScale(0.5);
+const vineText = this.add.text(0, 0, '$VINE: 60', textStyle).setScale(0.5);
 const waveText = this.add.text(0, 0, 'Wave: 1', textStyle).setScale(0.5);
 const livesLabel = this.add.text(0, 0, 'Lives:', textStyle).setScale(0.5);
 
@@ -1120,13 +1127,13 @@ centerY + 75,
 
 
   // 💾 Save vine to Supabase
-
- // 💾 Save vine to Supabase
-console.log('🏆 Saving vine from victory:', this.vineBalance, this.walletAddress);
-if (this.walletAddress && this.vineBalance > 0) {
-  window.dispatchEvent(new CustomEvent('save-vine', {
-    detail: { amount: this.vineBalance }
-  }));
+  console.log('📦 Attempting to save vine...');
+console.log('🌿 vineBalance:', this.vineBalance);
+console.log('👛 walletAddress:', this.walletAddress);
+  if (this.walletAddress && this.vineBalance > 0) {
+    window.dispatchEvent(new CustomEvent('save-vine', {
+      detail: { amount: this.vineBalance }
+    }));
   }
 
   return;
@@ -1283,6 +1290,7 @@ this.enemiesPerWave = queue.length;
 this.currentEnemyHP = config.hp;
 this.currentEnemyReward = config.reward;
 
+
   // 🪧 Wave banner
   const bannerBg = this.add.rectangle(
     Number(this.game.config.width) / 2,
@@ -1390,7 +1398,7 @@ this.towers = []; // Clear tower references
   }
   // 🔁 Reset game values
   this.waveNumber = 0;
-  this.vineBalance = 40;
+  this.vineBalance = 60;
   this.lives = 10;
   this.gameOver = false;
   // 🧾 Reset HUD
@@ -1605,8 +1613,9 @@ if (this.walletAddress && this.vineBalance > 0) {
   window.dispatchEvent(new CustomEvent('save-vine', {
     detail: { amount: this.vineBalance }
   }));
+  console.log('📤 Dispatching level:', 3);
   window.dispatchEvent(new CustomEvent('upgrade-campaign', {
-    detail: { level: 2 } // ⬅️ Since this is MainScene (level 1), victory bumps you to level 2
+    detail: { level: 3 }
   }));
   
 }
@@ -1625,8 +1634,9 @@ const playAgainBtn = this.createStyledButton(
       window.dispatchEvent(new CustomEvent('save-vine', {
         detail: { amount: this.vineBalance }
       }));
+      console.log('📤 Dispatching level:', 3);
       window.dispatchEvent(new CustomEvent('upgrade-campaign', {
-        detail: { level: 2 } // ⬅️ Since this is MainScene (level 1), victory bumps you to level 2
+        detail: { level: 3 }
       }));
       
     }
@@ -1652,8 +1662,9 @@ const mainMenuBtn = this.createStyledButton(
       window.dispatchEvent(new CustomEvent('save-vine', {
         detail: { amount: this.vineBalance }
       }));
+      console.log('📤 Dispatching level:', 3);
       window.dispatchEvent(new CustomEvent('upgrade-campaign', {
-        detail: { level: 2 } // ⬅️ Since this is MainScene (level 1), victory bumps you to level 2
+        detail: { level: 3 }
       }));
       
     }

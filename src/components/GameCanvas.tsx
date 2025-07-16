@@ -13,12 +13,18 @@ const GameCanvas = ({ walletAddress }: { walletAddress: string }) => {
     
       // Wait for scene manager to register scenes
       setTimeout(() => {
-        const mainScene = game?.scene.keys['MainScene'];
-        if (mainScene) {
-          (mainScene as any).walletAddress = walletAddress; // ✅ Inject it manually after scene load
-          (window as any).mainScene = mainScene;
-          console.log('🧠 mainScene attached to window.mainScene');
-        } else {
+        const scenes = game?.scene?.keys;
+if (scenes) {
+  Object.entries(scenes).forEach(([key, scene]: [string, any]) => {
+    if (scene) {
+      scene.walletAddress = walletAddress;
+      console.log(`🧠 ${key} attached with wallet: ${walletAddress}`);
+    }
+  });
+
+  (window as any).mainScene = scenes['MainScene'];
+}
+ else {
           console.warn('⚠️ mainScene not found!');
         }
       }, 500);
@@ -54,7 +60,17 @@ const GameCanvas = ({ walletAddress }: { walletAddress: string }) => {
         overlay.classList.toggle('active', isPortrait || isTooSmall);
       }
     };
+    window.addEventListener('upgrade-campaign', async (e: any) => {
+      const wallet = (window as any).connectedWalletAddress;
+      const targetLevel = e.detail.level;
+      console.log(`🔁 Upgrade event received. Wallet: ${wallet}, Level: ${targetLevel}`);
 
+      if (wallet && targetLevel) {
+        const { upgradeCampaignLevel } = await import('../utils/profile');
+        await upgradeCampaignLevel(wallet, targetLevel);
+      }
+    });
+    
     window.addEventListener('resize', checkOrientation);
     checkOrientation();
 

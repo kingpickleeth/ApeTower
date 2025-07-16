@@ -19,7 +19,8 @@ export default class MainMenuScene extends Phaser.Scene {
   create() {
     const centerX = Math.round(this.cameras.main.centerX);
     const centerY = Math.round(this.cameras.main.centerY);
-    
+    let redirectToCampaign = false;
+
     if ((window as any).ethereum) {
         (window as any).ethereum.on('accountsChanged', (accounts: string[]) => {
           if (accounts.length > 0) {
@@ -60,74 +61,65 @@ export default class MainMenuScene extends Phaser.Scene {
         ease: 'Power2',
       });
       
+// 🧭 Campaign Button
+const campaignButtonBg = this.add.rectangle(centerX, centerY + 20, 200, 60, 0x00B3FF, 1)
+  .setOrigin(0.5)
+  .setStrokeStyle(2, 0x00B3FF)
+  .setInteractive({ useHandCursor: true })
+  .setAlpha(0);
 
-    // 2. 🟩 Start Game Button
-    const buttonBg = this.add.rectangle(centerX, centerY + 20, 200, 60, 0x00B3FF, 1)
-      .setOrigin(0.5)
-      .setStrokeStyle(2, 0x00B3FF)
-      .setInteractive({ useHandCursor: true })
-      .setAlpha(0);
+const campaignButtonText = this.add.text(centerX, centerY + 20, 'Campaign', {
+  fontFamily: 'Outfit',
+  fontSize: '28px',
+  color: '#1A1F2B'
+}).setOrigin(0.5).setAlpha(0);
 
-    const buttonText = this.add.text(centerX, centerY + 20, 'Start Game', {
-      fontFamily: 'Outfit',
-      fontSize: '28px',
-      color: '#1A1F2B'
-    }).setOrigin(0.5).setAlpha(0);
+this.tweens.add({
+  targets: [campaignButtonBg, campaignButtonText],
+  alpha: 1,
+  duration: 500,
+  ease: 'Power2',
+  delay: 400,
+});
 
-    this.tweens.add({
-      targets: [buttonBg, buttonText],
-      alpha: 1,
-      duration: 500,
-      ease: 'Power2',
-      delay: 300,
-    });
+campaignButtonBg.on('pointerover', () => {
+  campaignButtonBg.setFillStyle(0x3CDFFF);
+  campaignButtonBg.setScale(1.05);
+});
+campaignButtonBg.on('pointerout', () => {
+  campaignButtonBg.setFillStyle(0x007AC6);
+  campaignButtonBg.setScale(1);
+});campaignButtonBg.on('pointerdown', async () => {
+    let wallet = (window as any).connectedWalletAddress;
+  
+    // 🪪 Request wallet if not connected
+    if (!wallet && (window as any).ethereum) {
+      const provider = new BrowserProvider((window as any).ethereum);
+      const accounts = await provider.send('eth_requestAccounts', []);
+      wallet = accounts[0];
+      (window as any).connectedWalletAddress = accounts[0]; // preserve casing
+    }
+  
+    if (!wallet) {
+      console.warn('⚠️ Still no wallet after request');
+      return;
+    }
+  
+    // 🧪 Check Deng ownership
+    const ownsDeng = await this.hasDeng(wallet);
+  
+    if (!ownsDeng) {
+      // 🔐 Show the gated support popup (will redirect to campaign)
+      showSupportPopup(true);
+    } else {
+      // ✅ User owns Deng — launch campaign
+      console.log('🎯 Launching CampaignMapScene with wallet:', wallet);
+      this.scene.start('CampaignMapScene', { wallet });
+    }
+  });
+  
+  
 
-    // 💫 Subtle glow pulse on title
-    this.tweens.add({
-      targets: title,
-      scale: { from: 1, to: 1.04 },
-      yoyo: true,
-      repeat: -1,
-      duration: 1500,
-      ease: 'Sine.easeInOut'
-    });
-
-    // 🧠 Hover Effects
-    buttonBg.on('pointerover', () => {
-      buttonBg.setFillStyle(0x3CDFFF);
-      buttonBg.setScale(1.05);
-      buttonText.setColor('#1A1F2B');
-    });
-    buttonBg.on('pointerout', () => {
-      buttonBg.setFillStyle(0x007AC6) // 🔷 deep brand blue);
-      buttonBg.setScale(1);
-      buttonText.setColor('#1A1F2B');
-    });
-    buttonBg.on('pointerdown', async () => {
-        let wallet = (window as any).connectedWalletAddress;
-      
-        // ⛔ If wallet is undefined, request connection
-        if (!wallet && (window as any).ethereum) {
-          const provider = new BrowserProvider((window as any).ethereum);
-          const accounts = await provider.send('eth_requestAccounts', []);
-          wallet = accounts[0];
-          (window as any).connectedWalletAddress = wallet; // store for later use
-        }
-      
-        if (!wallet) {
-          console.warn('No wallet connected');
-          return;
-        }
-      
-        const ownsDeng = await this.hasDeng(wallet);
-      
-        if (!ownsDeng) {
-          showSupportPopup();
-        } else {
-          this.scene.start('MainScene');
-        }
-      });
-      
 
     // 3. 📜 Rules Button
  // 📜 Rules Button (now fully matches Start Game style)
@@ -362,16 +354,21 @@ const or2Text = this.add.text(centerX, centerY + 60,
 const noThanksButton = this.add.rectangle(centerX, centerY + 120, 200, 44, 0xFF4F66, 1)
   .setOrigin(0.5).setStrokeStyle(2, 0xB0304A)
   .setInteractive({ useHandCursor: true }).setDepth(1101).setVisible(false);
-const noThanksText = this.add.text(centerX, centerY + 120, "Nah, I don't do that", {
+const noThanksText = this.add.text(centerX, centerY + 120, "Nah, I wanna play now", {
   fontFamily: 'Outfit',
   fontSize: '18px',
   color: '#1A1F2B'
 }).setOrigin(0.5).setDepth(1101).setVisible(false);
-
 noThanksButton.on('pointerdown', () => {
-  hideSupportPopup();
-  this.scene.start('MainScene');
-});
+    hideSupportPopup();
+    const wallet = (window as any).connectedWalletAddress;
+    if (redirectToCampaign) {
+      this.scene.start('CampaignMapScene', { wallet });
+    } else {
+      this.scene.start('MainScene', { wallet });
+    }
+  });
+  
 noThanksButton.on('pointerover', () => {
     this.tweens.add({
       targets: noThanksButton,
@@ -416,7 +413,8 @@ closeButtonText.setColor('#1A1F2B');
         rulesText.setVisible(false);
         closeButtonBg.setVisible(false);
         closeButtonText.setVisible(false);
-      });const showSupportPopup = () => {
+      });const showSupportPopup = (campaign = false) => {
+        redirectToCampaign = campaign; // ✅ this line resolves the warning
         modalBlocker.setVisible(true);
         supportModal.setVisible(true);
         supportText.setVisible(true);

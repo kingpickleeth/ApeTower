@@ -4,7 +4,7 @@ export async function getProfile(walletAddress: string) {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
-    .eq('wallet_address', walletAddress)
+    .ilike('wallet_address', walletAddress)
     .single();
 
   if (error) console.error('Error fetching profile:', error);
@@ -37,50 +37,50 @@ export async function upsertProfile(walletAddress: string, username: string, pfp
     return { data }; // ✅ optional but useful
   }
   export async function upgradeCampaignLevel(walletAddress: string, targetLevel: number) {
-    try {
-      const { data, error: fetchError } = await supabase
-        .from('profiles')
-        .select('campaign_level')
-        .eq('wallet_address', walletAddress)
-        .single();
-  
-      if (fetchError) {
-        console.error('❌ Error fetching campaign level:', fetchError);
-        return { error: fetchError };
-      }
-  
-      const currentLevel = data?.campaign_level ?? 1;
-  
-      if (currentLevel >= targetLevel) {
-        console.log(`✅ campaign_level already ${currentLevel}, no update needed.`);
-        return { data: currentLevel };
-      }
-  
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ campaign_level: targetLevel })
-        .eq('wallet_address', walletAddress);
-  
-      if (updateError) {
-        console.error('❌ Error updating campaign_level:', updateError);
-        return { error: updateError };
-      }
-  
-      console.log(`🚀 campaign_level upgraded: ${currentLevel} ➡️ ${targetLevel}`);
-      return { data: targetLevel };
-    } catch (e) {
-      console.error('🔥 Exception in upgradeCampaignLevel:', e);
-      return { error: e };
+  try {
+    const { data, error: fetchError } = await supabase
+      .from('profiles')
+      .select('campaign_level')
+      .ilike('wallet_address', walletAddress)
+      .single();
+
+    if (fetchError) {
+      console.error('❌ Error fetching campaign level:', fetchError);
+      return { error: fetchError };
     }
+
+    const currentLevel = data?.campaign_level ?? 1;
+
+    if (currentLevel >= targetLevel) {
+      console.log(`✅ campaign_level already ${currentLevel}, no update needed.`);
+      return { data: currentLevel };
+    }
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ campaign_level: targetLevel })
+      .ilike('wallet_address', walletAddress);
+
+    if (updateError) {
+      console.error('❌ Error updating campaign_level:', updateError);
+      return { error: updateError };
+    }
+
+    console.log(`🚀 campaign_level upgraded: ${currentLevel} ➡️ ${targetLevel}`);
+    return { data: targetLevel };
+  } catch (e) {
+    console.error('🔥 Exception in upgradeCampaignLevel:', e);
+    return { error: e };
   }
-  
+}
+
   export async function updateVineBalance(walletAddress: string, vineEarned: number) {
     try {
       // 🧠 Step 1: Fetch current total_vine
       const { data: profile, error: fetchError } = await supabase
         .from('profiles')
         .select('total_vine')
-        .eq('wallet_address', walletAddress)
+        .ilike('wallet_address', walletAddress)
         .single();
   
       if (fetchError) {
@@ -97,7 +97,7 @@ export async function upsertProfile(walletAddress: string, username: string, pfp
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ total_vine: newBalance })
-        .eq('wallet_address', walletAddress);
+        .ilike('wallet_address', walletAddress);
   
       if (updateError) {
         console.error('❌ Error updating vine balance:', updateError);
@@ -115,7 +115,7 @@ export async function upsertProfile(walletAddress: string, username: string, pfp
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('username', username)
+      .ilike('username', username)
       .single();
   
     if (error) {

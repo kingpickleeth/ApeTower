@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import MainScene from './MainScene';
 import MainMenuScene from './MainMenuScene';
+import CampaignMapScene from './CampaignMapScene';
+import Level2 from './Level2';
 
 const scale = window.devicePixelRatio || 1;
 
@@ -27,7 +29,7 @@ const GameConfig: HighResGameConfig = {
     width: 800,
     height: 600
   },
-  scene: [MainMenuScene, MainScene],
+  scene: [MainMenuScene, CampaignMapScene, MainScene, Level2],
   physics: {
     default: 'arcade',
     arcade: {
