@@ -269,25 +269,40 @@ this.heartIcons = [];
 for (let i = 0; i < 10; i++) {
   const col = i % 5;
   const row = Math.floor(i / 5);
-  const heart = this.add.text(
-    startX + col * heartSpacing,
-    hudY + row * 18 - 4,
-    '❤️',
-    { fontSize: '20px' }
-  )
-  .setInteractive({ useHandCursor: false })
-  .on('pointerover', () => {
-    this.tweens.add({
-      targets: heart,
-      y: heart.y - 8,
-      ease: 'Sine.easeOut',
-      duration: 100,
-      yoyo: true
-    });
+  const x = startX + col * heartSpacing;
+  const y = hudY + row * 18 - 4;
+
+  const heart = this.add.text(x, y, '❤️', { fontSize: '20px' })
+    .setInteractive()
+    .setAlpha(1)
+    .setData('originalY', y);
+
+  heart.on('pointerover', () => {
+    if (heart.alpha === 1) { // Only bounce if it's a live heart
+      // Kill existing tween if still bouncing
+      if (heart.getData('bounceTween')) {
+        heart.getData('bounceTween').remove();
+      }
+
+      const bounceTween = this.tweens.add({
+        targets: heart,
+        y: y - 6,
+        duration: 100,
+        ease: 'Power1',
+        yoyo: true,
+        onComplete: () => {
+          heart.setY(y); // 🔁 Force reset to exact Y
+          heart.setData('bounceTween', null);
+        }
+      });
+
+      heart.setData('bounceTween', bounceTween);
+    }
   });
 
   this.heartIcons.push(heart);
 }
+
 
 // Assign text objects for updates
 this.vineText = vineText;
@@ -611,9 +626,12 @@ const { icon: sfxIcon } = createCircleButton.call(this, buttonX + 6, marginY - 6
 }
 updateLivesDisplay(livesLeft: number) {
   this.heartIcons.forEach((heart, i) => {
-    heart.setAlpha(i < livesLeft ? 1 : 0.2);
+    const isAlive = i < livesLeft;
+    heart.setAlpha(isAlive ? 1 : 0.2);
+    heart.y = heart.getData('originalY'); // 🔥 Always reset to original Y
   });
 }
+
 createStyledButton(
   x: number,
   y: number,

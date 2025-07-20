@@ -267,25 +267,27 @@ this.heartIcons = [];
 for (let i = 0; i < 10; i++) {
   const col = i % 5;
   const row = Math.floor(i / 5);
-  const heart = this.add.text(
-    startX + col * heartSpacing,
-    hudY + row * 18 - 4,
-    '❤️',
-    { fontSize: '20px' }
-  )
-  .setInteractive({ useHandCursor: false })
-  .on('pointerover', () => {
-    this.tweens.add({
-      targets: heart,
-      y: heart.y - 8,
-      ease: 'Sine.easeOut',
-      duration: 100,
-      yoyo: true
+  const x = startX + col * heartSpacing;
+  const y = hudY + row * 18 - 4;
+
+  const heart = this.add.text(x, y, '❤️', { fontSize: '20px' })
+    .setInteractive({ useHandCursor: false })
+    .setData('originalY', y) // 🔵 Save original Y
+    .on('pointerover', () => {
+      if (heart.alpha === 1) {
+        this.tweens.add({
+          targets: heart,
+          y: heart.getData('originalY') - 8,
+          ease: 'Sine.easeOut',
+          duration: 100,
+          yoyo: true
+        });
+      }
     });
-  });
 
   this.heartIcons.push(heart);
 }
+
 
 // Assign text objects for updates
 this.vineText = vineText;
@@ -612,9 +614,12 @@ const { icon: sfxIcon } = createCircleButton.call(this, buttonX + 6, marginY - 6
 }
 updateLivesDisplay(livesLeft: number) {
   this.heartIcons.forEach((heart, i) => {
-    heart.setAlpha(i < livesLeft ? 1 : 0.2);
+    const isAlive = i < livesLeft;
+    heart.setAlpha(isAlive ? 1 : 0.2);
+    heart.y = heart.getData('originalY'); // 🔥 Always reset to original Y
   });
 }
+
 
 createStyledButton(
   x: number,
