@@ -176,6 +176,7 @@ rulesButtonBg.on('pointerdown', () => {
   modalBlocker.setVisible(true);
   modalBg.setVisible(true);
   rulesText.setVisible(true);
+  rulesTitle.setVisible(true);
   closeButtonBg.setVisible(true);
   closeButtonText.setVisible(true);
 });
@@ -188,24 +189,43 @@ const modalBlocker = this.add.rectangle(0, 0, this.scale.width, this.scale.heigh
 
 
     // 4. 🧾 Rules Modal (initially hidden)
-    const modalBg = this.add.rectangle(centerX, centerY, 500, 300, 0x1A1F2B, .98)
+    const modalBg = this.add.rectangle(centerX, centerY, 500, 600, 0x1A1F2B, .98)
       .setStrokeStyle(2, 0x00B3FF)
       .setOrigin(0.5).setDepth(1000)
       .setVisible(false);
-
-    const rulesText = this.add.text(centerX, centerY, `Don't be a pussy. Get in there and get your hands dirty 😈`, {
-      fontFamily: 'Outfit',
-      fontSize: '16px',
-      color: '#DFFBFF',
-      align: 'center',
-      wordWrap: { width: 460 }
-    })
-      .setOrigin(0.5).setDepth(1001)
+      const rulesTitle = this.add.text(centerX, centerY - 265, '📜 How to Play Deng Defense 📜', {
+        fontFamily: 'Outfit',
+        fontSize: '20px',
+        fontStyle: 'bold',
+        color: '#DFFBFF',
+        align: 'center',
+      })
+      .setOrigin(0.5)
+      .setDepth(1001)
       .setVisible(false);
-
+      
+      const rulesText = this.add.text(centerX, centerY, 
+        `1. Defend The Motherland!\nThe Smoove Brains are trying to sneak by you and destory DengLand. Your mission is to stop them before they reach the end!\n\n` +
+        `2. Build & Upgrade Towers\nYou are't helpless. Click green tiles to build different towers. Then click on those towers to upgrade their strength/range.\n\n` +
+        `3. Earn $VINE\nDestroy enemies to earn $VINE and spend it to build/upgrade. Whatever $VINE you end the round with, gets added to your profile\n\n` +
+        `4. Enemies Get Tougher\nEnemies get faster and tankier with each wave. Each level has more and more waves. You must survive all waves.\n\n` +
+        `5. You Have 10 Lives ❤️\nEach escaped enemy costs 1 life. Lose all = Game Over.\n\n` +
+        `6. Claim Glory\nYou can go to your profile to claim your $VINE anytime you'd like. This sends it to your wallet automatically (onchain)`,
+        {
+          fontFamily: 'Outfit',
+          fontSize: '16px',
+          color: '#DFFBFF',
+          align: 'left',
+          wordWrap: { width: 460 }
+        }
+      )
+      .setOrigin(0.5)
+      .setDepth(1001)
+      .setVisible(false);
+      
     // ❌ Close Button on Rules Modal (styled like Start Game & Rules)
   // ❌ Close Button (styled to match red theme with animation)
-const closeButtonBg = this.add.rectangle(centerX, centerY + 110, 140, 44, 0xFF4F66, 1)
+const closeButtonBg = this.add.rectangle(centerX, centerY + 260, 140, 44, 0xFF4F66, 1)
 .setOrigin(0.5)
 .setStrokeStyle(2, 0xffffff)
 .setInteractive({ useHandCursor: true })
@@ -213,7 +233,7 @@ const closeButtonBg = this.add.rectangle(centerX, centerY + 110, 140, 44, 0xFF4F
 .setScale(1)
 .setVisible(false);
 
-const closeButtonText = this.add.text(centerX, centerY + 110, '🆇 Close', {
+const closeButtonText = this.add.text(centerX, centerY + 260, '🆇 Close', {
 fontFamily: 'Outfit',
 fontSize: '20px',
 color: '#ffffff'
@@ -441,6 +461,7 @@ closeButtonBg.on('pointerout', () => {
         modalBlocker.setVisible(true);
         modalBg.setVisible(true);
         rulesText.setVisible(true);
+        rulesTitle.setVisible(true);
         closeButtonBg.setVisible(true);
         closeButtonText.setVisible(true);
       });
@@ -448,6 +469,7 @@ closeButtonBg.on('pointerout', () => {
         modalBlocker.setVisible(false);
         modalBg.setVisible(false);
         rulesText.setVisible(false);
+        rulesTitle.setVisible(false);
         closeButtonBg.setVisible(false);
         closeButtonText.setVisible(false);
       });
