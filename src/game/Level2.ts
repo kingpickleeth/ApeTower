@@ -427,7 +427,7 @@ const createCircleButton = (
     color: '#00B3FF',
     resolution: window.devicePixelRatio || 1
   }).setOrigin(0.5)
-    .setDepth(1000);
+    .setDepth(1001);
 
   const container = this.add.container(x, y, [circle, icon])
     .setSize(buttonRadius * 2, buttonRadius * 2)
@@ -436,32 +436,106 @@ const createCircleButton = (
     .setInteractive(
       new Phaser.Geom.Circle(20, 20, buttonRadius),
       Phaser.Geom.Circle.Contains
-    )
-    .on('pointerdown', onClick)
-    .on('pointerover', () => {
-      this.tweens.add({
-        targets: container,
-        scale: 1.1,
-        duration: 150,
-        ease: 'Power2'
-      });
-    })
-    .on('pointerout', () => {
-      this.tweens.add({
-        targets: container,
-        scale: 1,
-        duration: 150,
-        ease: 'Power2'
-      });
+    );
+
+  // 🖱 Hover scale
+  container.on('pointerover', () => {
+    this.tweens.add({
+      targets: container,
+      scale: 1.1,
+      duration: 150,
+      ease: 'Power2'
     });
+  });
+
+  // ❌ Exit hover
+  container.on('pointerout', () => {
+    this.tweens.add({
+      targets: container,
+      scale: 1,
+      duration: 150,
+      ease: 'Power2'
+    });
+  });
+
+  // 👆 Click squish + fire
+  container.on('pointerdown', () => {
+    this.tweens.add({
+      targets: container,
+      scale: 0.95,
+      duration: 80,
+      ease: 'Power1',
+      yoyo: true,
+      onComplete: onClick
+    });
+  });
 
   return { container, icon };
 };
 
+
 // Move buttons to the right side
 const buttonX = this.cameras.main.width - marginX;
+// 🧭 Main Menu Button (blue, rounded, text-based, above pause button)
+const menuButtonSize = 48;
+const menuButtonBg = this.add.rectangle(
+  buttonX + 6,
+  marginY - 5 - spacingY * 3,
+  menuButtonSize,
+  menuButtonSize,
+  0x00B3FF // 🔵 Matching blue button color
+)
+  .setStrokeStyle(2, 0xffffff)
+  .setOrigin(0.5)
+  .setDepth(1000)
+  .setInteractive({ useHandCursor: true });
 
-// 🟢 Pause Button (Toggle)
+// Add "Menu" label directly
+this.add.text(
+  buttonX + 6,
+  marginY - 5 - spacingY * 3,
+  'Menu',
+  {
+    fontFamily: 'Outfit',
+    fontSize: '14px',
+    color: '#1A1F2B', // 🖋️ readable dark text on blue
+    align: 'center'
+  }
+)
+  .setOrigin(0.5)
+  .setDepth(1001);
+
+// 🔁 Hover animation
+menuButtonBg.on('pointerover', () => {
+  this.tweens.add({
+    targets: menuButtonBg,
+    scale: 1.1,
+    duration: 150,
+    ease: 'Power2'
+  });
+});
+menuButtonBg.on('pointerout', () => {
+  this.tweens.add({
+    targets: menuButtonBg,
+    scale: 1,
+    duration: 150,
+    ease: 'Power2'
+  });
+});
+
+// 👆 Click squish + go to menu
+menuButtonBg.on('pointerdown', () => {
+  this.tweens.add({
+    targets: menuButtonBg,
+    scale: 0.95,
+    duration: 80,
+    ease: 'Power1',
+    yoyo: true,
+    onComplete: () => {
+      this.scene.start('MainMenuScene');
+    }
+  });
+});// 🟢 Pause Button (Toggle)
 let isPaused = this.isPaused;
 const { icon: pauseIcon } = createCircleButton.call(this, buttonX + 6, marginY - 5 - spacingY * 2, '⏸', () => {
   isPaused = !isPaused;
