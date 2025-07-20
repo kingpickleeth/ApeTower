@@ -275,38 +275,38 @@ for (let i = 0; i < 10; i++) {
   const row = Math.floor(i / 5);
   const x = startX + col * heartSpacing;
   const y = hudY + row * 18 - 4;
-
   const heart = this.add.text(x, y, '❤️', { fontSize: '20px' })
-    .setInteractive()
-    .setAlpha(1)
-    .setData('originalY', y);
-
-  heart.on('pointerover', () => {
-    if (heart.alpha === 1) { // Only bounce if it's a live heart
-      // Kill existing tween if still bouncing
-      if (heart.getData('bounceTween')) {
-        heart.getData('bounceTween').remove();
-      }
-
-      const bounceTween = this.tweens.add({
+  .setInteractive({ useHandCursor: false })
+  .setData('originalY', y)
+  .on('pointerover', () => {
+    if (heart.alpha === 1) {
+      this.tweens.killTweensOf(heart); // 🔪 Kill any existing tweens first
+      this.tweens.add({
         targets: heart,
-        y: y - 6,
+        y: heart.getData('originalY') - 8,
+        ease: 'Sine.easeOut',
         duration: 100,
-        ease: 'Power1',
         yoyo: true,
         onComplete: () => {
-          heart.setY(y); // 🔁 Force reset to exact Y
-          heart.setData('bounceTween', null);
+          heart.setY(heart.getData('originalY')); // 🧲 Force reset
         }
       });
-
-      heart.setData('bounceTween', bounceTween);
+    }
+  })
+  .on('pointerout', () => {
+    if (heart.alpha === 1 && heart.y !== heart.getData('originalY')) {
+      this.tweens.killTweensOf(heart);
+      this.tweens.add({
+        targets: heart,
+        y: heart.getData('originalY'),
+        ease: 'Sine.easeInOut',
+        duration: 80
+      });
     }
   });
 
-  this.heartIcons.push(heart);
+this.heartIcons.push(heart);
 }
-
 
 // Assign text objects for updates
 this.vineText = vineText;

@@ -271,21 +271,36 @@ for (let i = 0; i < 10; i++) {
   const y = hudY + row * 18 - 4;
 
   const heart = this.add.text(x, y, '❤️', { fontSize: '20px' })
-    .setInteractive({ useHandCursor: false })
-    .setData('originalY', y) // 🔵 Save original Y
-    .on('pointerover', () => {
-      if (heart.alpha === 1) {
-        this.tweens.add({
-          targets: heart,
-          y: heart.getData('originalY') - 8,
-          ease: 'Sine.easeOut',
-          duration: 100,
-          yoyo: true
-        });
-      }
-    });
+  .setInteractive({ useHandCursor: false })
+  .setData('originalY', y)
+  .on('pointerover', () => {
+    if (heart.alpha === 1) {
+      this.tweens.killTweensOf(heart); // 🔪 Kill any existing tweens first
+      this.tweens.add({
+        targets: heart,
+        y: heart.getData('originalY') - 8,
+        ease: 'Sine.easeOut',
+        duration: 100,
+        yoyo: true,
+        onComplete: () => {
+          heart.setY(heart.getData('originalY')); // 🧲 Force reset
+        }
+      });
+    }
+  })
+  .on('pointerout', () => {
+    if (heart.alpha === 1 && heart.y !== heart.getData('originalY')) {
+      this.tweens.killTweensOf(heart);
+      this.tweens.add({
+        targets: heart,
+        y: heart.getData('originalY'),
+        ease: 'Sine.easeInOut',
+        duration: 80
+      });
+    }
+  });
 
-  this.heartIcons.push(heart);
+this.heartIcons.push(heart);
 }
 
 
