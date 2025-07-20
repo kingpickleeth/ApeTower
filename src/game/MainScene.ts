@@ -1439,18 +1439,18 @@ if (this.walletAddress && this.vineBalance > 0) {
   this.enemiesSpawned = 0;
   this.enemiesKilled = 0;
   // 📦 Generate enemy queue
-  // 📦 Use explicit wave config
+// ✅ Full Wave Progression for Level 1
 const waveConfig = [
-  { total: 5,  mix: { normal: 1.0 },                           hp: { normal: 5 },       reward: { normal: 4 } },
-  { total: 6,  mix: { normal: 1.0 },                           hp: { normal: 5 },       reward: { normal: 5 } },
-  { total: 8,  mix: { normal: 0.75, fast: 0.25 },              hp: { normal: 5, fast: 4 }, reward: { normal: 5, fast: 6 } },
-  { total: 9,  mix: { normal: 0.6, fast: 0.4 },                hp: { normal: 5, fast: 4 }, reward: { normal: 6, fast: 7 } },
-  { total: 10, mix: { normal: 0.6, fast: 0.3, tank: 0.1 },     hp: { normal: 5, fast: 4, tank: 18 }, reward: { normal: 6, fast: 7, tank: 12 } },
-  { total: 12, mix: { normal: 0.5, fast: 0.3, tank: 0.2 },     hp: { normal: 5, fast: 4, tank: 18 }, reward: { normal: 7, fast: 8, tank: 14 } },
-  { total: 14, mix: { normal: 0.4, fast: 0.3, tank: 0.3 },     hp: { normal: 5, fast: 4, tank: 18 }, reward: { normal: 8, fast: 8, tank: 15 } },
-  { total: 16, mix: { normal: 0.3, fast: 0.3, tank: 0.4 },     hp: { normal: 5, fast: 4, tank: 18 }, reward: { normal: 8, fast: 9, tank: 16 } },
-  { total: 18, mix: { normal: 0.2, fast: 0.4, tank: 0.4 },     hp: { normal: 5, fast: 4, tank: 18 }, reward: { normal: 9, fast: 10, tank: 18 } },
-  { total: 20, mix: { fast: 0.2, tank: 0.8 },                  hp: { fast: 4, tank: 18 }, reward: { fast: 10, tank: 20 } }
+  { total: 5,  spawnDelay: 1400, mix: { normal: 1.0 }, hp: { normal: 5 }, reward: { normal: 4 } },
+  { total: 6,  spawnDelay: 1250, mix: { normal: 1.0 }, hp: { normal: 6 }, reward: { normal: 4 } },
+  { total: 7,  spawnDelay: 1150, mix: { normal: 1.0 }, hp: { normal: 6 }, reward: { normal: 4 } },
+  { total: 9,  spawnDelay: 1050, mix: { normal: 0.85, fast: 0.15 }, hp: { normal: 7, fast: 5 }, reward: { normal: 4, fast: 4 } },
+  { total: 11, spawnDelay: 950,  mix: { normal: 0.75, fast: 0.25 }, hp: { normal: 7, fast: 5 }, reward: { normal: 3, fast: 4 } },
+  { total: 12, spawnDelay: 900,  mix: { normal: 0.65, fast: 0.3, tank: 0.05 }, hp: { normal: 8, fast: 6, tank: 16 }, reward: { normal: 3, fast: 4, tank: 6 } },
+  { total: 13, spawnDelay: 850,  mix: { normal: 0.55, fast: 0.4, tank: 0.05 }, hp: { normal: 8, fast: 6, tank: 18 }, reward: { normal: 3, fast: 4, tank: 6 } },
+  { total: 14, spawnDelay: 800,  mix: { normal: 0.5, fast: 0.4, tank: 0.1 }, hp: { normal: 8, fast: 6, tank: 20 }, reward: { normal: 3, fast: 4, tank: 6 } },
+  { total: 15, spawnDelay: 750,  mix: { normal: 0.4, fast: 0.5, tank: 0.1 }, hp: { normal: 8, fast: 6, tank: 22 }, reward: { normal: 3, fast: 4, tank: 6 } },
+  { total: 16, spawnDelay: 700,  mix: { normal: 0.3, fast: 0.6, tank: 0.1 }, hp: { normal: 8, fast: 6, tank: 24 }, reward: { normal: 3, fast: 4, tank: 6 } },
 ];
 
 
@@ -1467,6 +1467,19 @@ for (const [type, ratio] of Object.entries(config.mix)) {
 Phaser.Utils.Array.Shuffle(queue); // Optional: mix it up
 this.enemyQueue = queue;
 this.enemiesPerWave = queue.length;
+// Set spawn interval dynamically from config
+const spawnDelay = Math.max(500, 1500 - this.waveNumber * 100);
+
+if (this.enemySpawnEvent) {
+  this.enemySpawnEvent.remove(false); // Clear previous one
+}
+
+this.enemySpawnEvent = this.time.addEvent({
+  delay: spawnDelay,
+  callback: this.spawnEnemy,
+  callbackScope: this,
+  loop: true,
+});
 
 // Set current HP and rewards for spawnEnemy()
 this.currentEnemyHP = config.hp;
@@ -1588,14 +1601,7 @@ this.towers = []; // Clear tower references
   this.startNextWave();
   this.isPaused = false;
   this.physics.resume();
-  
-  // 🔁 Resume enemy spawns
-  this.enemySpawnEvent = this.time.addEvent({
-    delay: 1000,
-    callback: this.spawnEnemy,
-    callbackScope: this,
-    loop: true,
-  });
+
 }
   // ---------------------------------------------------------------------------
   // 🔼 showUpgradePanel(): Displays tower upgrade UI

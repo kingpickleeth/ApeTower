@@ -1452,6 +1452,19 @@ const waveConfig = [
 
 const config = waveConfig[this.waveNumber - 1] ?? waveConfig[waveConfig.length - 1];
 const queue: string[] = [];
+// Set spawn interval dynamically from config
+const spawnDelay = config.spawnDelay || 1000;
+
+if (this.enemySpawnEvent) {
+  this.enemySpawnEvent.remove(false); // Clear previous one
+}
+
+this.enemySpawnEvent = this.time.addEvent({
+  delay: spawnDelay,
+  callback: this.spawnEnemy,
+  callbackScope: this,
+  loop: true,
+});
 
 for (const [type, ratio] of Object.entries(config.mix)) {
   const count = Math.round(ratio * config.total);
