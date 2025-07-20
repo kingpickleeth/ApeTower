@@ -275,10 +275,21 @@ for (let i = 0; i < 10; i++) {
   const row = Math.floor(i / 5);
   const heart = this.add.text(
     startX + col * heartSpacing,
-    hudY + row * 18 - 4, // offset Y slightly below the label
+    hudY + row * 18 - 4,
     '❤️',
     { fontSize: '20px' }
-  );
+  )
+  .setInteractive({ useHandCursor: false })
+  .on('pointerover', () => {
+    this.tweens.add({
+      targets: heart,
+      y: heart.y - 8,
+      ease: 'Sine.easeOut',
+      duration: 100,
+      yoyo: true
+    });
+  });
+
   this.heartIcons.push(heart);
 }
 
