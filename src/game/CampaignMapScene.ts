@@ -45,7 +45,7 @@ export default class CampaignMapScene extends Phaser.Scene {
       console.warn('⚠️ No wallet passed into CampaignMapScene');
     }
     
-    this.add.text(cx, 60, '📍 Select Your Mission', {
+    this.add.text(cx, 60, 'Select Your Mission', {
       fontSize: '32px',
       fontFamily: 'Outfit',
       color: '#00B3FF'
@@ -59,38 +59,87 @@ export default class CampaignMapScene extends Phaser.Scene {
       const y = startY + (i - 1) * gapY;
 
       const bg = this.add.rectangle(cx, y, 220, 44, isUnlocked ? 0x00B3FF : 0x444444)
-        .setOrigin(0.5)
-        .setStrokeStyle(2, 0xffffff)
-        .setInteractive({ useHandCursor: true })
-        .setAlpha(1);
+  .setOrigin(0.5)
+  .setStrokeStyle(2, 0xffffff)
+  .setInteractive({ useHandCursor: true })
+  .setAlpha(1)
+  .setScale(1);
 
-    this.add.text(cx, y, `Level ${i}`, {
-        fontFamily: 'Outfit',
-        fontSize: '22px',
-        color: isUnlocked ? '#1A1F2B' : '#999'
-      }).setOrigin(0.5);
+this.add.text(cx, y, `Level ${i}`, {
+  fontFamily: 'Outfit',
+  fontSize: '22px',
+  color: isUnlocked ? '#1A1F2B' : '#999'
+}).setOrigin(0.5);
 
-      if (isUnlocked) {
-        bg.on('pointerdown', () => {
-          console.log(`🟢 Starting level ${i}`);
-          const sceneName = LEVEL_SCENES[i] || 'MainScene';
-this.scene.start(sceneName, { level: i });
+if (isUnlocked) {
+  bg.on('pointerdown', () => {
+    console.log(`🟢 Starting level ${i}`);
+    const sceneName = LEVEL_SCENES[i] || 'MainScene';
+    this.scene.start(sceneName, { level: i });
+  });
 
-        });
+  bg.on('pointerover', () => {
+    this.tweens.add({
+      targets: bg,
+      scale: 1.05,
+      duration: 150,
+      ease: 'Power2'
+    });
+    bg.setFillStyle(0x3CDFFF);
+  });
 
-        bg.on('pointerover', () => bg.setFillStyle(0x3CDFFF));
-        bg.on('pointerout', () => bg.setFillStyle(0x00B3FF));
-      }
+  bg.on('pointerout', () => {
+    this.tweens.add({
+      targets: bg,
+      scale: 1,
+      duration: 150,
+      ease: 'Power2'
+    });
+    bg.setFillStyle(0x00B3FF);
+  });
+}
+
     }
 
-    const backBtn = this.add.text(cx, 550, '← Back to Menu', {
-      fontSize: '18px',
-      fontFamily: 'Outfit',
-      color: '#DFFBFF'
-    }).setOrigin(0.5).setInteractive();
+// 🟥 Back to Menu Button (Styled Red with smooth hover)
+const backY = 550;
+const backWidth = 220;
+const backHeight = 44;
 
-    backBtn.on('pointerdown', () => {
-      this.scene.start('MainMenuScene');
-    });
+const backRect = this.add.rectangle(0, 0, backWidth, backHeight, 0xB30000)
+  .setStrokeStyle(2, 0xffffff)
+  .setScale(1);
+
+const backText = this.add.text(0, 0, '← Back to Menu', {
+  fontSize: '18px',
+  fontFamily: 'Outfit',
+  color: '#ffffff'
+}).setOrigin(0.5);
+
+this.add.existing(
+  this.add.container(cx, backY, [backRect, backText])
+    .setSize(backWidth, backHeight)
+    .setInteractive({ useHandCursor: true })
+    .on('pointerdown', () => this.scene.start('MainMenuScene'))
+    .on('pointerover', () => {
+      backRect.setFillStyle(0xFF4D4D);
+      this.tweens.add({
+        targets: backRect,
+        scale: 1.05,
+        duration: 150,
+        ease: 'Power2'
+      });
+    })
+    .on('pointerout', () => {
+      backRect.setFillStyle(0xB30000);
+      this.tweens.add({
+        targets: backRect,
+        scale: 1,
+        duration: 150,
+        ease: 'Power2'
+      });
+    })
+);
+
   }
 }

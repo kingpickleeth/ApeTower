@@ -199,16 +199,10 @@ this.load.start();
   circle.generateTexture('enemy', 20, 20);
   circle.destroy();
   // 🛤️ Define path through tile grid
-  const pathTiles = [
-    [0, 3], [1, 3], [2, 3], [3, 3], 
-    [3, 2], [3, 1], 
-    [4, 1], [5, 1], [6, 1],
-    [6, 2], [6, 3], 
-    [7, 3], [8, 3], 
-    [8, 4], [8, 5],
-    [7, 5], [6, 5],
-    [6, 6], [6, 7],
-    [7, 7], [8, 7], [9, 7]
+ const pathTiles = [
+    [0, 0], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [2, 6], [3, 6],
+    [3, 5], [3, 4], [3, 3], [3, 2], [3, 1], [4, 1], [5, 1], [5, 2], [5, 3], [5, 4],
+    [5, 5], [5, 6], [6, 6], [7, 6], [7, 5], [7, 4], [7, 3], [7, 2], [7, 1], [8, 1], [9, 1]
   ];
   
   // 🧭 Create path curve
@@ -419,15 +413,17 @@ const createCircleButton = (
   onClick: () => void
 ) => {
   const buttonRadius = 24;
+
   const circle = this.add.circle(0, 0, buttonRadius, 0x1A1F2B)
     .setStrokeStyle(2, 0x00B3FF)
     .setDepth(1000);
-    const xOffset = ['⟳', '🔈', '🔇'].includes(emoji) ? 2 : 0;
-    const yOffset = ['⟳'].includes(emoji) ? -2 : 0;
+
+  const xOffset = ['⟳', '🔈', '🔇'].includes(emoji) ? 2 : 0;
+  const yOffset = ['⟳'].includes(emoji) ? -2 : 0;
 
   const icon = this.add.text(xOffset, yOffset, emoji, {
     fontSize: emoji === '⟳' ? '35px' : emoji === '⏸' || emoji === '▶️' ? '26px' : '20px',
- fontFamily: 'Outfit',
+    fontFamily: 'Outfit',
     color: '#00B3FF',
     resolution: window.devicePixelRatio || 1
   }).setOrigin(0.5)
@@ -441,7 +437,23 @@ const createCircleButton = (
       new Phaser.Geom.Circle(20, 20, buttonRadius),
       Phaser.Geom.Circle.Contains
     )
-    .on('pointerdown', onClick);
+    .on('pointerdown', onClick)
+    .on('pointerover', () => {
+      this.tweens.add({
+        targets: container,
+        scale: 1.1,
+        duration: 150,
+        ease: 'Power2'
+      });
+    })
+    .on('pointerout', () => {
+      this.tweens.add({
+        targets: container,
+        scale: 1,
+        duration: 150,
+        ease: 'Power2'
+      });
+    });
 
   return { container, icon };
 };

@@ -60,104 +60,126 @@ export default class MainMenuScene extends Phaser.Scene {
         duration: 600,
         ease: 'Power2',
       });
-      
-// 🧭 Campaign Button
+      // 🧭 Campaign Button (updated with smooth tween hover)
 const campaignButtonBg = this.add.rectangle(centerX, centerY + 20, 200, 60, 0x00B3FF, 1)
-  .setOrigin(0.5)
-  .setStrokeStyle(2, 0x00B3FF)
-  .setInteractive({ useHandCursor: true })
-  .setAlpha(0);
+.setOrigin(0.5)
+.setStrokeStyle(2, 0x00B3FF)
+.setInteractive({ useHandCursor: true })
+.setAlpha(0)
+.setScale(1);
 
 const campaignButtonText = this.add.text(centerX, centerY + 20, 'Campaign', {
-  fontFamily: 'Outfit',
-  fontSize: '28px',
-  color: '#1A1F2B'
+fontFamily: 'Outfit',
+fontSize: '28px',
+color: '#1A1F2B'
 }).setOrigin(0.5).setAlpha(0);
 
+// Fade in
 this.tweens.add({
-  targets: [campaignButtonBg, campaignButtonText],
-  alpha: 1,
-  duration: 500,
-  ease: 'Power2',
-  delay: 400,
+targets: [campaignButtonBg, campaignButtonText],
+alpha: 1,
+duration: 500,
+ease: 'Power2',
+delay: 400,
 });
 
+// Hover effects
 campaignButtonBg.on('pointerover', () => {
-  campaignButtonBg.setFillStyle(0x3CDFFF);
-  campaignButtonBg.setScale(1.05);
+campaignButtonBg.setFillStyle(0x3CDFFF);
+this.tweens.add({
+  targets: campaignButtonBg,
+  scale: 1.05,
+  duration: 150,
+  ease: 'Power2'
+});
 });
 campaignButtonBg.on('pointerout', () => {
-  campaignButtonBg.setFillStyle(0x007AC6);
-  campaignButtonBg.setScale(1);
-});campaignButtonBg.on('pointerdown', async () => {
-    let wallet = (window as any).connectedWalletAddress;
-  
-    // 🪪 Request wallet if not connected
-    if (!wallet && (window as any).ethereum) {
-      const provider = new BrowserProvider((window as any).ethereum);
-      const accounts = await provider.send('eth_requestAccounts', []);
-      wallet = accounts[0];
-      (window as any).connectedWalletAddress = accounts[0]; // preserve casing
-    }
-  
-    if (!wallet) {
-      console.warn('⚠️ Still no wallet after request');
-      return;
-    }
-  
-    // 🧪 Check Deng ownership
-    const ownsDeng = await this.hasDeng(wallet);
-  
-    if (!ownsDeng) {
-      // 🔐 Show the gated support popup (will redirect to campaign)
-      showSupportPopup(true);
-    } else {
-      // ✅ User owns Deng — launch campaign
-      console.log('🎯 Launching CampaignMapScene with wallet:', wallet);
-      this.scene.start('CampaignMapScene', { wallet });
-    }
-  });
-  
-  
+campaignButtonBg.setFillStyle(0x007AC6);
+this.tweens.add({
+  targets: campaignButtonBg,
+  scale: 1,
+  duration: 150,
+  ease: 'Power2'
+});
+});
 
+// Click behavior
+campaignButtonBg.on('pointerdown', async () => {
+let wallet = (window as any).connectedWalletAddress;
 
-    // 3. 📜 Rules Button
- // 📜 Rules Button (now fully matches Start Game style)
-// 📜 Rules Button
+if (!wallet && (window as any).ethereum) {
+  const provider = new BrowserProvider((window as any).ethereum);
+  const accounts = await provider.send('eth_requestAccounts', []);
+  wallet = accounts[0];
+  (window as any).connectedWalletAddress = accounts[0];
+}
+
+if (!wallet) {
+  console.warn('⚠️ Still no wallet after request');
+  return;
+}
+
+const ownsDeng = await this.hasDeng(wallet);
+
+if (!ownsDeng) {
+  showSupportPopup(true);
+} else {
+  console.log('🎯 Launching CampaignMapScene with wallet:', wallet);
+  this.scene.start('CampaignMapScene', { wallet });
+}
+});// 📜 Rules Button (updated with smooth tween hover)
 const rulesButtonBg = this.add.rectangle(centerX, centerY + 100, 200, 60, 0x00B3FF, 1)
   .setOrigin(0.5)
   .setStrokeStyle(2, 0x00B3FF)
   .setInteractive({ useHandCursor: true })
-  .setAlpha(0); // <== important for fade in
+  .setAlpha(0)
+  .setScale(1);
 
 const rulesButtonText = this.add.text(centerX, centerY + 100, 'The Rules', {
   fontFamily: 'Outfit',
   fontSize: '28px',
   color: '#1A1F2B',
-  resolution: 2 // <== 👈 crisp on HiDPI
-}).setOrigin(0.5).setAlpha(0); // <== important for fade in
+  resolution: 2
+}).setOrigin(0.5).setAlpha(0);
 
-// 🌀 Fade-in Tween (matches Start Game)
+// Fade in
 this.tweens.add({
   targets: [rulesButtonBg, rulesButtonText],
   alpha: 1,
   duration: 500,
   ease: 'Power2',
-  delay: 300, // match Start Game or change to 400 for a staggered look
+  delay: 300
 });
 
-
-// 🎯 Hover Effects — matches Start Game
+// Hover effects
 rulesButtonBg.on('pointerover', () => {
-rulesButtonBg.setFillStyle(0x3CDFFF);
-rulesButtonBg.setScale(1.05);
-rulesButtonText.setColor('#1A1F2B');
+  rulesButtonBg.setFillStyle(0x3CDFFF);
+  this.tweens.add({
+    targets: rulesButtonBg,
+    scale: 1.05,
+    duration: 150,
+    ease: 'Power2'
+  });
 });
 rulesButtonBg.on('pointerout', () => {
-rulesButtonBg.setFillStyle(0x007AC6) // 🔷 deep brand blue);
-rulesButtonBg.setScale(1);
-rulesButtonText.setColor('#1A1F2B');
+  rulesButtonBg.setFillStyle(0x007AC6);
+  this.tweens.add({
+    targets: rulesButtonBg,
+    scale: 1,
+    duration: 150,
+    ease: 'Power2'
+  });
 });
+
+// Click to show rules modal
+rulesButtonBg.on('pointerdown', () => {
+  modalBlocker.setVisible(true);
+  modalBg.setVisible(true);
+  rulesText.setVisible(true);
+  closeButtonBg.setVisible(true);
+  closeButtonText.setVisible(true);
+});
+
 // 🔒 Interaction-blocking overlay (initially hidden)
 const modalBlocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x1A1F2B, 0)
   .setOrigin(0)
@@ -181,18 +203,22 @@ const modalBlocker = this.add.rectangle(0, 0, this.scale.width, this.scale.heigh
       .setOrigin(0.5).setDepth(1001)
       .setVisible(false);
 
-    // ❌ Close Button (styled like Start Game & Rules)
-    const closeButtonBg = this.add.rectangle(centerX, centerY + 110, 140, 44, 0xFF4F66, 1)
-  .setOrigin(0.5).setDepth(1002)
-  .setStrokeStyle(2, 0x00B3FF)
-  .setInteractive({ useHandCursor: true })
-  .setVisible(false);
+    // ❌ Close Button on Rules Modal (styled like Start Game & Rules)
+  // ❌ Close Button (styled to match red theme with animation)
+const closeButtonBg = this.add.rectangle(centerX, centerY + 110, 140, 44, 0xFF4F66, 1)
+.setOrigin(0.5)
+.setStrokeStyle(2, 0xffffff)
+.setInteractive({ useHandCursor: true })
+.setDepth(1002)
+.setScale(1)
+.setVisible(false);
 
 const closeButtonText = this.add.text(centerX, centerY + 110, '🆇 Close', {
-  fontFamily: 'Outfit',
-  fontSize: '22px',
-  color: '#1A1F2B' // bright red for visibility
+fontFamily: 'Outfit',
+fontSize: '20px',
+color: '#ffffff'
 }).setOrigin(0.5).setDepth(1002).setVisible(false);
+
 
 const supportModal = this.add.rectangle(centerX, centerY, 520, 360, 0x1A1F2B, 0.96)
   .setStrokeStyle(2, 0x00B3FF)
@@ -351,13 +377,13 @@ const or2Text = this.add.text(centerX, centerY + 60,
       wordWrap: { width: 480 }
     }).setOrigin(0.5).setDepth(1101).setVisible(false);
 // 🤪 Funny Close Button
-const noThanksButton = this.add.rectangle(centerX, centerY + 120, 200, 44, 0xFF4F66, 1)
-  .setOrigin(0.5).setStrokeStyle(2, 0xB0304A)
+const noThanksButton = this.add.rectangle(centerX, centerY + 120, 200, 44, 0xB30000, 1)
+  .setOrigin(0.5).setStrokeStyle(2, 0xffffff)
   .setInteractive({ useHandCursor: true }).setDepth(1101).setVisible(false);
 const noThanksText = this.add.text(centerX, centerY + 120, "Nah, I wanna play now", {
   fontFamily: 'Outfit',
   fontSize: '18px',
-  color: '#1A1F2B'
+  color: '#ffffff'
 }).setOrigin(0.5).setDepth(1101).setVisible(false);
 noThanksButton.on('pointerdown', () => {
     hideSupportPopup();
@@ -370,6 +396,7 @@ noThanksButton.on('pointerdown', () => {
   });
   
 noThanksButton.on('pointerover', () => {
+  noThanksButton.setFillStyle(0xFF4D4D)
     this.tweens.add({
       targets: noThanksButton,
       scale: 1.05,
@@ -378,6 +405,7 @@ noThanksButton.on('pointerover', () => {
     });
   });
   noThanksButton.on('pointerout', () => {
+    noThanksButton.setFillStyle(0xB30000)
   this.tweens.add({
     targets: noThanksButton,
     scale: 1,
@@ -386,17 +414,26 @@ noThanksButton.on('pointerover', () => {
   });
 });
   
-// Hover Effects (same as other buttons)
+// Hover Effects (same as other buttons)// 🎯 Hover effects for red rules modal close button
 closeButtonBg.on('pointerover', () => {
-closeButtonBg.setFillStyle(0xFF6F80);
-closeButtonBg.setScale(1.05);
-closeButtonText.setColor('#1A1F2B');
+  closeButtonBg.setFillStyle(0xFF6F80);
+  this.tweens.add({
+    targets: closeButtonBg,
+    scale: 1.05,
+    duration: 150,
+    ease: 'Power2'
+  });
 });
 closeButtonBg.on('pointerout', () => {
-closeButtonBg.setFillStyle(0xFF4F66);
-closeButtonBg.setScale(1);
-closeButtonText.setColor('#1A1F2B');
+  closeButtonBg.setFillStyle(0xFF4F66);
+  this.tweens.add({
+    targets: closeButtonBg,
+    scale: 1,
+    duration: 150,
+    ease: 'Power2'
+  });
 });
+
 
 
     // 5. Modal Open/Close Logic
@@ -413,7 +450,8 @@ closeButtonText.setColor('#1A1F2B');
         rulesText.setVisible(false);
         closeButtonBg.setVisible(false);
         closeButtonText.setVisible(false);
-      });const showSupportPopup = (campaign = false) => {
+      });
+        const showSupportPopup = (campaign = false) => {
         redirectToCampaign = campaign; // ✅ this line resolves the warning
         modalBlocker.setVisible(true);
         supportModal.setVisible(true);
