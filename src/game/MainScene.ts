@@ -1420,7 +1420,7 @@ this.currentEnemyReward = config.reward;
   const bannerBg = this.add.rectangle(
     Number(this.game.config.width) / 2,
     Number(this.game.config.height) / 2,
-    250, 80,
+    250, 150,
     0x222222,
     0.85
   ).setOrigin(0.5).setDepth(1005).setStrokeStyle(2, 0xDFFBFF);
@@ -1428,8 +1428,7 @@ this.currentEnemyReward = config.reward;
   this.canSpawnEnemies = false;
   const bannerText = this.add.text(
     bannerBg.x, bannerBg.y,
-   `Level ${this.levelNumber}\n🌊 Wave ${this.waveNumber}`,
-
+   `Level ${this.levelNumber}\n\nWave ${this.waveNumber} / ${this.MAX_WAVE}`,
     {
       fontSize: '28px',
       fontFamily: 'Outfit',
