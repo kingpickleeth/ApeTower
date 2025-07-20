@@ -1275,11 +1275,31 @@ const mainMenuBtn = this.createStyledButton(
   '🏠 Main Menu',
   0x00B3FF,
   () => {
-    this.sound.stopAll(); // 🛑 Stop all music and sound effects
+    // 🛑 Stop all music and sound effects
+    this.sound.stopAll();
+
+    // 🛑 Stop enemy spawn loop
+    if (this.enemySpawnEvent) {
+      this.enemySpawnEvent.remove(false);
+    }
+
+    // 🧹 Clear all pending and active timers/events
+    this.time.clearPendingEvents();
+    this.time.removeAllEvents();
+
+    // 🔁 Reset core game values
+    this.waveNumber = 0;
+    this.lives = 10;
+    this.vineBalance = 40;
+    this.gameOver = false;
+    this.isPaused = false;
+
+    // 🚪 Go back to the Main Menu
     this.scene.start('MainMenuScene');
   },
   0x3CDFFF
 );
+
 
 
 
@@ -1797,9 +1817,27 @@ const campaignBtn = this.createStyledButton(
 
     // 🧹 Clean up popup elements
     [victoryOverlay, victoryPopupBg, victoryText, vineAmount, vineMessage, campaignBtn, mainMenuBtn].forEach(e => e.destroy());
- // 🛑 Stop all sounds before scene change
-    this.sound.stopAll();   
-    // 🚀 Navigate to campaign
+
+    // 🔇 Stop all sounds
+    this.sound.stopAll();
+
+    // 🛑 Stop enemy spawn loop
+    if (this.enemySpawnEvent) {
+      this.enemySpawnEvent.remove(false);
+    }
+
+    // 🧼 Clear timers/events
+    this.time.clearPendingEvents();
+    this.time.removeAllEvents();
+
+    // ♻️ Reset core state values
+    this.waveNumber = 0;
+    this.lives = 10;
+    this.vineBalance = 40;
+    this.gameOver = false;
+    this.isPaused = false;
+
+    // 🚀 Navigate to Campaign Map
     this.scene.stop();
     this.scene.start('CampaignMapScene');
   },
