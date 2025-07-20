@@ -600,24 +600,23 @@ updateLivesDisplay(livesLeft: number) {
     heart.setAlpha(i < livesLeft ? 1 : 0.2);
   });
 }
-
 createStyledButton(
   x: number,
   y: number,
   label: string,
   bgColor: number,
   onClick: () => void,
-  hoverColor?: number // 🟡 New optional param
+  hoverColor?: number
 ): Phaser.GameObjects.Container {
   const paddingX = 16;
   const paddingY = 8;
   const fontSize = 18;
-  const borderRadius = 12;
+  const borderRadius = 4; // 🟦 Matching all buttons
 
   const text = this.add.text(0, 0, label, {
     fontSize: `${fontSize}px`,
     fontFamily: 'Outfit',
-    color: '#DFFBFF',
+    color: '#1A1F2B',
     align: 'center',
   }).setOrigin(0.5);
 
@@ -639,16 +638,34 @@ createStyledButton(
     .on('pointerdown', onClick)
     .on('pointerover', () => {
       bg.clear();
-      const fill = hoverColor ?? (bgColor + 0x202020); // Use custom if provided
+      const fill = hoverColor ?? (bgColor + 0x202020);
       bg.fillStyle(fill, 1);
       bg.fillRoundedRect(-width / 2, -height / 2, width, height, borderRadius);
       this.input.setDefaultCursor('pointer');
+
+      // 🌀 Squish Animation on Hover
+      this.tweens.add({
+        targets: button,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 100,
+        ease: 'Power1',
+      });
     })
     .on('pointerout', () => {
       bg.clear();
       bg.fillStyle(bgColor, 1);
       bg.fillRoundedRect(-width / 2, -height / 2, width, height, borderRadius);
       this.input.setDefaultCursor('default');
+
+      // 🔙 Shrink back on mouse out
+      this.tweens.add({
+        targets: button,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: 'Power1',
+      });
     });
 
   return button;
@@ -1152,61 +1169,63 @@ if (this.lives <= 0 && !this.gameOver) {
   });
 
   // 🖼️ Display Game Over popup
-  const centerX = Number(this.game.config.width) / 2;
-  const centerY = Number(this.game.config.height) / 2;
+ // 🖼️ Game Over Popup
+const centerX = Number(this.game.config.width) / 2;
+const centerY = Number(this.game.config.height) / 2;
 
-  const overlay = this.add.rectangle(centerX, centerY, this.game.config.width as number, this.game.config.height as number, 0x1A1F2B, 0.4).setOrigin(0.5).setDepth(1005);
+const overlay = this.add.rectangle(centerX, centerY, this.game.config.width as number, this.game.config.height as number, 0x1A1F2B, 0.4)
+  .setOrigin(0.5)
+  .setDepth(1005);
 
-  // 🟥 Popup Background
- // 🟥 Popup Background
+// 🟥 Popup Background
 const popupBg = this.add.rectangle(centerX, centerY, 340, 230, 0x1A1F2B, 0.8)
-.setOrigin(0.5)
-.setStrokeStyle(2, 0xFF4F66)
-.setDepth(1006);
+  .setOrigin(0.5)
+  .setStrokeStyle(2, 0xFF4F66)
+  .setDepth(1006);
 
-// 🧠 Title
+// 💀 Title
 const gameOverText = this.add.text(centerX, centerY - 60, '💀 Game Over 💀', {
-fontSize: '36px',
-fontFamily: 'Outfit',
-fontStyle: 'bold',
-color: '#FF4F66'
+  fontSize: '36px',
+  fontFamily: 'Outfit',
+  fontStyle: 'bold',
+  color: '#FF4F66'
 }).setOrigin(0.5).setDepth(1006);
 
 // 🌿 Vine Earned
 const vineText = this.add.text(centerX, centerY - 20, `You still earned ${this.vineBalance} $VINE`, {
-fontSize: '20px',
-fontFamily: 'Outfit',
-color: '#5CFFA3' // ✅ Reward color
+  fontSize: '20px',
+  fontFamily: 'Outfit',
+  color: '#5CFFA3'
 }).setOrigin(0.5).setDepth(1006);
 
-// 🔁 Play Again
+// 🔁 Play Again Button (styled)
 const restartBtn = this.createStyledButton(
-centerX,
-centerY + 25,
-'🔁 Play Again',
-0x00B3FF, // ✅ Primary blue
-() => {
-  popupBg.destroy();
-  gameOverText.destroy();
-  vineText.destroy();
-  restartBtn.destroy();
-  mainMenuBtn.destroy();
-  overlay.destroy();
-  this.restartGame();
-},
-0x3CDFFF // ✅ Hover color
+  centerX,
+  centerY + 25,
+  '🔁 Play Again',
+  0x00B3FF,
+  () => {
+    popupBg.destroy();
+    gameOverText.destroy();
+    vineText.destroy();
+    restartBtn.destroy();
+    mainMenuBtn.destroy();
+    overlay.destroy();
+    this.restartGame();
+  },
+  0x3CDFFF
 );
 
-// 🏠 Main Menu
+// 🏠 Main Menu Button (styled)
 const mainMenuBtn = this.createStyledButton(
-centerX,
-centerY + 75,
-'🏠 Main Menu',
-0x00B3FF, // ✅ Dark panel color (MainMenu style)
-() => {
-  window.location.reload();
-},
-0x3CDFFF // Optional: subtle hover or use 0x3CDFFF for consistency
+  centerX,
+  centerY + 75,
+  '🏠 Main Menu',
+  0x00B3FF,
+  () => {
+    this.scene.start('MainMenuScene');
+  },
+  0x3CDFFF
 );
 
 
@@ -1705,34 +1724,54 @@ if (this.walletAddress && this.vineBalance > 0) {
   
 }
 
-
-// 🔁 Play Again (Amber with hover)
-const playAgainBtn = this.createStyledButton(
+// 📍 Back to campaign
+const campaignBtn = this.createStyledButton(
   cx,
   cy + 48,
-  'Play Again',
+  'Campaign',
   0x00B3FF,
   () => {
-    // 💾 Save first, like Game Over
-    console.log('📦 Attempting to save vine from victory (play again)...');
+    console.log('📦 Saving vine from victory (to campaign)...');
     if (this.walletAddress && this.vineBalance > 0) {
       window.dispatchEvent(new CustomEvent('save-vine', {
         detail: { amount: this.vineBalance }
       }));
-      console.log('📤 Dispatching level:', 3);
       window.dispatchEvent(new CustomEvent('upgrade-campaign', {
-        detail: { level: 4 }
+        detail: { level: 4 } // adjust level dynamically if needed
       }));
-      
     }
 
-    [victoryOverlay, victoryPopupBg, victoryText, vineAmount, vineMessage, playAgainBtn, mainMenuBtn].forEach(e => e.destroy());
-    this.canSelectTile = true;
-    this.towers.forEach(tower => tower.setInteractive());
-    this.restartGame();
+    // 🧹 Clean up popup elements
+    [victoryOverlay, victoryPopupBg, victoryText, vineAmount, vineMessage, campaignBtn, mainMenuBtn].forEach(e => e.destroy());
+    
+    // 🚀 Navigate to campaign
+    this.scene.stop();
+    this.scene.start('CampaignMapScene');
   },
   0x3CDFFF
 );
+
+// ✨ Add squish animation for hover
+campaignBtn.setInteractive()
+  .on('pointerover', () => {
+    this.tweens.add({
+      targets: campaignBtn,
+      scaleX: 1.05,
+      scaleY: 1.05,
+      duration: 100,
+      ease: 'Power1'
+    });
+  })
+  .on('pointerout', () => {
+    this.tweens.add({
+      targets: campaignBtn,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 100,
+      ease: 'Power1'
+    });
+  });
+
 
 
 // 🏠 Main Menu (same amber)
