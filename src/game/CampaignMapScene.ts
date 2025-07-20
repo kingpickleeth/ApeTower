@@ -1,6 +1,7 @@
 // src/game/CampaignMapScene.ts
 import Phaser from 'phaser';
 import { getProfile } from '../utils/profile';
+const DISABLE_LEVELS_2_TO_7 = true;
 const LEVEL_SCENES: Record<number, string> = {
     1: 'MainScene',
     2: 'Level2',
@@ -55,17 +56,22 @@ export default class CampaignMapScene extends Phaser.Scene {
     const gapY = 55;
 
     for (let i = 1; i <= 7; i++) {
-      const isUnlocked = i <= this.campaignLevel;
+      const isUnlocked = i === 1 || (!DISABLE_LEVELS_2_TO_7 && i <= this.campaignLevel);
+
       const y = startY + (i - 1) * gapY;
 
       const bg = this.add.rectangle(cx, y, 220, 44, isUnlocked ? 0x00B3FF : 0x444444)
-  .setOrigin(0.5)
-  .setStrokeStyle(2, 0xffffff)
-  .setInteractive({ useHandCursor: true })
-  .setAlpha(1)
-  .setScale(1);
+      .setOrigin(0.5)
+      .setStrokeStyle(2, 0xffffff)
+      .setAlpha(1)
+      .setScale(1);
+    
+    if (isUnlocked) {
+      bg.setInteractive({ useHandCursor: true });
+    }
+    
 
-this.add.text(cx, y, `Level ${i}`, {
+  this.add.text(cx, y, isUnlocked ? `Level ${i}` : 'Coming Soon', {
   fontFamily: 'Outfit',
   fontSize: '22px',
   color: isUnlocked ? '#1A1F2B' : '#999'
