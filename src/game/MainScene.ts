@@ -1445,13 +1445,19 @@ const waveConfig = [
   { total: 6,  spawnDelay: 1250, mix: { normal: 1.0 }, hp: { normal: 6 }, reward: { normal: 4 } },
   { total: 7,  spawnDelay: 1150, mix: { normal: 1.0 }, hp: { normal: 6 }, reward: { normal: 4 } },
   { total: 9,  spawnDelay: 1050, mix: { normal: 0.85, fast: 0.15 }, hp: { normal: 7, fast: 5 }, reward: { normal: 4, fast: 4 } },
-  { total: 11, spawnDelay: 950,  mix: { normal: 0.75, fast: 0.25 }, hp: { normal: 7, fast: 5 }, reward: { normal: 3, fast: 4 } },
-  { total: 12, spawnDelay: 900,  mix: { normal: 0.65, fast: 0.3, tank: 0.05 }, hp: { normal: 8, fast: 6, tank: 16 }, reward: { normal: 3, fast: 4, tank: 6 } },
-  { total: 13, spawnDelay: 850,  mix: { normal: 0.55, fast: 0.4, tank: 0.05 }, hp: { normal: 8, fast: 6, tank: 18 }, reward: { normal: 3, fast: 4, tank: 6 } },
+
+  // 🔧 Harder Wave 5
+  { total: 12, spawnDelay: 850,  mix: { normal: 0.6, fast: 0.35, tank: 0.05 }, hp: { normal: 8, fast: 6, tank: 18 }, reward: { normal: 3, fast: 3, tank: 5 } },
+
+  // 🔧 Harder Wave 6
+  { total: 14, spawnDelay: 850,  mix: { normal: 0.5, fast: 0.4, tank: 0.1 }, hp: { normal: 9, fast: 7, tank: 22 }, reward: { normal: 3, fast: 3, tank: 5 } },
+
+  { total: 13, spawnDelay: 830,  mix: { normal: 0.55, fast: 0.4, tank: 0.05 }, hp: { normal: 8, fast: 6, tank: 18 }, reward: { normal: 3, fast: 4, tank: 6 } },
   { total: 14, spawnDelay: 800,  mix: { normal: 0.5, fast: 0.4, tank: 0.1 }, hp: { normal: 8, fast: 6, tank: 20 }, reward: { normal: 3, fast: 4, tank: 6 } },
   { total: 15, spawnDelay: 750,  mix: { normal: 0.4, fast: 0.5, tank: 0.1 }, hp: { normal: 8, fast: 6, tank: 22 }, reward: { normal: 3, fast: 4, tank: 6 } },
   { total: 16, spawnDelay: 700,  mix: { normal: 0.3, fast: 0.6, tank: 0.1 }, hp: { normal: 8, fast: 6, tank: 24 }, reward: { normal: 3, fast: 4, tank: 6 } },
 ];
+
 
 
 const config = waveConfig[this.waveNumber - 1] ?? waveConfig[waveConfig.length - 1];
@@ -1779,7 +1785,7 @@ const victoryText = this.add.text(cx, cy - 64, '🏆 You Win 🏆', {
 }).setOrigin(0.5).setDepth(1006);
 
 // 💰 Earnings Message
-const vineAmount = this.add.text(cx, cy - 18, `${this.vineBalance} $VINE`, {
+const vineAmount = this.add.text(cx, cy - 18, `${this.vineBalance + 1000} $VINE`, {
   fontSize: '22px',
   fontFamily: 'Outfit',
   fontStyle: 'bold',
@@ -1794,16 +1800,19 @@ const vineMessage = this.add.text(cx, cy + 10, `was added to your profile`, {
   color: '#DFFBFF',
 }).setOrigin(0.5).setDepth(1006);
 // 💾 Save vine to Supabase
-console.log('🏆 Saving vine from victory:', this.vineBalance, this.walletAddress);
 if (this.walletAddress && this.vineBalance > 0) {
+  const totalVine = this.vineBalance + 1000;
+  console.log(`🏆 Granting 1000 bonus VINE. Total: ${totalVine}`);
+
   window.dispatchEvent(new CustomEvent('save-vine', {
-    detail: { amount: this.vineBalance }
+    detail: { amount: totalVine }
   }));
+
   window.dispatchEvent(new CustomEvent('upgrade-campaign', {
-    detail: { level: 2 } // ⬅️ Since this is MainScene (level 1), victory bumps you to level 2
+    detail: { level: 2 }
   }));
-  
 }
+
 
 
 // 🔁 Play Again (Amber with hover)
