@@ -556,10 +556,7 @@ menuButtonBg.on('pointerdown', () => {
     ease: 'Power1',
     yoyo: true,
     onComplete: () => {
-      // 🛑 Stop music
-      if (this.bgMusic && this.bgMusic.isPlaying) {
-        this.bgMusic.stop();
-      }
+     this.sound.stopAll();
 
       // 🛑 Stop enemy spawn loop
       if (this.enemySpawnEvent) {
@@ -1274,10 +1271,12 @@ const mainMenuBtn = this.createStyledButton(
   '🏠 Main Menu',
   0x00B3FF,
   () => {
+    this.sound.stopAll(); // 🛑 Stop all music and sound effects
     this.scene.start('MainMenuScene');
   },
   0x3CDFFF
 );
+
 
 
 
@@ -1796,7 +1795,8 @@ const campaignBtn = this.createStyledButton(
 
     // 🧹 Clean up popup elements
     [victoryOverlay, victoryPopupBg, victoryText, vineAmount, vineMessage, campaignBtn, mainMenuBtn].forEach(e => e.destroy());
-    
+ // 🛑 Stop all sounds before scene change
+    this.sound.stopAll();   
     // 🚀 Navigate to campaign
     this.scene.stop();
     this.scene.start('CampaignMapScene');
@@ -1844,8 +1844,8 @@ const mainMenuBtn = this.createStyledButton(
       }));
       
     }
-
-    window.location.reload();
+   // 🛑 Stop all sounds before reload
+    this.sound.stopAll();    window.location.reload();
   },
   0x3CDFFF
 );
