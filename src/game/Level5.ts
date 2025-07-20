@@ -564,10 +564,33 @@ menuButtonBg.on('pointerdown', () => {
     ease: 'Power1',
     yoyo: true,
     onComplete: () => {
+      // 🛑 Stop music
+      if (this.bgMusic && this.bgMusic.isPlaying) {
+        this.bgMusic.stop();
+      }
+
+      // 🛑 Stop enemy spawn loop
+      if (this.enemySpawnEvent) {
+        this.enemySpawnEvent.remove(false);
+      }
+
+      // 🧹 Clear any scene-level timers/events
+      this.time.clearPendingEvents();
+      this.time.removeAllEvents();
+
+      // 🧼 Optional: reset wave/lives/etc. in case you return later
+      this.waveNumber = 0;
+      this.lives = 10;
+      this.vineBalance = 40;
+      this.gameOver = false;
+      this.isPaused = false;
+
+      // 🚪 Transition to menu scene
       this.scene.start('MainMenuScene');
     }
   });
-});// 🟢 Pause Button (Toggle)
+});
+// 🟢 Pause Button (Toggle)
 let isPaused = this.isPaused;
 const { icon: pauseIcon } = createCircleButton.call(this, buttonX + 6, marginY - 5 - spacingY * 2, '⏸', () => {
   isPaused = !isPaused;
