@@ -1743,15 +1743,15 @@ blocker.once('pointerdown', () => {
 }
 triggerVictory() {
   // 💾 Save vine to Supabase
-this.time.delayedCall(100, () => {
   if (!this.hasSavedVine && this.walletAddress) {
     this.hasSavedVine = true;
     const totalVine = this.vineBalance + 1000;
     window.dispatchEvent(new CustomEvent('save-vine', {
       detail: { amount: totalVine }
     }));
+    console.log('✅ save-vine dispatched from victory:', totalVine);
   }
-});
+  
 
   if (this.towerSelectPanel) {
     this.towerSelectPanel.destroy();
