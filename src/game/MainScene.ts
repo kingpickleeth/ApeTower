@@ -21,7 +21,7 @@ export default class MainScene extends Phaser.Scene {
   canSelectTile: boolean = true;
   claimButton?: Phaser.GameObjects.Container;
   canSpawnEnemies: boolean = false;
-  MAX_WAVE: number = 10;
+  MAX_WAVE: number = 1;
   walletAddress: string = '';
   totalEnemiesKilledByPhysics = 0;
   totalEnemiesDestroyed = 0;
@@ -1255,12 +1255,15 @@ const vineText = this.add.text(centerX, centerY - 20, `You still earned ${this.v
   color: '#5CFFA3'
 }).setOrigin(0.5).setDepth(1006);
  // 💾 Save vine to Supabase
- if (!this.hasSavedVine && this.walletAddress && this.vineBalance > 0) {
-  this.hasSavedVine = true;
-  window.dispatchEvent(new CustomEvent('save-vine', {
-    detail: { amount: this.vineBalance }
-  }));
-}
+ this.time.delayedCall(100, () => {
+  if (!this.hasSavedVine && this.walletAddress && this.vineBalance > 0) {
+    this.hasSavedVine = true;
+    window.dispatchEvent(new CustomEvent('save-vine', {
+      detail: { amount: this.vineBalance }
+    }));
+  }
+});
+
 // 🔁 Play Again Button (styled)
 const restartBtn = this.createStyledButton(
   centerX,
