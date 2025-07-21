@@ -1762,16 +1762,22 @@ triggerVictory() {
   this.enemySpawnEvent.remove(false);
   this.isPaused = true;
   this.physics.pause();
-  // ⛔ Stop towers
-  this.towers.forEach(tower => {
-    const timer = tower.getData('shootTimer');
-    timer?.remove(false);
-  });
-  this.towers.forEach(tower => {
-    if (tower && tower.disableInteractive) {
-      tower.disableInteractive();
-    }
-  });  
+// ⛔ Stop towers
+this.towers.forEach(tower => {
+  if (!tower || !tower.getData) return;
+
+  const timer = tower.getData('shootTimer');
+  if (timer?.remove) {
+    timer.remove(false);
+  }
+});
+
+this.towers.forEach(tower => {
+  if (tower && typeof tower.disableInteractive === 'function' && tower.scene?.input) {
+    tower.disableInteractive();
+  }  
+});
+
   const cx = Number(this.game.config.width) / 2;
   const cy = Number(this.game.config.height) / 2;
   

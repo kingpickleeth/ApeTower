@@ -8,7 +8,7 @@ import { JsonRpcProvider, Contract, formatUnits } from 'ethers';
 import VINE_ABI from '../abis/VineToken.json'; // create this if needed
 
 
-const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/PFP.svg';
+const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/avatar.svg';
 const VINE_CONTRACT = '0xe6027e786e2Ef799316aFabAE84E072cA73AA97f';
 const FALLBACK_RPC = "https://rpc.apechain.com"; // or your custom node
 
@@ -174,7 +174,7 @@ useEffect(() => {
       setShowErrorModal("Username is required!");
       return;
     }
-    const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/PFP.svg'; // ✅ Use your actual default image path
+    const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/avatar.svg'; // ✅ Use your actual default image path
 const finalPfp = pfpUrl || DEFAULT_PFP_URL;
 const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
 
