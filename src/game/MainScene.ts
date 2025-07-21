@@ -27,6 +27,8 @@ export default class MainScene extends Phaser.Scene {
   totalEnemiesDestroyed = 0;
   heartIcons: Phaser.GameObjects.Text[] = [];
   levelNumber: number = 1; // default, can be overridden
+  hasSavedVine: boolean = false;
+
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
@@ -1252,7 +1254,13 @@ const vineText = this.add.text(centerX, centerY - 20, `You still earned ${this.v
   fontFamily: 'Outfit',
   color: '#5CFFA3'
 }).setOrigin(0.5).setDepth(1006);
-
+ // 💾 Save vine to Supabase
+ if (!this.hasSavedVine && this.walletAddress && this.vineBalance > 0) {
+  this.hasSavedVine = true;
+  window.dispatchEvent(new CustomEvent('save-vine', {
+    detail: { amount: this.vineBalance }
+  }));
+}
 // 🔁 Play Again Button (styled)
 const restartBtn = this.createStyledButton(
   centerX,
@@ -1302,21 +1310,6 @@ const mainMenuBtn = this.createStyledButton(
   },
   0x3CDFFF
 );
-
-
-
-
-
-
-  // 💾 Save vine to Supabase
-
- // 💾 Save vine to Supabase
-console.log('🏆 Saving vine from victory:', this.vineBalance, this.walletAddress);
-if (this.walletAddress && this.vineBalance > 0) {
-  window.dispatchEvent(new CustomEvent('save-vine', {
-    detail: { amount: this.vineBalance }
-  }));
-  }
 
   return;
 }
@@ -1584,7 +1577,7 @@ this.children.getAll().forEach(child => {
   }
 });
 
-this.towers = []; // Clear tower references
+this.towers = this.towers.filter(t => !!t && t.active); // remove nulls before using
 
   // 🔲 Reset map tiles
   for (let row = 0; row < this.mapRows; row++) {
@@ -1760,7 +1753,11 @@ triggerVictory() {
     const timer = tower.getData('shootTimer');
     timer?.remove(false);
   });
-  this.towers.forEach(tower => tower.disableInteractive());
+  this.towers.forEach(tower => {
+    if (tower && tower.disableInteractive) {
+      tower.disableInteractive();
+    }
+  });  
   const cx = Number(this.game.config.width) / 2;
   const cy = Number(this.game.config.height) / 2;
   
@@ -1800,18 +1797,14 @@ const vineMessage = this.add.text(cx, cy + 10, `was added to your profile`, {
   color: '#DFFBFF',
 }).setOrigin(0.5).setDepth(1006);
 // 💾 Save vine to Supabase
-if (this.walletAddress && this.vineBalance > 0) {
+if (!this.hasSavedVine && this.walletAddress) {
+  this.hasSavedVine = true;
   const totalVine = this.vineBalance + 1000;
-  console.log(`🏆 Granting 1000 bonus VINE. Total: ${totalVine}`);
-
   window.dispatchEvent(new CustomEvent('save-vine', {
     detail: { amount: totalVine }
   }));
-
-  window.dispatchEvent(new CustomEvent('upgrade-campaign', {
-    detail: { level: 2 }
-  }));
 }
+
 
 
 
@@ -1825,9 +1818,6 @@ const campaignBtn = this.createStyledButton(
   () => {
     console.log('📦 Saving vine from victory (to campaign)...');
     if (this.walletAddress && this.vineBalance > 0) {
-      window.dispatchEvent(new CustomEvent('save-vine', {
-        detail: { amount: this.vineBalance }
-      }));
       window.dispatchEvent(new CustomEvent('upgrade-campaign', {
         detail: { level: 2 } // adjust level dynamically if needed
       }));
@@ -1892,15 +1882,8 @@ const mainMenuBtn = this.createStyledButton(
   0x00B3FF,
   () => {
     console.log('📦 Attempting to save vine from victory (main menu)...');
-    if (this.walletAddress && this.vineBalance > 0) {
-      window.dispatchEvent(new CustomEvent('save-vine', {
-        detail: { amount: this.vineBalance }
-      }));
-      window.dispatchEvent(new CustomEvent('upgrade-campaign', {
-        detail: { level: 2 } // ⬅️ Since this is MainScene (level 1), victory bumps you to level 2
-      }));
-      
-    }
+  
+    
    // 🛑 Stop all sounds before reload
     this.sound.stopAll();    window.location.reload();
   },
