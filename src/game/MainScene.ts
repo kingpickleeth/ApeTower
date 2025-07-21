@@ -1820,15 +1820,10 @@ const campaignBtn = this.createStyledButton(
   'Campaign',
   0x00B3FF,
   () => {
-    const totalVine = this.vineBalance + 1000;
-    console.log('📦 Campaign button clicked. Dispatching save-vine:', totalVine);
-  
-    if (this.walletAddress && totalVine > 0) {
-      window.dispatchEvent(new CustomEvent('save-vine', {
-        detail: { amount: totalVine }
-      }));
+    console.log('📦 Saving vine from victory (to campaign)...');
+    if (this.walletAddress && this.vineBalance > 0) {
       window.dispatchEvent(new CustomEvent('upgrade-campaign', {
-        detail: { level: 2 }
+        detail: { level: 2 } // adjust level dynamically if needed
       }));
     }
 
@@ -1890,22 +1885,11 @@ const mainMenuBtn = this.createStyledButton(
   'Main Menu',
   0x00B3FF,
   () => {
-    const vineReward = 1000;
-
-    if (this.walletAddress && vineReward > 0) {
-      console.log('📦 Dispatching save-vine from main menu button:', vineReward);
-      window.dispatchEvent(new CustomEvent('save-vine', {
-        detail: { amount: vineReward }
-      }));
-    }
-
-    // 🛑 Stop all sounds before reload
-    this.sound.stopAll();
-
-    // Add a small delay to ensure event dispatch is processed before reload
-    setTimeout(() => {
-      window.location.reload();
-    }, 150); // 150ms gives time to process the save
+    console.log('📦 Attempting to save vine from victory (main menu)...');
+  
+    
+   // 🛑 Stop all sounds before reload
+    this.sound.stopAll();    window.location.reload();
   },
   0x3CDFFF
 );
