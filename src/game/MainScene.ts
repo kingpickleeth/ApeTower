@@ -98,29 +98,36 @@ export default class MainScene extends Phaser.Scene {
     this.assetsLoaded = true; // ✅ This line is essential
   });
   }
+  showRewardText(x: number, y: number, amount: number) {
+    const rewardText = this.add.text(x, y - 12, `+${amount} $VINE`, {
+      fontSize: '18px',
+      fontFamily: 'Outfit',
+      fontStyle: 'bold',
+      color: '#00FF66', // ✅ Green
+      backgroundColor: '', // ✅ No background
+      padding: { left: 6, right: 6, top: 2, bottom: 2 }
+    })
+      .setOrigin(0.5)
+      .setAlpha(1)
+      .setDepth(5000);
+  
+    this.tweens.add({
+      targets: rewardText,
+      y: rewardText.y - 20,
+      alpha: 0,
+      duration: 1000,
+      ease: 'Cubic.easeOut',
+      onComplete: () => rewardText.destroy()
+    });
+  }
+  
+
   killEnemy(enemy: Phaser.GameObjects.Arc) {
   const reward = enemy.getData('reward') || 0;
   this.vineBalance += reward;
 
   const { x, y } = enemy.getCenter();
-  const rewardText = this.add.text(x, y - 12, `+${reward} $VINE`, {
-    fontSize: '18px',
-    fontFamily: 'Outfit',
-    fontStyle: 'bold',
-    color: '#00B3FF',
-    backgroundColor: '#1A1F2B',
-    padding: { left: 6, right: 6, top: 2, bottom: 2 }
-  }).setOrigin(0.5).setAlpha(1).setDepth(10000);
-
-  this.tweens.add({
-    targets: rewardText,
-    y: rewardText.y - 20,
-    alpha: 0,
-    duration: 1000,
-    ease: 'Cubic.easeOut',
-    onComplete: () => rewardText.destroy()
-  });
-
+  this.showRewardText(x, y, reward); // ⬅️ Use this
   this.vineText.setText(`$VINE: ${this.vineBalance}`);
 
   const bar = enemy.getData('hpBar') as Phaser.GameObjects.Rectangle;
@@ -382,32 +389,7 @@ if (hp <= 0) {
         this.vineBalance += reward;
         
         const { x, y } = enemy.getCenter();
-        const vineText = this.add.graphics({ x, y: y - 12 }).setDepth(10000);
-        const rewardText = this.add.text(0, 0, `+${reward} $VINE`, {
-          fontSize: '18px',
-          fontFamily: 'Arial',
-          fontStyle: 'bold',
-          color: '#00B3FF',
-          backgroundColor: '#1A1F2B',
-          padding: { left: 6, right: 6, top: 2, bottom: 2 }
-        }).setOrigin(0.5).setAlpha(1);
-        
-        const textContainer = this.add.container(x, y - 12, [rewardText])
-          .setDepth(10000)
-          .setAlpha(1)
-          .setScrollFactor(0); // pin to camera view (remove if world-relative)
-          this.children.bringToTop(textContainer);
-
-        this.tweens.add({
-          targets: textContainer,
-          y: textContainer.y - 20,
-          alpha: 0,
-          duration: 1000,
-          ease: 'Cubic.easeOut',
-          onComplete: () => textContainer.destroy()
-        });        
-        console.log('💸 Floating reward text created at', vineText.x, vineText.y);
-
+        this.showRewardText(x, y, reward);
         this.vineText.setText(`$VINE: ${this.vineBalance}`);
         const bar = enemy.getData('hpBar') as Phaser.GameObjects.Rectangle;
         const barBg = enemy.getData('hpBarBg') as Phaser.GameObjects.Rectangle;
