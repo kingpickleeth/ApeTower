@@ -169,6 +169,7 @@ window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
         setShowProfile(true);
         if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
         if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
+        if ((window as any).disableCampaignInput) (window as any).disableCampaignInput(); // ✅ added
       }}
       title={profile?.username || 'Profile'}
     >
@@ -180,6 +181,7 @@ window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
         setShowProfile(true);
         if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
         if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
+        if ((window as any).disableCampaignInput) (window as any).disableCampaignInput(); // ✅ added
       }}
       title={profile?.username || 'Profile'}
     >
@@ -194,6 +196,7 @@ window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
         setShowProfile(true);
         if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
         if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
+        if ((window as any).disableCampaignInput) (window as any).disableCampaignInput(); // ✅ added
       }}
     >
       👤 Profile
@@ -204,6 +207,7 @@ window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
         setShowProfile(true);
         if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
         if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
+        if ((window as any).disableCampaignInput) (window as any).disableCampaignInput(); // ✅ added
       }}
     >
       👤
@@ -229,6 +233,7 @@ window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
       setShowProfile(false);
       if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
       if ((window as any).enableMainMenuInput) (window as any).enableMainMenuInput(); // ✅ restore input
+      if ((window as any).enableCampaignInput) (window as any).enableCampaignInput(); // ✅ restore input
     }
   }}
 />
@@ -241,6 +246,7 @@ window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
       setShowProfile(false);
       if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
       if ((window as any).enableMainMenuInput) (window as any).enableMainMenuInput(); // ✅ restore input
+      if ((window as any).enableCampaignInput) (window as any).enableCampaignInput(); // ✅ restore input
     }
   }}
   
@@ -268,6 +274,7 @@ window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
       }
       if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
       if ((window as any).enableMainMenuInput) (window as any).enableMainMenuInput(); // ✅ restore input
+      if ((window as any).enableCampaignInput) (window as any).enableCampaignInput(); // ✅ restore input
     }}    
   />
 )}

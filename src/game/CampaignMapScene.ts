@@ -146,6 +146,15 @@ this.add.existing(
       });
     })
 );
-
+      // ⛔ Disable input when profile modal is open
+      (window as any).disableCampaignInput = () => {
+        this.input.enabled = false;
+      };
+      
+      // ✅ Re-enable it when modal is closed
+      (window as any).enableCampaignInput = () => {
+        this.input.enabled = true;
+      };
+      
   }
 }
