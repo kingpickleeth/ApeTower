@@ -21,7 +21,7 @@ export default class MainScene extends Phaser.Scene {
   canSelectTile: boolean = true;
   claimButton?: Phaser.GameObjects.Container;
   canSpawnEnemies: boolean = false;
-  MAX_WAVE: number = 1;
+  MAX_WAVE: number = 10;
   walletAddress: string = '';
   totalEnemiesKilledByPhysics = 0;
   totalEnemiesDestroyed = 0;
@@ -1885,8 +1885,12 @@ const mainMenuBtn = this.createStyledButton(
   'Main Menu',
   0x00B3FF,
   () => {
-    console.log('📦 Attempting to save vine from victory (main menu)...');
-  
+    console.log('📦 Saving vine from victory (to campaign)...');
+    if (this.walletAddress && this.vineBalance > 0) {
+      window.dispatchEvent(new CustomEvent('upgrade-campaign', {
+        detail: { level: 2 } // adjust level dynamically if needed
+      }));
+    }
     
    // 🛑 Stop all sounds before reload
     this.sound.stopAll();    window.location.reload();
