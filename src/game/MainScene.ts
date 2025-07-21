@@ -1742,6 +1742,17 @@ blocker.once('pointerdown', () => {
 });
 }
 triggerVictory() {
+  // 💾 Save vine to Supabase
+this.time.delayedCall(100, () => {
+  if (!this.hasSavedVine && this.walletAddress) {
+    this.hasSavedVine = true;
+    const totalVine = this.vineBalance + 1000;
+    window.dispatchEvent(new CustomEvent('save-vine', {
+      detail: { amount: totalVine }
+    }));
+  }
+});
+
   if (this.towerSelectPanel) {
     this.towerSelectPanel.destroy();
     this.towerSelectPanel = undefined;
@@ -1799,16 +1810,6 @@ const vineMessage = this.add.text(cx, cy + 10, `was added to your profile`, {
   align: 'center',
   color: '#DFFBFF',
 }).setOrigin(0.5).setDepth(1006);
-// 💾 Save vine to Supabase
-this.time.delayedCall(100, () => {
-  if (!this.hasSavedVine && this.walletAddress) {
-    this.hasSavedVine = true;
-    const totalVine = this.vineBalance + 1000;
-    window.dispatchEvent(new CustomEvent('save-vine', {
-      detail: { amount: totalVine }
-    }));
-  }
-});
 
 
 // 🔁 Play Again (Amber with hover)
