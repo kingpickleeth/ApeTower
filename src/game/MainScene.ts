@@ -145,8 +145,8 @@ export default class MainScene extends Phaser.Scene {
   // 🎮 create(): Setup the map, UI, path, selectors, towers, collisions
   // ---------------------------------------------------------------------------
   create() {
-    
   console.log('✅ MainScene created');
+  this.hasSavedVine = false;
   const screenWidth = Number(this.game.config.width);
   const screenHeight = Number(this.game.config.height);
   const mapWidth = this.mapCols * this.tileSize;
