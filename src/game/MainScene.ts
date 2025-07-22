@@ -1195,6 +1195,16 @@ console.log(`🚫 Non-HP enemy destroy #${this.totalEnemiesDestroyed}`);
       // 💀 Game Over condition
       // 💀 Game Over condition
 if (this.lives <= 0 && !this.gameOver) {
+   // 💾 Save vine to Supabase
+ this.time.delayedCall(100, () => {
+  if (!this.hasSavedVine && this.walletAddress && this.vineBalance > 0) {
+    this.hasSavedVine = true;
+    window.dispatchEvent(new CustomEvent('save-vine', {
+      detail: { amount: this.vineBalance }
+    }));
+  }
+});
+
   this.gameOver = true;
   this.enemySpawnEvent.remove(false);
   this.isPaused = true;
@@ -1236,15 +1246,6 @@ const vineText = this.add.text(centerX, centerY - 20, `You still earned ${this.v
   fontFamily: 'Outfit',
   color: '#5CFFA3'
 }).setOrigin(0.5).setDepth(1006);
- // 💾 Save vine to Supabase
- this.time.delayedCall(100, () => {
-  if (!this.hasSavedVine && this.walletAddress && this.vineBalance > 0) {
-    this.hasSavedVine = true;
-    window.dispatchEvent(new CustomEvent('save-vine', {
-      detail: { amount: this.vineBalance }
-    }));
-  }
-});
 
 // 🔁 Play Again Button (styled)
 const restartBtn = this.createStyledButton(
