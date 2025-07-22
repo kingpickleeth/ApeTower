@@ -20,7 +20,7 @@ export default class MainScene extends Phaser.Scene {
   canSelectTile: boolean = true;
   claimButton?: Phaser.GameObjects.Container;
   canSpawnEnemies: boolean = false;
-  MAX_WAVE: number = 10;
+  MAX_WAVE: number = 2;
   walletAddress: string = '';
   totalEnemiesKilledByPhysics = 0;
   totalEnemiesDestroyed = 0;
@@ -133,7 +133,74 @@ export default class MainScene extends Phaser.Scene {
     this.checkWaveOver();
     console.log(`✅ killEnemy() executed at (${x}, ${y}) with reward ${reward}`);
   }
-
+  cleanupGameObjects(fullReset = false) {
+    this.enemySpawnEvent?.remove(false);
+    this.time.clearPendingEvents();
+    this.time.removeAllEvents();
+    this.sound.stopAll();
+    this.hasSavedVine = false;
+    this.enemyGroup.getChildren().forEach((enemyObj) => {
+      const hpBar = enemyObj.getData?.('hpBar');
+      const hpBarBg = enemyObj.getData?.('hpBarBg');
+      hpBar?.destroy();
+      hpBarBg?.destroy();
+      enemyObj.destroy();
+    });
+    // Kill Rogue Health Bars
+    this.children.getAll().forEach(child => {
+      if (child.name === 'hpBar' || child.name === 'hpBarBg') child.destroy();
+    });    
+    // 🗑️ Clear tower selection UI
+    this.towerSelectPanel?.destroy();
+    this.towerSelectPanel = undefined;
+    this.towerSelectHighlight?.destroy();
+    this.towerSelectHighlight = undefined;
+    this.enemyGroup.clear(true, true);
+    this.bulletGroup.getChildren().forEach(b => b.destroy());
+    this.bulletGroup.clear(true, true);
+    this.towers.forEach(tower => {
+      const timer = tower.getData?.('shootTimer');
+      timer?.remove(true);
+      tower.getData?.('levelText')?.destroy();
+      tower.disableInteractive?.();
+      tower.destroy();
+    });
+    this.towers = [];
+    this.tileMap.forEach((row, r) => {
+      row.forEach((tile, c) => {
+        if (tile === 2) this.tileMap[r][c] = 1;
+        this.tileSprites[r][c].setFillStyle(tile === 0 ? 0x00B3FF : 0x00FFE7);
+      });
+    });
+    if (fullReset) {
+      this.vineBalance = 40;
+      this.lives = 10;
+      this.waveNumber = 0;
+      this.gameOver = false;
+      this.isPaused = false;
+      this.updateLivesDisplay(this.lives);
+      this.vineText.setText(`$VINE: ${this.vineBalance}`);
+      this.waveText.setText(`Wave: 1`);
+    } else {
+      this.physics.pause();
+      this.isPaused = true;
+    }
+    this.canSelectTile = false;
+    if (fullReset) {
+      this.rangeCircle?.destroy();
+      this.rangeCircle = undefined;
+    
+      this.nextRangeCircle?.destroy();
+      this.nextRangeCircle = undefined;
+    
+      const upgradePanel = this.children.getByName('upgradePanel');
+      upgradePanel?.destroy();
+      this.upgradePanelOpen = false;
+      this.activeTower = undefined;
+      this.activeUpgradeButton = undefined;
+      this.activeUpgradeCost = undefined;
+    }    
+  }  
   // ---------------------------------------------------------------------------
   // 🎮 create(): Setup the map, UI, path, selectors, towers, collisions
   // ---------------------------------------------------------------------------
@@ -497,24 +564,8 @@ menuButtonBg.on('pointerdown', () => {
     ease: 'Power1',
     yoyo: true,
     onComplete: () => {
-     this.sound.stopAll();
-
-      // 🛑 Stop enemy spawn loop
-      if (this.enemySpawnEvent) {
-        this.enemySpawnEvent.remove(false);
-      }
-
-      // 🧹 Clear any scene-level timers/events
-      this.time.clearPendingEvents();
-      this.time.removeAllEvents();
-
-      // 🧼 Optional: reset wave/lives/etc. in case you return later
-      this.waveNumber = 0;
-      this.lives = 10;
-      this.vineBalance = 40;
-      this.gameOver = false;
-      this.isPaused = false;
-
+      // Reset
+      this.cleanupGameObjects(true);
       // 🚪 Transition to menu scene
       this.scene.start('MainMenuScene');
     }
@@ -1143,10 +1194,10 @@ console.log(`🚫 Non-HP enemy destroy #${this.totalEnemiesDestroyed}`);
       if (!this.gameOver && this.enemyGroup.countActive() === 0) {
         this.time.delayedCall(1000, () => this.startNextWave());
       }
-
-      // 💀 Game Over condition
       // 💀 Game Over condition
 if (this.lives <= 0 && !this.gameOver) {
+  // FULL GAME RESET
+this.cleanupGameObjects(); // fullReset = false
    // 💾 Save vine to Supabase
  this.time.delayedCall(100, () => {
   if (!this.hasSavedVine && this.walletAddress && this.vineBalance > 0) {
@@ -1156,19 +1207,6 @@ if (this.lives <= 0 && !this.gameOver) {
     }));
   }
 });
-
-  this.gameOver = true;
-  this.enemySpawnEvent.remove(false);
-  this.isPaused = true;
-  this.physics.pause();
-  this.canSelectTile = false;
-
-  // ⛔ Stop towers from firing
-  this.towers.forEach(tower => {
-    const timer = tower.getData('shootTimer');
-    timer?.remove(false);
-  });
-
   // 🖼️ Display Game Over popup
 // 🖼️ Game Over Popup
 const centerX = Number(this.game.config.width) / 2;
@@ -1360,47 +1398,42 @@ const mainMenuBtn = this.createStyledButton(
   // 🌊 startNextWave(): Sets up the enemy queue and wave banner
   // ---------------------------------------------------------------------------
   startNextWave() {
-  this.enemiesEscaped = 0;
-  this.waveNumber++;
-  if (this.waveNumber > this.MAX_WAVE) {
+    this.enemiesEscaped = 0;
+    this.waveNumber++;
+    if (this.waveNumber > this.MAX_WAVE) {
     this.triggerVictory();
     return;
-  }  
-  this.waveText.setText(`Wave: ${this.waveNumber}`);
-  this.enemiesSpawned = 0;
-  this.enemiesKilled = 0;
-  // 📦 Generate enemy queue
-// ✅ Full Wave Progression for Level 1
-const waveConfig = [
-  { total: 5,  spawnDelay: 1400, mix: { normal: 1.0 }, hp: { normal: 5 }, reward: { normal: 4 } },
-  { total: 6,  spawnDelay: 1250, mix: { normal: 1.0 }, hp: { normal: 6 }, reward: { normal: 4 } },
-  { total: 7,  spawnDelay: 1150, mix: { normal: 1.0 }, hp: { normal: 6 }, reward: { normal: 4 } },
-  { total: 9,  spawnDelay: 1050, mix: { normal: 0.85, fast: 0.15 }, hp: { normal: 7, fast: 5 }, reward: { normal: 4, fast: 4 } },
+   }  
+    this.waveText.setText(`Wave: ${this.waveNumber}`);
+    this.enemiesSpawned = 0;
+    this.enemiesKilled = 0;
+    // 📦 Generate enemy queue
+    // ✅ Full Wave Progression for Level 1
+    const waveConfig = [
+    { total: 5,  spawnDelay: 1400, mix: { normal: 1.0 }, hp: { normal: 5 }, reward: { normal: 4 } },
+    { total: 6,  spawnDelay: 1250, mix: { normal: 1.0 }, hp: { normal: 6 }, reward: { normal: 4 } },
+    { total: 7,  spawnDelay: 1150, mix: { normal: 1.0 }, hp: { normal: 6 }, reward: { normal: 4 } },
+    { total: 9,  spawnDelay: 1050, mix: { normal: 0.85, fast: 0.15 }, hp: { normal: 7, fast: 5 }, reward: { normal: 4, fast: 4 } },
 
-  // 🔧 Harder Wave 5
-  { total: 12, spawnDelay: 850,  mix: { normal: 0.6, fast: 0.35, tank: 0.05 }, hp: { normal: 8, fast: 6, tank: 18 }, reward: { normal: 3, fast: 3, tank: 5 } },
+    // 🔧 Harder Wave 5
+    { total: 12, spawnDelay: 850,  mix: { normal: 0.6, fast: 0.35, tank: 0.05 }, hp: { normal: 8, fast: 6, tank: 18 }, reward: { normal: 3, fast: 3, tank: 5 } },
 
-  // 🔧 Harder Wave 6
-  { total: 14, spawnDelay: 850,  mix: { normal: 0.5, fast: 0.4, tank: 0.1 }, hp: { normal: 9, fast: 7, tank: 22 }, reward: { normal: 3, fast: 3, tank: 5 } },
+    // 🔧 Harder Wave 6
+    { total: 14, spawnDelay: 850,  mix: { normal: 0.5, fast: 0.4, tank: 0.1 }, hp: { normal: 9, fast: 7, tank: 22 }, reward: { normal: 3, fast: 3, tank: 5 } },
 
-  { total: 13, spawnDelay: 830,  mix: { normal: 0.55, fast: 0.4, tank: 0.05 }, hp: { normal: 8, fast: 6, tank: 18 }, reward: { normal: 3, fast: 4, tank: 6 } },
-  { total: 14, spawnDelay: 800,  mix: { normal: 0.5, fast: 0.4, tank: 0.1 }, hp: { normal: 8, fast: 6, tank: 20 }, reward: { normal: 3, fast: 4, tank: 6 } },
-  { total: 15, spawnDelay: 750,  mix: { normal: 0.4, fast: 0.5, tank: 0.1 }, hp: { normal: 8, fast: 6, tank: 22 }, reward: { normal: 3, fast: 4, tank: 6 } },
-  { total: 16, spawnDelay: 700,  mix: { normal: 0.3, fast: 0.6, tank: 0.1 }, hp: { normal: 8, fast: 6, tank: 24 }, reward: { normal: 3, fast: 4, tank: 6 } },
-];
-
-
-
+    { total: 13, spawnDelay: 830,  mix: { normal: 0.55, fast: 0.4, tank: 0.05 }, hp: { normal: 8, fast: 6, tank: 18 }, reward: { normal: 3, fast: 4, tank: 6 } },
+    { total: 14, spawnDelay: 800,  mix: { normal: 0.5, fast: 0.4, tank: 0.1 }, hp: { normal: 8, fast: 6, tank: 20 }, reward: { normal: 3, fast: 4, tank: 6 } },
+    { total: 15, spawnDelay: 750,  mix: { normal: 0.4, fast: 0.5, tank: 0.1 }, hp: { normal: 8, fast: 6, tank: 22 }, reward: { normal: 3, fast: 4, tank: 6 } },
+    { total: 16, spawnDelay: 700,  mix: { normal: 0.3, fast: 0.6, tank: 0.1 }, hp: { normal: 8, fast: 6, tank: 24 }, reward: { normal: 3, fast: 4, tank: 6 } },
+    ];
 const config = waveConfig[this.waveNumber - 1] ?? waveConfig[waveConfig.length - 1];
 const queue: string[] = [];
-
 for (const [type, ratio] of Object.entries(config.mix)) {
   const count = Math.round(ratio * config.total);
   for (let i = 0; i < count; i++) {
     queue.push(type);
   }
 }
-
 Phaser.Utils.Array.Shuffle(queue); // Optional: mix it up
 this.enemyQueue = queue;
 this.enemiesPerWave = queue.length;
@@ -1466,92 +1499,22 @@ this.currentEnemyReward = config.reward;
   // 🔁 restartGame(): Full reset of game state and visuals
   // ---------------------------------------------------------------------------
   restartGame() {
-  console.log('🔁 Restarting game...');
-  // 🧹 Destroy enemies and health bars
-  this.enemyGroup.getChildren().forEach((enemyObj) => {
-    const enemy = enemyObj as Phaser.GameObjects.GameObject;
-    if (!enemy?.active) return;
-    const hpBar = enemy.getData('hpBar');
-    const hpBarBg = enemy.getData('hpBarBg');
-    hpBar?.destroy();
-    hpBarBg?.destroy();
-    enemy.destroy();
-    this.bulletGroup.getChildren().forEach((bulletObj) => {
-      const bullet = bulletObj as Phaser.GameObjects.Arc;
-      const target = bullet.getData('target');
-      if (target === enemy) {
-        bullet.destroy();
-      }
-    });    
-  });
-// 🛑 Clear previous enemy spawn loop
-if (this.enemySpawnEvent) {
-  this.enemySpawnEvent.remove(false);
+    console.log('🔁 Restarting game...');
+    this.cleanupGameObjects(true);
+    this.startNextWave();
+    this.physics.resume();    
 }
-  this.enemyGroup.clear(true, true);
-  // 🔥 Extra health bar cleanup
-  this.children.getAll().forEach(child => {
-    if (child.name === 'hpBar' || child.name === 'hpBarBg') {
-      child.destroy();
-    }
-  });
-  this.bulletGroup.clear(true, true);
-// 🧹 Destroy towers
-this.towers.forEach(tower => {
-  const timer = tower.getData('shootTimer');
-  if (timer) timer.remove(true); // 🧼 Fully remove timer
-
-  const levelText = tower.getData('levelText') as Phaser.GameObjects.Text;
-  levelText?.destroy(); // 🧹 Destroy level badge
-
-  tower.destroy(); // 🧹 Destroy tower image
-});
-
-// 🔨 Extra brute-force cleanup for debug
-this.children.getAll().forEach(child => {
-  if (child instanceof Phaser.GameObjects.Image &&
-      ['basicTowerRight','machineTower', 'cannonTower'].includes(child.texture.key)) {
-    child.destroy();
-  }
-});
-
-this.towers = this.towers.filter(t => !!t && t.active); // remove nulls before using
-
-  // 🔲 Reset map tiles
-  for (let row = 0; row < this.mapRows; row++) {
-    for (let col = 0; col < this.mapCols; col++) {
-      if (this.tileMap[row][col] === 2) this.tileMap[row][col] = 1;
-      this.tileSprites[row][col].setFillStyle(
-        this.tileMap[row][col] === 0 ? 0x00B3FF : 0x00FFE7
-      );
-    }
-  }
-  // 🔁 Reset game values
-  this.waveNumber = 0;
-  this.vineBalance = 40;
-  this.lives = 10;
-  this.gameOver = false;
-  // 🧾 Reset HUD
-  this.vineText.setText(`$VINE: ${this.vineBalance}`);
-  this.waveText.setText(`Wave: 1`);
-  this.updateLivesDisplay(this.lives);
-  this.startNextWave();
-  this.isPaused = false;
-  this.physics.resume();
-
-}
-  // ---------------------------------------------------------------------------
-  // 🔼 showUpgradePanel(): Displays tower upgrade UI
-  // ---------------------------------------------------------------------------
-  showUpgradePanel(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform & { getData: Function }) {
-    if (this.gameOver) return;
-    const existing = this.children.getByName('upgradePanel');
+// ---------------------------------------------------------------------------
+// 🔼 showUpgradePanel(): Displays tower upgrade UI
+// ---------------------------------------------------------------------------
+showUpgradePanel(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform & { getData: Function }) {
+  if (this.gameOver) return;
+  const existing = this.children.getByName('upgradePanel');
   if (existing) existing.destroy();
   this.upgradePanelOpen = true;
   this.isPaused = true;
   this.physics.pause();
   this.enemySpawnEvent.paused = true;
-
   // 🧹 Cleanup any previous range indicators
   this.rangeCircle?.destroy();
   this.nextRangeCircle?.destroy();
@@ -1572,7 +1535,7 @@ this.towers = this.towers.filter(t => !!t && t.active); // remove nulls before u
   const bg = this.add.rectangle(0, 0, panelWidth, 110, 0x1A1F2B)
     .setOrigin(0.5)
     .setStrokeStyle(2, 0x00FFE7);
-  // 🔢 Stats
+  // 🔢 Stats & upgrade logic
   const dmg = tower.getData('damage');
   const rng = tower.getData('range');
   const level = tower.getData('level') ?? 1;
@@ -1615,7 +1578,6 @@ this.towers = this.towers.filter(t => !!t && t.active); // remove nulls before u
         tower.setData('level', level + 1);
         tower.setData('damage', nextDmg);
         tower.setData('range', nextRng);
-
         const levelText = tower.getData('levelText') as Phaser.GameObjects.Text;
         levelText?.setText(String(level + 1));
         // ♻️ Clean and refresh panel
@@ -1642,40 +1604,38 @@ this.towers = this.towers.filter(t => !!t && t.active); // remove nulls before u
       this.nextRangeCircle = undefined;
       this.upgradePanelOpen = false;
       this.isPaused = false;
-  
-      // ✅ FIX: Resume the selected tower’s shooting timer (if it exists)
       const shootTimer = tower.getData('shootTimer');
       shootTimer.paused = false;
-  
       const existingCircle = this.children.getByName('rangeCircle');
       existingCircle?.destroy();
       this.activeUpgradeButton = undefined;
       this.activeUpgradeCost = undefined;
       this.activeTower = undefined;
     });
-  });  
-  const blocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x1A1F2B, 0.001)
-  .setOrigin(0)
-  .setInteractive()
-  .setDepth(999);
-
-blocker.once('pointerdown', () => {
-  console.log('[🔴 Blocker clicked]');
-  this.towerSelectPanel?.destroy();
-  this.towerSelectPanel = undefined;
-  this.towerSelectHighlight?.destroy();
-  this.towerSelectHighlight = undefined;
-  blocker.destroy();
-  this.isPaused = false;
-  this.physics.resume();
-  this.enemySpawnEvent.paused = false;
-
-  this.time.delayedCall(16, () => {
-    this.input.enabled = true;
-    this.canSelectTile = true; // ✅ make sure this is also true from cancel
   });
-});
+  const blocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x1A1F2B, 0.001)
+    .setOrigin(0)
+    .setInteractive()
+    .setDepth(999);
+  blocker.once('pointerdown', () => {
+    console.log('[🔴 Blocker clicked]');
+    this.towerSelectPanel?.destroy();
+    this.towerSelectPanel = undefined;
+    this.towerSelectHighlight?.destroy();
+    this.towerSelectHighlight = undefined;
+    blocker.destroy();
+    this.isPaused = false;
+    this.physics.resume();
+    this.enemySpawnEvent.paused = false;
+    this.time.delayedCall(16, () => {
+      this.input.enabled = true;
+      this.canSelectTile = true;
+    });
+  });
 }
+///////////////////////////
+// 🏆 TRIGGER VICTORY 🏆 //
+///////////////////////////
 triggerVictory() {
   // 💾 Save vine to Supabase
   if (!this.hasSavedVine && this.walletAddress) {
@@ -1686,160 +1646,95 @@ triggerVictory() {
     }));
     console.log('✅ save-vine dispatched from victory:', totalVine);
   }
-  
-
-  if (this.towerSelectPanel) {
-    this.towerSelectPanel.destroy();
-    this.towerSelectPanel = undefined;
-  }
-  this.canSelectTile = false;
-  this.gameOver = true;
-  this.enemySpawnEvent.remove(false);
-  this.isPaused = true;
-  this.physics.pause();
-// ⛔ Stop towers
-this.towers.forEach(tower => {
-  if (!tower || !tower.getData) return;
-
-  const timer = tower.getData('shootTimer');
-  if (timer?.remove) {
-    timer.remove(false);
-  }
-});
-
-this.towers.forEach(tower => {
-  if (tower && typeof tower.disableInteractive === 'function' && tower.scene?.input) {
-    tower.disableInteractive();
-  }  
-});
-
+  // Victory RESET Game
+  this.cleanupGameObjects(true); // not full reset
   const cx = Number(this.game.config.width) / 2;
   const cy = Number(this.game.config.height) / 2;
-  
-// 🔲 Dim background
-const victoryOverlay = this.add.rectangle(cx, cy, this.game.config.width as number, this.game.config.height as number, 0x1A1F2B, 0.4)
-  .setOrigin(0.5)
-  .setDepth(-1);
-
-// 🎉 Popup Background
-const victoryPopupBg = this.add.rectangle(cx, cy, 340, 240, 0x1A1F2B, 0.8)
-  .setOrigin(0.5)
-  .setStrokeStyle(2, 0x00B3FF)
-  .setDepth(1006);
-
-// 🏆 Title
-const victoryText = this.add.text(cx, cy - 64, '🏆 You Win 🏆', {
-  fontSize: '36px',
-  fontFamily: 'Outfit',
-  fontStyle: 'bold',
-  align: 'center',
-  color: '#5CFFA3', // GREEN
-}).setOrigin(0.5).setDepth(1006);
-
-// 💰 Earnings Message
-const vineAmount = this.add.text(cx, cy - 18, `${this.vineBalance + 1000} $VINE`, {
-  fontSize: '22px',
-  fontFamily: 'Outfit',
-  fontStyle: 'bold',
-  align: 'center',
-   color: '#5CFFA3', // 🟠 Amber
-}).setOrigin(0.5).setDepth(1006);
-
-const vineMessage = this.add.text(cx, cy + 10, `was added to your profile`, {
-  fontSize: '18px',
-  fontFamily: 'Outfit',
-  align: 'center',
-  color: '#DFFBFF',
-}).setOrigin(0.5).setDepth(1006);
-
-
-// 🔁 Play Again (Amber with hover)
-// 📍 Back to campaign
-const campaignBtn = this.createStyledButton(
-  cx,
-  cy + 48,
-  'Campaign',
-  0x00B3FF,
-  () => {
-    console.log('📦 Saving vine from victory (to campaign)...');
-    if (this.walletAddress && this.vineBalance > 0) {
-      window.dispatchEvent(new CustomEvent('upgrade-campaign', {
-        detail: { level: 2 } // adjust level dynamically if needed
-      }));
-    }
-
-    // 🧹 Clean up popup elements
-    [victoryOverlay, victoryPopupBg, victoryText, vineAmount, vineMessage, campaignBtn, mainMenuBtn].forEach(e => e.destroy());
-
-    // 🔇 Stop all sounds
-    this.sound.stopAll();
-
-    // 🛑 Stop enemy spawn loop
-    if (this.enemySpawnEvent) {
-      this.enemySpawnEvent.remove(false);
-    }
-
-    // 🧼 Clear timers/events
-    this.time.clearPendingEvents();
-    this.time.removeAllEvents();
-
-    // ♻️ Reset core state values
-    this.waveNumber = 0;
-    this.lives = 10;
-    this.vineBalance = 40;
-    this.gameOver = false;
-    this.isPaused = false;
-
-    // 🚀 Navigate to Campaign Map
-    this.scene.stop();
-    this.scene.start('CampaignMapScene');
-  },
-  0x3CDFFF
-);
-
-// ✨ Add squish animation for hover
-campaignBtn.setInteractive()
-  .on('pointerover', () => {
-    this.tweens.add({
-      targets: campaignBtn,
-      scaleX: 1.05,
-      scaleY: 1.05,
-      duration: 100,
-      ease: 'Power1'
+  // 🔲 Dim background
+  const victoryOverlay = this.add.rectangle(cx, cy, this.game.config.width as number, this.game.config.height as number, 0x1A1F2B, 0.4)
+    .setOrigin(0.5)
+    .setDepth(-1);
+  // Victory Popup Background
+  const victoryPopupBg = this.add.rectangle(cx, cy, 340, 240, 0x1A1F2B, 0.8)
+    .setOrigin(0.5)
+    .setStrokeStyle(2, 0x00B3FF)
+    .setDepth(1006);
+  // Victory Title
+  const victoryText = this.add.text(cx, cy - 64, '🏆 You Win 🏆', {
+    fontSize: '36px',
+    fontFamily: 'Outfit',
+    fontStyle: 'bold',
+    align: 'center',
+    color: '#5CFFA3'
+  }).setOrigin(0.5).setDepth(1006);
+  // Victory Earnings Message
+  const vineAmount = this.add.text(cx, cy - 18, `${this.vineBalance + 1000} $VINE`, {
+    fontSize: '22px',
+    fontFamily: 'Outfit',
+    fontStyle: 'bold',
+    align: 'center',
+    color: '#5CFFA3'
+  }).setOrigin(0.5).setDepth(1006);
+  const vineMessage = this.add.text(cx, cy + 10, `was added to your profile`, {
+    fontSize: '18px',
+    fontFamily: 'Outfit',
+    align: 'center',
+    color: '#DFFBFF'
+  }).setOrigin(0.5).setDepth(1006);
+  // Victory Campaign Button
+  const campaignBtn = this.createStyledButton(
+    cx,
+    cy + 48,
+    'Campaign',
+    0x00B3FF,
+    () => {
+      console.log('📦 Saving vine from victory (to campaign)...');
+      if (this.walletAddress && this.vineBalance > 0) {
+        window.dispatchEvent(new CustomEvent('upgrade-campaign', {
+          detail: { level: 2 }
+        }));
+      }
+      [victoryOverlay, victoryPopupBg, victoryText, vineAmount, vineMessage, campaignBtn, mainMenuBtn].forEach(e => e.destroy());
+      this.cleanupGameObjects(true);
+      this.scene.stop();
+      this.scene.start('CampaignMapScene');
+    },
+    0x3CDFFF
+  );
+  // ✨ Add squish animation for hover
+  campaignBtn.setInteractive()
+    .on('pointerover', () => {
+      this.tweens.add({
+        targets: campaignBtn,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 100,
+        ease: 'Power1'
+      });
+    })
+    .on('pointerout', () => {
+      this.tweens.add({
+        targets: campaignBtn,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: 'Power1'
+      });
     });
-  })
-  .on('pointerout', () => {
-    this.tweens.add({
-      targets: campaignBtn,
-      scaleX: 1,
-      scaleY: 1,
-      duration: 100,
-      ease: 'Power1'
-    });
-  });
-
-
-// 🏠 Main Menu (same amber)
-const mainMenuBtn = this.createStyledButton(
-  cx,
-  cy + 94,
-  'Main Menu',
-  0x00B3FF,
-  () => {
-    console.log('📦 Saving vine from victory (to campaign)...');
-    if (this.walletAddress && this.vineBalance > 0) {
-      window.dispatchEvent(new CustomEvent('upgrade-campaign', {
-        detail: { level: 2 } // adjust level dynamically if needed
-      }));
-    }
-    
-   // 🛑 Stop all sounds before reload
-    this.sound.stopAll();    window.location.reload();
-  },
-  0x3CDFFF
-);
-
-
-}  
-
+  // Victory Main Menu Button
+  const mainMenuBtn = this.createStyledButton(cx,cy + 94,'Main Menu', 0x00B3FF,
+    () => {
+      console.log('📦 Saving vine from victory (to campaign)...');
+      if (this.walletAddress && this.vineBalance > 0) {
+        window.dispatchEvent(new CustomEvent('upgrade-campaign', {
+          detail: { level: 2 }
+        }));
+      }
+      this.cleanupGameObjects(true);
+      this.sound.stopAll();
+      window.location.reload();
+    },
+    0x3CDFFF
+  );
+}
 }
