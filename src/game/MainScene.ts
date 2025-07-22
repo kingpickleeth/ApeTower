@@ -20,7 +20,7 @@ export default class MainScene extends Phaser.Scene {
   canSelectTile: boolean = true;
   claimButton?: Phaser.GameObjects.Container;
   canSpawnEnemies: boolean = false;
-  MAX_WAVE: number = 2;
+  MAX_WAVE: number = 10;
   walletAddress: string = '';
   totalEnemiesKilledByPhysics = 0;
   totalEnemiesDestroyed = 0;
