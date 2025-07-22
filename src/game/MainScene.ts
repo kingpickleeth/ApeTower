@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 export default class MainScene extends Phaser.Scene {
-
   // ---------------------------------------------------------------------------
   // 📦 Core Game Objects
   // ---------------------------------------------------------------------------
@@ -28,7 +27,6 @@ export default class MainScene extends Phaser.Scene {
   heartIcons: Phaser.GameObjects.Text[] = [];
   levelNumber: number = 1; // default, can be overridden
   hasSavedVine: boolean = false;
-
   // ---------------------------------------------------------------------------
   // 💰 Currency, Lives & Game State
   // ---------------------------------------------------------------------------
@@ -41,7 +39,6 @@ export default class MainScene extends Phaser.Scene {
   lives: number = 10;
   gameOver: boolean = false;
   isPaused: boolean = false;
-  
   // ---------------------------------------------------------------------------
   // 🗺️ Grid & Map
   // ---------------------------------------------------------------------------
@@ -78,26 +75,28 @@ export default class MainScene extends Phaser.Scene {
   constructor() {
     super('MainScene');
   }
- 
   // ---------------------------------------------------------------------------
   // 🔁 preload(): Load assets
   // ---------------------------------------------------------------------------
   preload() {
-  this.load.image('basicTowerRight', 'https://admin.demwitches.xyz/assets/archerturret.png');
-  this.load.image('basicTowerLeft', 'https://admin.demwitches.xyz/assets/archerturretleft.png');
-  this.load.image('cannonTowerRight', 'https://admin.demwitches.xyz/assets/cannonturret.png');
-  this.load.image('cannonTowerLeft', 'https://admin.demwitches.xyz/assets/cannonturretleft.png');
-  this.load.image('rapidTowerRight', 'https://admin.demwitches.xyz/assets/rapidturret.png');
-  this.load.image('rapidTowerLeft', 'https://admin.demwitches.xyz/assets/rapidturretleft.png');
-  this.load.image('enemyNormal', 'https://admin.demwitches.xyz/assets/normalenemy.png');
-  this.load.image('enemyFast', 'https://admin.demwitches.xyz/assets/fastenemy.png');
-  this.load.image('enemyTank', 'https://admin.demwitches.xyz/assets/tankenemy.png');
-   // 🔁 Then this
-   this.load.once('complete', () => {
+    this.load.image('basicTowerRight', 'https://admin.demwitches.xyz/assets/archerturret.png');
+    this.load.image('basicTowerLeft', 'https://admin.demwitches.xyz/assets/archerturretleft.png');
+    this.load.image('cannonTowerRight', 'https://admin.demwitches.xyz/assets/cannonturret.png');
+    this.load.image('cannonTowerLeft', 'https://admin.demwitches.xyz/assets/cannonturretleft.png');
+    this.load.image('rapidTowerRight', 'https://admin.demwitches.xyz/assets/rapidturret.png');
+    this.load.image('rapidTowerLeft', 'https://admin.demwitches.xyz/assets/rapidturretleft.png');
+    this.load.image('enemyNormal', 'https://admin.demwitches.xyz/assets/normalenemy.png');
+    this.load.image('enemyFast', 'https://admin.demwitches.xyz/assets/fastenemy.png');
+    this.load.image('enemyTank', 'https://admin.demwitches.xyz/assets/tankenemy.png');
+    // 🔁 Then this
+    this.load.once('complete', () => {
     console.log('✅ All assets loaded.');
     this.assetsLoaded = true; // ✅ This line is essential
-  });
+    });
   }
+  // ---------------------------------------------------------------------------
+  // 💡 Helper Methods
+  // ---------------------------------------------------------------------------
   showRewardText(x: number, y: number, amount: number) {
     const rewardText = this.add.text(x, y - 12, `+${amount} $VINE`, {
       fontSize: '18px',
@@ -110,7 +109,6 @@ export default class MainScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setAlpha(1)
       .setDepth(5000);
-  
     this.tweens.add({
       targets: rewardText,
       y: rewardText.y - 20,
@@ -120,26 +118,21 @@ export default class MainScene extends Phaser.Scene {
       onComplete: () => rewardText.destroy()
     });
   }
-  
-
   killEnemy(enemy: Phaser.GameObjects.Arc) {
-  const reward = enemy.getData('reward') || 0;
-  this.vineBalance += reward;
-
-  const { x, y } = enemy.getCenter();
-  this.showRewardText(x, y, reward); // ⬅️ Use this
-  this.vineText.setText(`$VINE: ${this.vineBalance}`);
-
-  const bar = enemy.getData('hpBar') as Phaser.GameObjects.Rectangle;
-  const barBg = enemy.getData('hpBarBg') as Phaser.GameObjects.Rectangle;
-  bar?.destroy();
-  barBg?.destroy();
-  enemy.destroy();
-  this.enemiesKilled++;
-  this.checkWaveOver();
-
-  console.log(`✅ killEnemy() executed at (${x}, ${y}) with reward ${reward}`);
-}
+    const reward = enemy.getData('reward') || 0;
+    this.vineBalance += reward;
+    const { x, y } = enemy.getCenter();
+    this.showRewardText(x, y, reward); // ⬅️ Use this
+    this.vineText.setText(`$VINE: ${this.vineBalance}`);
+    const bar = enemy.getData('hpBar') as Phaser.GameObjects.Rectangle;
+    const barBg = enemy.getData('hpBarBg') as Phaser.GameObjects.Rectangle;
+    bar?.destroy();
+    barBg?.destroy();
+    enemy.destroy();
+    this.enemiesKilled++;
+    this.checkWaveOver();
+    console.log(`✅ killEnemy() executed at (${x}, ${y}) with reward ${reward}`);
+  }
 
   // ---------------------------------------------------------------------------
   // 🎮 create(): Setup the map, UI, path, selectors, towers, collisions
@@ -152,55 +145,45 @@ export default class MainScene extends Phaser.Scene {
   const mapWidth = this.mapCols * this.tileSize;
   const mapHeight = this.mapRows * this.tileSize;
   this.load.audio('bgMusic', ['https://admin.demwitches.xyz/assets/music.mp3']);
-this.load.once('complete', () => {
+  this.load.once('complete', () => {
   const music = this.sound.add('bgMusic', { loop: true, volume: 0.5 });
   music.play();
-});
-this.load.start();
+    });
+  this.load.start();
   this.mapOffsetX = (screenWidth - mapWidth) / 2;
   this.mapOffsetY = (screenHeight - mapHeight) / 2;
-
-  // External Pause Function from UI
+    // External Pause Function from UI
   (window as any).pauseGameFromUI = () => {
     this.isPaused = true;
     this.canSelectTile = false; // ⛔ Disable tile selection
-  
     this.physics.pause();
-  
     if (this.enemySpawnEvent) {
       this.enemySpawnEvent.paused = true;
     }
-  
     this.towers.forEach(t => {
       const timer = t.getData('shootTimer');
       if (timer) timer.paused = true;
     });
-  
     this.bulletGroup.getChildren().forEach(b => {
       const timer = b.getData('despawnTimer');
       if (timer) timer.paused = true;
     });
   };
-  // EXTERNAL RESUME FUNCTION
+    // EXTERNAL RESUME FUNCTION
   (window as any).resumeGameFromUI = () => {
     this.isPaused = false;
     this.canSelectTile = true; // Enable tile selection
     this.physics.resume();
-  
     if (this.enemySpawnEvent) this.enemySpawnEvent.paused = false;
-  
     this.towers.forEach(t => {
       const timer = t.getData('shootTimer');
       if (timer) timer.paused = false;
     });
-  
     this.bulletGroup.getChildren().forEach(b => {
       const timer = b.getData('despawnTimer');
       if (timer) timer.paused = false;
     });
   };
-  
-  
   // 🧿 Generate enemy texture as red circle
   const circle = this.add.graphics();
   circle.fillStyle(0xff0000, 1);
@@ -213,7 +196,6 @@ this.load.start();
     [3, 5], [3, 4], [3, 3], [3, 2], [3, 1], [4, 1], [5, 1], [5, 2], [5, 3], [5, 4],
     [5, 5], [5, 6], [6, 6], [7, 6], [7, 5], [7, 4], [7, 3], [7, 2], [7, 1], [8, 1], [9, 1]
   ];
-  
   // 🧭 Create path curve
   const [startCol, startRow] = pathTiles[0];
   this.path = this.add.path(
@@ -235,19 +217,15 @@ const textStyle = {
   color: '#DFFBFF',
   resolution: window.devicePixelRatio || 1
 };
-
 // Temporarily create texts offscreen to measure widths
 const vineText = this.add.text(0, 0, '$VINE: 40', textStyle).setScale(0.5);
 const waveText = this.add.text(0, 0, 'Wave: 1', textStyle).setScale(0.5);
 const livesLabel = this.add.text(0, 0, 'Lives:', textStyle).setScale(0.5);
-
 // Spacing between each
 const padding = 64;
-
 // Measure the heart grid size manually (5 hearts wide, 2 rows)
 const heartSpacing = 22;
 const heartWidth = 5 * heartSpacing;
-
 // Total width = vine + wave + livesLabel + heart grid + padding
 const totalWidth =
   vineText.displayWidth +
@@ -255,22 +233,17 @@ const totalWidth =
   livesLabel.displayWidth +
   heartWidth +
   padding * 3;
-
 const centerX = Number(this.game.config.width) / 2;
 let startX = centerX - totalWidth / 2;
-
 // 🪙 Position VINE
 vineText.setPosition(startX, hudY);
 startX += vineText.displayWidth + padding;
-
 // 🌊 Position Wave
 waveText.setPosition(startX, hudY);
 startX += waveText.displayWidth + padding;
-
 // ❤️ Lives label
 livesLabel.setPosition(startX, hudY);
 startX += livesLabel.displayWidth + 8;
-
 // ❤️ Heart Icons Grid
 this.heartIcons = [];
 for (let i = 0; i < 10; i++) {
@@ -278,7 +251,6 @@ for (let i = 0; i < 10; i++) {
   const row = Math.floor(i / 5);
   const x = startX + col * heartSpacing;
   const y = hudY + row * 18 - 4;
-
   const heart = this.add.text(x, y, '❤️', { fontSize: '20px' })
   .setInteractive({ useHandCursor: false })
   .setData('originalY', y)
@@ -308,17 +280,12 @@ for (let i = 0; i < 10; i++) {
       });
     }
   });
-
 this.heartIcons.push(heart);
 }
-
-
 // Assign text objects for updates
 this.vineText = vineText;
 this.waveText = waveText;
 this.updateLivesDisplay(10); // Or whatever the starting lives count is
-
-
   // 🧱 Initialize tile map (1 = buildable, 0 = path)
   this.tileMap = Array.from({ length: this.mapRows }, () => Array(this.mapCols).fill(1));
   for (const [col, row] of pathTiles) this.tileMap[row][col] = 0;
@@ -341,13 +308,10 @@ this.updateLivesDisplay(10); // Or whatever the starting lives count is
             this.canSelectTile = false;
             this.showTowerSelectPanel(col, row);
           }
-          
         });
       }
-      
     }
   }
- 
   // 👾 Create enemy and bullet groups
   this.enemyGroup = this.add.group();
   this.bulletGroup = this.add.group();
@@ -358,7 +322,6 @@ this.updateLivesDisplay(10); // Or whatever the starting lives count is
     callbackScope: this,
     loop: true,
   });
- 
   // 💥 Bullet + Enemy collision logic
   this.physics.add.overlap(
     this.bulletGroup,
@@ -381,10 +344,8 @@ this.updateLivesDisplay(10); // Or whatever the starting lives count is
       });
       bullet.destroy();
       console.log(`🎯 Bullet hit: enemy HP before = ${hp}, damage = ${damage}`);
-
 if (hp <= 0) {
   console.log(`✅ Entered kill block at (${enemy.x}, ${enemy.y})`);
-
         const reward = enemy.getData('reward') || 0;
         this.vineBalance += reward;
         
@@ -410,14 +371,12 @@ if (hp <= 0) {
       }
     }
   );
-  
   // 🎬 Start wave
   this.startNextWave();
 const buttonRadius = 24;
 const marginX = 20 + buttonRadius;
 const marginY = this.scale.height - 90;
 const spacingY = 60;
-
 // Helper to create a circular emoji button
 const createCircleButton = (
   x: number,
@@ -426,14 +385,11 @@ const createCircleButton = (
   onClick: () => void
 ) => {
   const buttonRadius = 24;
-
   const circle = this.add.circle(0, 0, buttonRadius, 0x1A1F2B)
     .setStrokeStyle(2, 0x00B3FF)
     .setDepth(1000);
-
   const xOffset = ['⟳', '🔈', '🔇'].includes(emoji) ? 2 : 0;
   const yOffset = ['⟳'].includes(emoji) ? -2 : 0;
-
   const icon = this.add.text(xOffset, yOffset, emoji, {
     fontSize: emoji === '⟳' ? '35px' : emoji === '⏸' || emoji === '▶️' ? '26px' : '20px',
     fontFamily: 'Outfit',
@@ -441,7 +397,6 @@ const createCircleButton = (
     resolution: window.devicePixelRatio || 1
   }).setOrigin(0.5)
     .setDepth(1001);
-
   const container = this.add.container(x, y, [circle, icon])
     .setSize(buttonRadius * 2, buttonRadius * 2)
     .setDepth(1000)
@@ -450,7 +405,6 @@ const createCircleButton = (
       new Phaser.Geom.Circle(20, 20, buttonRadius),
       Phaser.Geom.Circle.Contains
     );
-
   // 🖱 Hover scale
   container.on('pointerover', () => {
     this.tweens.add({
@@ -460,7 +414,6 @@ const createCircleButton = (
       ease: 'Power2'
     });
   });
-
   // ❌ Exit hover
   container.on('pointerout', () => {
     this.tweens.add({
@@ -470,7 +423,6 @@ const createCircleButton = (
       ease: 'Power2'
     });
   });
-
   // 👆 Click squish + fire
   container.on('pointerdown', () => {
     this.tweens.add({
