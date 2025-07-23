@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { JsonRpcProvider, Contract } from 'ethers';
 
 export async function getProfile(walletAddress: string) {
   const { data, error } = await supabase
@@ -111,6 +112,15 @@ export async function upsertProfile(walletAddress: string, username: string, pfp
       return { error: e };
     }
   }
+  const DENG_TOWER_ABI = ['function balanceOf(address) view returns (uint256)'];
+  const DENG_TOWER_ADDRESS = '0xeDed3FA692Bf921B9857F86CC5BB21419F5f77ec';
+
+export async function checkTowerBalance(walletAddress: string): Promise<number> {
+  const provider = new JsonRpcProvider("https://apechain.calderachain.xyz/http");
+  const contract = new Contract(DENG_TOWER_ADDRESS, DENG_TOWER_ABI, provider);
+  const balance = await contract.balanceOf(walletAddress);
+  return Number(balance);
+}
   export async function getProfileByUsername(username: string) {
     const { data, error } = await supabase
       .from('profiles')

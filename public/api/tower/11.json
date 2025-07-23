@@ -1,0 +1,11 @@
+{
+  "name": "Deng Tower #11",
+  "description": "A Rapid Tower NFT.",
+  "image": "https://admin.demwitches.xyz/towers/rapid.png",
+  "attributes": [
+    {
+      "trait_type": "Type",
+      "value": "Rapid"
+    }
+  ]
+}

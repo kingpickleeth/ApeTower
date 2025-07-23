@@ -1,0 +1,11 @@
+{
+  "name": "Deng Tower #15",
+  "description": "A Basic Tower NFT.",
+  "image": "https://admin.demwitches.xyz/towers/basic.png",
+  "attributes": [
+    {
+      "trait_type": "Type",
+      "value": "Basic"
+    }
+  ]
+}

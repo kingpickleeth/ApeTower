@@ -6,6 +6,7 @@ import { updateVineBalance } from '../utils/profile'; // ⬅️ Make sure this e
 import { getProfileByUsername } from '../utils/profile';
 import { JsonRpcProvider, Contract, formatUnits } from 'ethers';
 import VINE_ABI from '../abis/VineToken.json'; // create this if needed
+import { checkTowerBalance } from '../utils/profile'; // adjust path if needed
 
 
 const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/avatar.svg';
@@ -170,12 +171,30 @@ useEffect(() => {
   };
 
   const saveProfile = async () => {
+    
     if (!username.trim()) {
       setShowErrorModal("Username is required!");
       return;
     }
+    
     const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/avatar.svg'; // ✅ Use your actual default image path
 const finalPfp = pfpUrl || DEFAULT_PFP_URL;
+try {
+  const towerBalance = await checkTowerBalance(walletAddress);
+  if (towerBalance === 0) {
+    console.log("🛠️ No towers found, dispatching mint...");
+    window.dispatchEvent(new CustomEvent("mint-starter-towers", {
+      detail: { wallet: walletAddress }
+    }));
+    // Optionally wait a moment to ensure mint finishes
+    await new Promise(resolve => setTimeout(resolve, 3000));
+  } else {
+    console.log("🧱 Towers already owned, skipping mint.");
+  }
+} catch (err) {
+  console.error("❌ Tower balance check or mint dispatch failed:", err);
+}
+
 const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
 
   

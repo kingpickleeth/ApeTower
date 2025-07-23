@@ -5,6 +5,7 @@ import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Chain } from 'viem';
 import type { ReactNode } from 'react';
+import React from 'react';
 
 const apechain: Chain = {
   id: 33139,

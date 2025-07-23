@@ -1,0 +1,15 @@
+{
+  "name": "Deng Tower #42",
+  "description": "Starter tower in Deng Defense.",
+  "image": "https://admin.demwitches.xyz/images/tower/42.png",
+  "attributes": [
+    {
+      "trait_type": "Type",
+      "value": "Basic"
+    },
+    {
+      "trait_type": "Level",
+      "value": 1
+    }
+  ]
+}

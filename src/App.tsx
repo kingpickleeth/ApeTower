@@ -8,6 +8,8 @@ import { JsonRpcProvider, Wallet, Contract, parseUnits, getAddress } from 'ether
 import { getProfile } from './utils/profile';
 import GameModal from './components/GameModal';
 import { updateVineBalance, upgradeCampaignLevel } from './utils/profile'; // ✅ Make sure this is at the top
+import DENG_TOWER_ABI from './abis/Tower.json'; // You can paste ABI inline if needed
+import React from 'react';
 
 
 const VINE_TOKEN = "0xe6027e786e2ef799316afabae84e072ca73aa97f";
@@ -129,6 +131,73 @@ window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
     return () => window.removeEventListener('save-vine', handleSaveVine);
   }, [address]);
   
+  useEffect(() => {
+    const handler = async (e: any) => {
+      const walletAddress = e.detail.wallet;
+      if (!walletAddress) return;
+  
+      try {
+        const provider = new JsonRpcProvider(APECHAIN_RPC);
+        const privateKey = import.meta.env.VITE_ADMIN_PRIVATE_KEY;
+        if (!privateKey) throw new Error("Missing admin private key");
+  
+        const adminWallet = new Wallet(privateKey, provider);
+        const towerContract = new Contract(
+          '0xeDed3FA692Bf921B9857F86CC5BB21419F5f77ec',
+          DENG_TOWER_ABI.abi,
+          adminWallet
+        );
+  
+        const tx = await towerContract.mintStarterTowers(walletAddress);
+        const receipt = await tx.wait();
+        const tokenIds: number[] = [];
+
+for (const log of receipt.logs) {
+  try {
+    if (log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef') {
+      // Standard ERC721 Transfer event
+      const tokenIdHex = log.topics[3]; // topics[3] = tokenId (indexed)
+      const tokenId = parseInt(tokenIdHex, 16);
+      tokenIds.push(tokenId);
+    }
+  } catch (err) {
+    console.warn('Error parsing log:', err);
+  }
+}
+
+console.log("🎯 Minted token IDs:", tokenIds);
+
+for (const id of tokenIds) {
+  try {
+    const res = await fetch(`https://metadata-server-production.up.railway.app/generate-metadata/${id}`, {
+      method: 'POST'
+    });
+  
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Server returned ${res.status}: ${text}`);
+    }
+    console.log(`📁 Metadata generated for tower #${id}`);
+  } catch (err) {
+    console.error(`❌ Metadata generation failed for ID ${id}:`, err);
+  }
+}
+
+
+
+        console.log("✅ Towers minted:", receipt.transactionHash);
+  
+        window.dispatchEvent(new CustomEvent("towers-minted", {
+          detail: { txHash: receipt.transactionHash }
+        }));
+      } catch (err) {
+        console.error("❌ Failed to mint towers:", err);
+      }
+    };
+  
+    window.addEventListener("mint-starter-towers", handler);
+    return () => window.removeEventListener("mint-starter-towers", handler);
+  }, []);
   
   useEffect(() => {
     if (!address) return;

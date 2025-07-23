@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import Phaser from 'phaser';
 import GameConfig from '../game/GameConfig';
 import WebFont from 'webfontloader';
+import React from 'react';
 
 let game: Phaser.Game | null = null;
 
