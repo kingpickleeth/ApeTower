@@ -1,8 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { id } = req.query;
+
+    // Handle missing or invalid ID
+    if (!id || Array.isArray(id)) {
+      return res.status(400).json({ error: "Invalid or missing ID" });
+    }
 
     const towerData: Record<string, any> = {
       "1": {
@@ -43,16 +48,15 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       }
     };
 
-    const metadata = towerData[id as string];
+    const metadata = towerData[id];
 
     if (!metadata) {
-      console.warn("Invalid tower ID requested:", id);
       return res.status(404).json({ error: "Tower not found" });
     }
 
     return res.status(200).json(metadata);
   } catch (err) {
-    console.error("🔥 Tower API Error:", err);
+    console.error("🔥 API Error at /api/tower/[id]:", err);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 }
