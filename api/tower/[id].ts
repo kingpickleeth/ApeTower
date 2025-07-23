@@ -1,13 +1,11 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
-
-const handler = (req: VercelRequest, res: VercelResponse) => {
+module.exports = (req, res) => {
   const id = req.query.id;
 
   if (!id || Array.isArray(id)) {
     return res.status(400).json({ error: "Invalid or missing ID" });
   }
 
-  const towerData: Record<string, any> = {
+  const towerData = {
     "1": {
       name: "Basic Tower",
       description: "A well-rounded starter tower with balanced stats.",
@@ -54,5 +52,3 @@ const handler = (req: VercelRequest, res: VercelResponse) => {
 
   return res.status(200).json(metadata);
 };
-
-export default handler;
