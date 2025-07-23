@@ -1,0 +1,12 @@
+{
+  "name": "Cannon Tower",
+  "description": "Heavy-hitting cannon with long range and slow reload.",
+  "image": "https://dengdefense.com/assets/towers/cannon.png",
+  "attributes": [
+    { "trait_type": "Level", "value": 1 },
+    { "trait_type": "Damage", "value": 25 },
+    { "trait_type": "Range", "value": 300 },
+    { "trait_type": "Fire Rate", "value": 2400 },
+    { "trait_type": "Tower Type", "value": "Cannon" }
+  ]
+}

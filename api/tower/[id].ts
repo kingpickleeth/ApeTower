@@ -1,52 +1,58 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
+  try {
+    const { id } = req.query;
 
-  const towerData: Record<string, any> = {
-    "1": {
-      name: "Basic Tower",
-      description: "A well-rounded starter tower with balanced stats.",
-      image: "https://dengdefense.com/assets/towers/basic.png",
-      attributes: [
-        { trait_type: "Level", value: 1 },
-        { trait_type: "Damage", value: 10 },
-        { trait_type: "Range", value: 160 },
-        { trait_type: "Fire Rate", value: 1000 },
-        { trait_type: "Tower Type", value: "Basic" }
-      ]
-    },
-    "2": {
-      name: "Sniper Tower",
-      description: "Long-range tower with high single-shot damage.",
-      image: "https://dengdefense.com/assets/towers/sniper.png",
-      attributes: [
-        { trait_type: "Level", value: 1 },
-        { trait_type: "Damage", value: 25 },
-        { trait_type: "Range", value: 300 },
-        { trait_type: "Fire Rate", value: 2400 },
-        { trait_type: "Tower Type", value: "Sniper" }
-      ]
-    },
-    "3": {
-      name: "Freeze Tower",
-      description: "Slows enemies with icy blasts. Low damage, tactical utility.",
-      image: "https://dengdefense.com/assets/towers/freeze.png",
-      attributes: [
-        { trait_type: "Level", value: 1 },
-        { trait_type: "Damage", value: 4 },
-        { trait_type: "Range", value: 140 },
-        { trait_type: "Fire Rate", value: 1800 },
-        { trait_type: "Tower Type", value: "Freeze" }
-      ]
+    const towerData: Record<string, any> = {
+      "1": {
+        name: "Basic Tower",
+        description: "A well-rounded starter tower with balanced stats.",
+        image: "https://dengdefense.com/assets/towers/basic.png",
+        attributes: [
+          { trait_type: "Level", value: 1 },
+          { trait_type: "Damage", value: 10 },
+          { trait_type: "Range", value: 160 },
+          { trait_type: "Fire Rate", value: 1000 },
+          { trait_type: "Tower Type", value: "Basic" }
+        ]
+      },
+      "2": {
+        name: "Cannon Tower",
+        description: "Heavy-hitting cannon with long range and slow reload.",
+        image: "https://dengdefense.com/assets/towers/cannon.png",
+        attributes: [
+          { trait_type: "Level", value: 1 },
+          { trait_type: "Damage", value: 25 },
+          { trait_type: "Range", value: 300 },
+          { trait_type: "Fire Rate", value: 2400 },
+          { trait_type: "Tower Type", value: "Cannon" }
+        ]
+      },
+      "3": {
+        name: "Rapid Tower",
+        description: "Fast-firing tower that delivers rapid low-damage shots.",
+        image: "https://dengdefense.com/assets/towers/rapid.png",
+        attributes: [
+          { trait_type: "Level", value: 1 },
+          { trait_type: "Damage", value: 4 },
+          { trait_type: "Range", value: 140 },
+          { trait_type: "Fire Rate", value: 1800 },
+          { trait_type: "Tower Type", value: "Rapid" }
+        ]
+      }
+    };
+
+    const metadata = towerData[id as string];
+
+    if (!metadata) {
+      console.warn("Invalid tower ID requested:", id);
+      return res.status(404).json({ error: "Tower not found" });
     }
-  };
 
-  const metadata = towerData[id as string];
-
-  if (!metadata) {
-    return res.status(404).json({ error: "Tower not found" });
+    return res.status(200).json(metadata);
+  } catch (err) {
+    console.error("🔥 Tower API Error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
-
-  return res.status(200).json(metadata);
 }
