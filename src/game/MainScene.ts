@@ -1,225 +1,228 @@
 import Phaser from 'phaser';
 export default class MainScene extends Phaser.Scene {
-  // ---------------------------------------------------------------------------
-  // 📦 Core Game Objects
-  // ---------------------------------------------------------------------------
-  path!: Phaser.Curves.Path;
-  enemyGroup!: Phaser.GameObjects.Group;
-  bulletGroup!: Phaser.GameObjects.Group;
-  tower!: Phaser.GameObjects.Arc;
-  towers: (Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform)[] = [];
-  hudBar!: Phaser.GameObjects.Rectangle;
-  assetsLoaded: boolean = false;
-  isMusicMuted: boolean = false;
-  isSfxMuted: boolean = false;
-  bgMusic!: Phaser.Sound.BaseSound;
-  selectedTilePos?: { x: number; y: number };
-  selectedTile?: { col: number, row: number };
-  towerSelectPanel?: Phaser.GameObjects.Container;
-  towerSelectHighlight?: Phaser.GameObjects.Rectangle;
-  canSelectTile: boolean = true;
-  claimButton?: Phaser.GameObjects.Container;
-  canSpawnEnemies: boolean = false;
-  MAX_WAVE: number = 10;
-  walletAddress: string = '';
-  totalEnemiesKilledByPhysics = 0;
-  totalEnemiesDestroyed = 0;
-  heartIcons: Phaser.GameObjects.Text[] = [];
-  levelNumber: number = 1; // default, can be overridden
-  hasSavedVine: boolean = false;
-  // ---------------------------------------------------------------------------
-  // 💰 Currency, Lives & Game State
-  // ---------------------------------------------------------------------------
-  vineBalance: number = 40; // Starting VINE
-  currentEnemyHP: Partial<Record<string, number>> = {};
-  currentEnemyReward: Partial<Record<string, number>> = {};  
-  vineText!: Phaser.GameObjects.Text;
-  waveText!: Phaser.GameObjects.Text;
-  livesText!: Phaser.GameObjects.Text;
-  lives: number = 10;
-  gameOver: boolean = false;
-  isPaused: boolean = false;
-  // ---------------------------------------------------------------------------
-  // 🗺️ Grid & Map
-  // ---------------------------------------------------------------------------
-  tileSize: number = 64;
-  mapCols: number = 10;
-  mapRows: number = 8;
-  tileMap: number[][] = [];
-  tileSprites: Phaser.GameObjects.Rectangle[][] = [];
-  mapOffsetX: number = 0;
-  mapOffsetY: number = 0;
-  // ---------------------------------------------------------------------------
-  // 📈 Wave & Enemy Tracking
-  // ---------------------------------------------------------------------------
-  waveNumber: number = 0;
-  enemyQueue: string[] = []; // Enemies to spawn this wave
-  enemiesPerWave: number = 5;
-  enemiesSpawned: number = 0;
-  enemiesKilled: number = 0;
-  enemiesEscaped: number = 0;
-  enemySpawnEvent!: Phaser.Time.TimerEvent;
-  // ---------------------------------------------------------------------------
-  // 🏹 Towers & Upgrades
-  // ---------------------------------------------------------------------------
-  currentTowerType: string = 'basic'; // Default selected tower type
-  activeTower?: Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform & { getData: Function };
-  activeUpgradeButton?: Phaser.GameObjects.Text;
-  activeUpgradeCost?: number;
-  rangeCircle?: Phaser.GameObjects.Arc;
-  nextRangeCircle?: Phaser.GameObjects.Arc;
-  upgradePanelOpen: boolean = false;
-  // ---------------------------------------------------------------------------
-  // 🛠️ Constructor
-  // ---------------------------------------------------------------------------
-  constructor() {
-    super('MainScene');
-  }
-  // ---------------------------------------------------------------------------
-  // 🔁 preload(): Load assets
-  // ---------------------------------------------------------------------------
-  preload() {
-    this.load.image('basicTowerRight', 'https://admin.demwitches.xyz/assets/archerturret.png');
-    this.load.image('basicTowerLeft', 'https://admin.demwitches.xyz/assets/archerturretleft.png');
-    this.load.image('cannonTowerRight', 'https://admin.demwitches.xyz/assets/cannonturret.png');
-    this.load.image('cannonTowerLeft', 'https://admin.demwitches.xyz/assets/cannonturretleft.png');
-    this.load.image('rapidTowerRight', 'https://admin.demwitches.xyz/assets/rapidturret.png');
-    this.load.image('rapidTowerLeft', 'https://admin.demwitches.xyz/assets/rapidturretleft.png');
-    this.load.image('enemyNormal', 'https://admin.demwitches.xyz/assets/normalenemy.png');
-    this.load.image('enemyFast', 'https://admin.demwitches.xyz/assets/fastenemy.png');
-    this.load.image('enemyTank', 'https://admin.demwitches.xyz/assets/tankenemy.png');
-    // 🔁 Then this
-    this.load.once('complete', () => {
+// ---------------------------------------------------------------------------
+// 📦 Core Game Objects
+// ---------------------------------------------------------------------------
+assetsLoaded: boolean = false;
+bgMusic!: Phaser.Sound.BaseSound;
+bulletGroup!: Phaser.GameObjects.Group;
+enemyGroup!: Phaser.GameObjects.Group;
+hudBar!: Phaser.GameObjects.Rectangle;
+isMusicMuted: boolean = false;
+isSfxMuted: boolean = false;
+MAX_WAVE: number = 10;
+path!: Phaser.Curves.Path;
+selectedTile?: { col: number, row: number };
+selectedTilePos?: { x: number; y: number };
+tower!: Phaser.GameObjects.Arc;
+towerSelectHighlight?: Phaser.GameObjects.Rectangle;
+towerSelectPanel?: Phaser.GameObjects.Container;
+towers: (Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform)[] = [];
+walletAddress: string = '';
+// ---------------------------------------------------------------------------
+// 💰 Currency, Lives & Game State
+// ---------------------------------------------------------------------------
+currentEnemyHP: Partial<Record<string, number>> = {};
+currentEnemyReward: Partial<Record<string, number>> = {};
+gameOver: boolean = false;
+hasSavedVine: boolean = false;
+isPaused: boolean = false;
+levelNumber: number = 1; // default, can be overridden
+lives: number = 10;
+livesText!: Phaser.GameObjects.Text;
+totalEnemiesDestroyed = 0;
+totalEnemiesKilledByPhysics = 0;
+vineBalance: number = 40; // Starting VINE
+vineText!: Phaser.GameObjects.Text;
+waveText!: Phaser.GameObjects.Text;
+// ---------------------------------------------------------------------------
+// 🗺️ Grid & Map
+// ---------------------------------------------------------------------------
+heartIcons: Phaser.GameObjects.Text[] = [];
+mapCols: number = 10;
+mapOffsetX: number = 0;
+mapOffsetY: number = 0;
+mapRows: number = 8;
+tileMap: number[][] = [];
+tileSize: number = 64;
+tileSprites: Phaser.GameObjects.Rectangle[][] = [];
+// ---------------------------------------------------------------------------
+// 📈 Wave & Enemy Tracking
+// ---------------------------------------------------------------------------
+canSpawnEnemies: boolean = false;
+enemyQueue: string[] = []; // Enemies to spawn this wave
+enemySpawnEvent!: Phaser.Time.TimerEvent;
+enemiesEscaped: number = 0;
+enemiesKilled: number = 0;
+enemiesPerWave: number = 5;
+enemiesSpawned: number = 0;
+waveNumber: number = 0;
+// ---------------------------------------------------------------------------
+// 🏹 Towers & Upgrades
+// ---------------------------------------------------------------------------
+activeTower?: Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform & { getData: Function };
+activeUpgradeButton?: Phaser.GameObjects.Text;
+activeUpgradeCost?: number;
+canSelectTile: boolean = true;
+currentTowerType: string = 'basic'; // Default selected tower type
+nextRangeCircle?: Phaser.GameObjects.Arc;
+rangeCircle?: Phaser.GameObjects.Arc;
+upgradePanelOpen: boolean = false;
+// ---------------------------------------------------------------------------
+// Constructor: Initializes the main game scene
+// ---------------------------------------------------------------------------
+constructor() {
+  super('MainScene');
+}
+// ---------------------------------------------------------------------------
+// preload(): Loads all required image assets before the game starts
+// ---------------------------------------------------------------------------
+preload() {
+  this.load.image('basicTowerRight', 'https://admin.demwitches.xyz/assets/archerturret.png');
+  this.load.image('basicTowerLeft', 'https://admin.demwitches.xyz/assets/archerturretleft.png');
+  this.load.image('cannonTowerRight', 'https://admin.demwitches.xyz/assets/cannonturret.png');
+  this.load.image('cannonTowerLeft', 'https://admin.demwitches.xyz/assets/cannonturretleft.png');
+  this.load.image('rapidTowerRight', 'https://admin.demwitches.xyz/assets/rapidturret.png');
+  this.load.image('rapidTowerLeft', 'https://admin.demwitches.xyz/assets/rapidturretleft.png');
+  this.load.image('enemyNormal', 'https://admin.demwitches.xyz/assets/normalenemy.png');
+  this.load.image('enemyFast', 'https://admin.demwitches.xyz/assets/fastenemy.png');
+  this.load.image('enemyTank', 'https://admin.demwitches.xyz/assets/tankenemy.png');
+  // Callback once all assets are loaded
+  this.load.once('complete', () => {
     console.log('✅ All assets loaded.');
-    this.assetsLoaded = true; // ✅ This line is essential
+    this.assetsLoaded = true;
+  });
+}
+// ---------------------------------------------------------------------------
+// showRewardText(): Displays a floating reward text at a given position
+// ---------------------------------------------------------------------------
+showRewardText(x: number, y: number, amount: number) {
+  const rewardText = this.add.text(x, y - 12, `+${amount} $VINE`, {
+    fontSize: '18px',
+    fontFamily: 'Outfit',
+    fontStyle: 'bold',
+    color: '#00FF66',
+    backgroundColor: '',
+    padding: { left: 6, right: 6, top: 2, bottom: 2 }
+  }).setOrigin(0.5).setAlpha(1).setDepth(5000);
+  this.tweens.add({
+    targets: rewardText,
+    y: rewardText.y - 20,
+    alpha: 0,
+    duration: 1000,
+    ease: 'Cubic.easeOut',
+    onComplete: () => rewardText.destroy()
+  });
+}
+// ---------------------------------------------------------------------------
+// killEnemy(): Handles logic when an enemy is killed, including rewards
+// ---------------------------------------------------------------------------
+killEnemy(enemy: Phaser.GameObjects.Arc) {
+  const reward = enemy.getData('reward') || 0;
+  this.vineBalance += reward;
+  const { x, y } = enemy.getCenter();
+  this.showRewardText(x, y, reward);
+  this.vineText.setText(`$VINE: ${this.vineBalance}`);
+  const bar = enemy.getData('hpBar') as Phaser.GameObjects.Rectangle;
+  const barBg = enemy.getData('hpBarBg') as Phaser.GameObjects.Rectangle;
+  bar?.destroy();
+  barBg?.destroy();
+  enemy.destroy();
+  this.enemiesKilled++;
+  this.checkWaveOver();
+  console.log(`✅ killEnemy() executed at (${x}, ${y}) with reward ${reward}`);
+}
+// ---------------------------------------------------------------------------
+// cleanupGameObjects(): Resets and clears all active game objects and state
+// ---------------------------------------------------------------------------
+cleanupGameObjects(fullReset = false) {
+  this.enemySpawnEvent?.remove(false);
+  this.time.clearPendingEvents();
+  this.time.removeAllEvents();
+  this.sound.stopAll();
+  this.hasSavedVine = false;
+  this.enemyGroup.getChildren().forEach((enemyObj) => {
+    const hpBar = enemyObj.getData?.('hpBar');
+    const hpBarBg = enemyObj.getData?.('hpBarBg');
+    hpBar?.destroy();
+    hpBarBg?.destroy();
+    enemyObj.destroy();
+  });
+  // Destroy any lingering health bars
+  this.children.getAll().forEach(child => {
+    if (child.name === 'hpBar' || child.name === 'hpBarBg') child.destroy();
+  });
+  // Destroy tower selection UI
+  this.towerSelectPanel?.destroy();
+  this.towerSelectPanel = undefined;
+  this.towerSelectHighlight?.destroy();
+  this.towerSelectHighlight = undefined;
+  this.enemyGroup.clear(true, true);
+  this.bulletGroup.getChildren().forEach(b => b.destroy());
+  this.bulletGroup.clear(true, true);
+  this.towers.forEach(tower => {
+    const timer = tower.getData?.('shootTimer');
+    timer?.remove(true);
+    tower.getData?.('levelText')?.destroy();
+    tower.disableInteractive?.();
+    tower.destroy();
+  });
+  this.towers = [];
+  // Reset map tile visuals
+  this.tileMap.forEach((row, r) => {
+    row.forEach((tile, c) => {
+      if (tile === 2) this.tileMap[r][c] = 1;
+      this.tileSprites[r][c].setFillStyle(tile === 0 ? 0x00B3FF : 0x00FFE7);
     });
-  }
-  // ---------------------------------------------------------------------------
-  // 💡 Helper Methods
-  // ---------------------------------------------------------------------------
-  showRewardText(x: number, y: number, amount: number) {
-    const rewardText = this.add.text(x, y - 12, `+${amount} $VINE`, {
-      fontSize: '18px',
-      fontFamily: 'Outfit',
-      fontStyle: 'bold',
-      color: '#00FF66', // ✅ Green
-      backgroundColor: '', // ✅ No background
-      padding: { left: 6, right: 6, top: 2, bottom: 2 }
-    })
-      .setOrigin(0.5)
-      .setAlpha(1)
-      .setDepth(5000);
-    this.tweens.add({
-      targets: rewardText,
-      y: rewardText.y - 20,
-      alpha: 0,
-      duration: 1000,
-      ease: 'Cubic.easeOut',
-      onComplete: () => rewardText.destroy()
-    });
-  }
-  killEnemy(enemy: Phaser.GameObjects.Arc) {
-    const reward = enemy.getData('reward') || 0;
-    this.vineBalance += reward;
-    const { x, y } = enemy.getCenter();
-    this.showRewardText(x, y, reward); // ⬅️ Use this
+  });
+  if (fullReset) {
+    this.vineBalance = 40;
+    this.lives = 10;
+    this.waveNumber = 0;
+    this.gameOver = false;
+    this.isPaused = false;
+    this.updateLivesDisplay(this.lives);
     this.vineText.setText(`$VINE: ${this.vineBalance}`);
-    const bar = enemy.getData('hpBar') as Phaser.GameObjects.Rectangle;
-    const barBg = enemy.getData('hpBarBg') as Phaser.GameObjects.Rectangle;
-    bar?.destroy();
-    barBg?.destroy();
-    enemy.destroy();
-    this.enemiesKilled++;
-    this.checkWaveOver();
-    console.log(`✅ killEnemy() executed at (${x}, ${y}) with reward ${reward}`);
+    this.waveText.setText(`Wave: 1`);
+  } else {
+    this.physics.pause();
+    this.isPaused = true;
   }
-  cleanupGameObjects(fullReset = false) {
-    this.enemySpawnEvent?.remove(false);
-    this.time.clearPendingEvents();
-    this.time.removeAllEvents();
-    this.sound.stopAll();
-    this.hasSavedVine = false;
-    this.enemyGroup.getChildren().forEach((enemyObj) => {
-      const hpBar = enemyObj.getData?.('hpBar');
-      const hpBarBg = enemyObj.getData?.('hpBarBg');
-      hpBar?.destroy();
-      hpBarBg?.destroy();
-      enemyObj.destroy();
-    });
-    // Kill Rogue Health Bars
-    this.children.getAll().forEach(child => {
-      if (child.name === 'hpBar' || child.name === 'hpBarBg') child.destroy();
-    });    
-    // 🗑️ Clear tower selection UI
-    this.towerSelectPanel?.destroy();
-    this.towerSelectPanel = undefined;
-    this.towerSelectHighlight?.destroy();
-    this.towerSelectHighlight = undefined;
-    this.enemyGroup.clear(true, true);
-    this.bulletGroup.getChildren().forEach(b => b.destroy());
-    this.bulletGroup.clear(true, true);
-    this.towers.forEach(tower => {
-      const timer = tower.getData?.('shootTimer');
-      timer?.remove(true);
-      tower.getData?.('levelText')?.destroy();
-      tower.disableInteractive?.();
-      tower.destroy();
-    });
-    this.towers = [];
-    this.tileMap.forEach((row, r) => {
-      row.forEach((tile, c) => {
-        if (tile === 2) this.tileMap[r][c] = 1;
-        this.tileSprites[r][c].setFillStyle(tile === 0 ? 0x00B3FF : 0x00FFE7);
-      });
-    });
-    if (fullReset) {
-      this.vineBalance = 40;
-      this.lives = 10;
-      this.waveNumber = 0;
-      this.gameOver = false;
-      this.isPaused = false;
-      this.updateLivesDisplay(this.lives);
-      this.vineText.setText(`$VINE: ${this.vineBalance}`);
-      this.waveText.setText(`Wave: 1`);
-    } else {
-      this.physics.pause();
-      this.isPaused = true;
-    }
-    this.canSelectTile = false;
-    if (fullReset) {
-      this.rangeCircle?.destroy();
-      this.rangeCircle = undefined;
-    
-      this.nextRangeCircle?.destroy();
-      this.nextRangeCircle = undefined;
-    
-      const upgradePanel = this.children.getByName('upgradePanel');
-      upgradePanel?.destroy();
-      this.upgradePanelOpen = false;
-      this.activeTower = undefined;
-      this.activeUpgradeButton = undefined;
-      this.activeUpgradeCost = undefined;
-    }    
-  }  
-  // ---------------------------------------------------------------------------
-  // 🎮 create(): Setup the map, UI, path, selectors, towers, collisions
-  // ---------------------------------------------------------------------------
-  create() {
+  this.canSelectTile = false;
+  if (fullReset) {
+    this.rangeCircle?.destroy();
+    this.rangeCircle = undefined;
+    this.nextRangeCircle?.destroy();
+    this.nextRangeCircle = undefined;
+    const upgradePanel = this.children.getByName('upgradePanel');
+    upgradePanel?.destroy();
+    this.upgradePanelOpen = false;
+    this.activeTower = undefined;
+    this.activeUpgradeButton = undefined;
+    this.activeUpgradeCost = undefined;
+  }
+}
+// ---------------------------------------------------------------------------
+// create(): Sets up the game scene — map, HUD, path, selectors, towers, UI
+// ---------------------------------------------------------------------------
+create() {
   console.log('✅ MainScene created');
   this.hasSavedVine = false;
+  // Screen and Map Dimensions
   const screenWidth = Number(this.game.config.width);
   const screenHeight = Number(this.game.config.height);
   const mapWidth = this.mapCols * this.tileSize;
   const mapHeight = this.mapRows * this.tileSize;
+  this.mapOffsetX = (screenWidth - mapWidth) / 2;
+  this.mapOffsetY = (screenHeight - mapHeight) / 2;
+  // Load Background Music
   this.load.audio('bgMusic', ['https://admin.demwitches.xyz/assets/music.mp3']);
   this.load.once('complete', () => {
   const music = this.sound.add('bgMusic', { loop: true, volume: 0.5 });
   music.play();
     });
   this.load.start();
-  this.mapOffsetX = (screenWidth - mapWidth) / 2;
-  this.mapOffsetY = (screenHeight - mapHeight) / 2;
-    // External Pause Function from UI
+  // External Pause / Resume Game Functions
   (window as any).pauseGameFromUI = () => {
     this.isPaused = true;
     this.canSelectTile = false; // ⛔ Disable tile selection
@@ -236,7 +239,6 @@ export default class MainScene extends Phaser.Scene {
       if (timer) timer.paused = true;
     });
   };
-    // EXTERNAL RESUME FUNCTION
   (window as any).resumeGameFromUI = () => {
     this.isPaused = false;
     this.canSelectTile = true; // Enable tile selection
@@ -251,19 +253,12 @@ export default class MainScene extends Phaser.Scene {
       if (timer) timer.paused = false;
     });
   };
-  // 🧿 Generate enemy texture as red circle
-  const circle = this.add.graphics();
-  circle.fillStyle(0xff0000, 1);
-  circle.fillCircle(0, 0, 10);
-  circle.generateTexture('enemy', 20, 20);
-  circle.destroy();
-  // 🛤️ Define path through tile grid
+  // Define Enemy Path
   const pathTiles = [
     [0, 0], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [2, 6], [3, 6],
     [3, 5], [3, 4], [3, 3], [3, 2], [3, 1], [4, 1], [5, 1], [5, 2], [5, 3], [5, 4],
     [5, 5], [5, 6], [6, 6], [7, 6], [7, 5], [7, 4], [7, 3], [7, 2], [7, 1], [8, 1], [9, 1]
   ];
-  // 🧭 Create path curve
   const [startCol, startRow] = pathTiles[0];
   this.path = this.add.path(
     this.mapOffsetX + startCol * this.tileSize + this.tileSize / 2,
@@ -276,44 +271,33 @@ export default class MainScene extends Phaser.Scene {
       this.mapOffsetY + row * this.tileSize + this.tileSize / 2
     );
   }
- // 💬 HUD Text (Centered Group)
-const hudY = 10;
-const textStyle = {
+  // HUD: VINE, Wave, Lives, Heart Icons
+  const hudY = 10;
+  const textStyle = {
   fontSize: '45px',
   fontFamily: 'Outfit',
   color: '#DFFBFF',
   resolution: window.devicePixelRatio || 1
-};
-// Temporarily create texts offscreen to measure widths
-const vineText = this.add.text(0, 0, '$VINE: 40', textStyle).setScale(0.5);
-const waveText = this.add.text(0, 0, 'Wave: 1', textStyle).setScale(0.5);
-const livesLabel = this.add.text(0, 0, 'Lives:', textStyle).setScale(0.5);
-// Spacing between each
-const padding = 64;
-// Measure the heart grid size manually (5 hearts wide, 2 rows)
-const heartSpacing = 22;
-const heartWidth = 5 * heartSpacing;
-// Total width = vine + wave + livesLabel + heart grid + padding
-const totalWidth =
+  };
+  const vineText = this.add.text(0, 0, '$VINE: 40', textStyle).setScale(0.5);
+  const waveText = this.add.text(0, 0, 'Wave: 1', textStyle).setScale(0.5);
+  const livesLabel = this.add.text(0, 0, 'Lives:', textStyle).setScale(0.5);
+  const padding = 64;
+  const heartSpacing = 22;
+  const heartWidth = 5 * heartSpacing;
+  const totalWidth =
   vineText.displayWidth +
   waveText.displayWidth +
   livesLabel.displayWidth +
   heartWidth +
   padding * 3;
-const centerX = Number(this.game.config.width) / 2;
-let startX = centerX - totalWidth / 2;
-// 🪙 Position VINE
-vineText.setPosition(startX, hudY);
-startX += vineText.displayWidth + padding;
-// 🌊 Position Wave
-waveText.setPosition(startX, hudY);
-startX += waveText.displayWidth + padding;
-// ❤️ Lives label
-livesLabel.setPosition(startX, hudY);
-startX += livesLabel.displayWidth + 8;
-// ❤️ Heart Icons Grid
-this.heartIcons = [];
-for (let i = 0; i < 10; i++) {
+  const centerX = Number(this.game.config.width) / 2;
+  let startX = centerX - totalWidth / 2;
+  vineText.setPosition(startX, hudY); startX += vineText.displayWidth + padding;
+  waveText.setPosition(startX, hudY); startX += waveText.displayWidth + padding;
+  livesLabel.setPosition(startX, hudY); startX += livesLabel.displayWidth + 8;
+  this.heartIcons = [];
+  for (let i = 0; i < 10; i++) {
   const col = i % 5;
   const row = Math.floor(i / 5);
   const x = startX + col * heartSpacing;
@@ -347,103 +331,89 @@ for (let i = 0; i < 10; i++) {
       });
     }
   });
-this.heartIcons.push(heart);
-}
-// Assign text objects for updates
-this.vineText = vineText;
-this.waveText = waveText;
-this.updateLivesDisplay(10); // Or whatever the starting lives count is
-  // 🧱 Initialize tile map (1 = buildable, 0 = path)
+  this.heartIcons.push(heart);
+  }
+  this.vineText = vineText;
+  this.waveText = waveText;
+  this.updateLivesDisplay(10);
+  // Tile Map Setup
   this.tileMap = Array.from({ length: this.mapRows }, () => Array(this.mapCols).fill(1));
   for (const [col, row] of pathTiles) this.tileMap[row][col] = 0;
-  // 🔲 Generate tile visuals
   for (let row = 0; row < this.mapRows; row++) {
-    this.tileSprites[row] = [];
-    for (let col = 0; col < this.mapCols; col++) {
-      const x = this.mapOffsetX + col * this.tileSize + this.tileSize / 2;
-      const y = this.mapOffsetY + row * this.tileSize + this.tileSize / 2;
-      const type = this.tileMap[row][col];
-      const color = type === 0 ? 0x00B3FF : 0x00FFE7;
-      const tile = this.add.rectangle(x, y, this.tileSize - 2, this.tileSize - 2, color)
-        .setInteractive()
-        .setAlpha(0.2);
-      this.tileSprites[row][col] = tile;
-      if (type === 1) {
-        tile.on('pointerdown', () => {
-          // prevent placing over existing tower
-          if (this.canSelectTile && !this.towerSelectPanel) {
-            this.canSelectTile = false;
-            this.showTowerSelectPanel(col, row);
-          }
-        });
-      }
+  this.tileSprites[row] = [];
+  for (let col = 0; col < this.mapCols; col++) {
+  const x = this.mapOffsetX + col * this.tileSize + this.tileSize / 2;
+  const y = this.mapOffsetY + row * this.tileSize + this.tileSize / 2;
+  const type = this.tileMap[row][col];
+  const color = type === 0 ? 0x00B3FF : 0x00FFE7;
+  const tile = this.add.rectangle(x, y, this.tileSize - 2, this.tileSize - 2, color)
+  .setInteractive()
+  .setAlpha(0.2);
+  this.tileSprites[row][col] = tile;
+  if (type === 1) {
+  tile.on('pointerdown', () => {
+    if (this.canSelectTile && !this.towerSelectPanel) {
+      this.canSelectTile = false;
+      this.showTowerSelectPanel(col, row);
     }
+  });
+  }}
   }
-  // 👾 Create enemy and bullet groups
+  // Enemy and Bullet Groups + Collision Handling
   this.enemyGroup = this.add.group();
   this.bulletGroup = this.add.group();
-  // 🔁 Spawn enemies on interval
   this.enemySpawnEvent = this.time.addEvent({
     delay: 1000,
     callback: this.spawnEnemy,
     callbackScope: this,
-    loop: true,
+    loop: true
   });
-  // 💥 Bullet + Enemy collision logic
-  this.physics.add.overlap(
-    this.bulletGroup,
-    this.enemyGroup,
-    (bulletObj, enemyObj) => {
-      const bullet = bulletObj as Phaser.GameObjects.Arc;
-      const enemy = enemyObj as Phaser.GameObjects.Arc;
-      const damage = bullet.getData('damage');
-      let hp = enemy.getData('hp');
-      if (typeof damage !== 'number') return;
-      hp -= damage;
-      // ✨ Hit flash effect
-      const hit = this.add.circle(enemy.x, enemy.y, 10, 0x00FFE7).setAlpha(0.6);
-      this.tweens.add({
-        targets: hit,
-        alpha: 0,
-        scale: 2,
-        duration: 200,
-        onComplete: () => hit.destroy(),
-      });
-      bullet.destroy();
-      console.log(`🎯 Bullet hit: enemy HP before = ${hp}, damage = ${damage}`);
-if (hp <= 0) {
-  console.log(`✅ Entered kill block at (${enemy.x}, ${enemy.y})`);
-        const reward = enemy.getData('reward') || 0;
-        this.vineBalance += reward;
-        
-        const { x, y } = enemy.getCenter();
-        this.showRewardText(x, y, reward);
-        this.vineText.setText(`$VINE: ${this.vineBalance}`);
-        const bar = enemy.getData('hpBar') as Phaser.GameObjects.Rectangle;
-        const barBg = enemy.getData('hpBarBg') as Phaser.GameObjects.Rectangle;
-        bar?.destroy();
-        barBg?.destroy();
-     enemy.destroy();
-        this.enemiesKilled++;
-        this.checkWaveOver();
-      } else {
-        enemy.setData('hp', hp);
-        const maxHp = enemy.getData('maxHp');
-        const bar = enemy.getData('hpBar') as Phaser.GameObjects.Rectangle;
-        if (bar) {
-          const percent = hp / maxHp;
-          bar.width = 20 * percent;
-          bar.setFillStyle(percent > 0.5 ? 0x00FFE7 : percent > 0.25 ? 0xffa500 : 0xff0000);
-        }
+  this.physics.add.overlap(this.bulletGroup, this.enemyGroup, (bulletObj, enemyObj) => {
+    const bullet = bulletObj as Phaser.GameObjects.Arc;
+    const enemy = enemyObj as Phaser.GameObjects.Arc;
+    const damage = bullet.getData('damage');
+    let hp = enemy.getData('hp');
+    if (typeof damage !== 'number') return;
+    hp -= damage;
+    const hit = this.add.circle(enemy.x, enemy.y, 10, 0x00FFE7).setAlpha(0.6);
+    this.tweens.add({
+      targets: hit,
+      alpha: 0,
+      scale: 2,
+      duration: 200,
+      onComplete: () => hit.destroy(),
+    });
+    bullet.destroy();
+    console.log(`🎯 Bullet hit: enemy HP before = ${hp + damage}, damage = ${damage}`);
+    if (hp <= 0) {
+      console.log(`✅ Entered kill block at (${enemy.x}, ${enemy.y})`);
+      const reward = enemy.getData('reward') || 0;
+      this.vineBalance += reward;
+      const { x, y } = enemy.getCenter();
+      this.showRewardText(x, y, reward);
+      this.vineText.setText(`$VINE: ${this.vineBalance}`);
+      enemy.getData('hpBar')?.destroy();
+      enemy.getData('hpBarBg')?.destroy();
+      enemy.destroy();
+      this.enemiesKilled++;
+      this.checkWaveOver();
+    } else {
+      enemy.setData('hp', hp);
+      const maxHp = enemy.getData('maxHp');
+      const bar = enemy.getData('hpBar') as Phaser.GameObjects.Rectangle;
+      if (bar) {
+        const percent = hp / maxHp;
+        bar.width = 20 * percent;
+        bar.setFillStyle(percent > 0.5 ? 0x00FFE7 : percent > 0.25 ? 0xffa500 : 0xff0000);
       }
     }
-  );
-  // 🎬 Start wave
+  });
+  // Start First Wave
   this.startNextWave();
-const buttonRadius = 24;
-const marginX = 20 + buttonRadius;
-const marginY = this.scale.height - 90;
-const spacingY = 60;
+  const buttonRadius = 24;
+  const marginX = 20 + buttonRadius;
+  const marginY = this.scale.height - 90;
+  const spacingY = 60;
 // Helper to create a circular emoji button
 const createCircleButton = (
   x: number,
@@ -875,19 +845,6 @@ const blocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x
     });
   });
 }
-
-// ---------------------------------------------------------------------------
-// ☠️ Unused legacy function (still present for potential future use)
-// ---------------------------------------------------------------------------
-handleBulletHit(
-  bulletObj: Phaser.Types.Physics.Arcade.GameObjectWithBody,
-  enemyObj: Phaser.Types.Physics.Arcade.GameObjectWithBody
-) {
-  const bullet = bulletObj as Phaser.GameObjects.Arc;
-  const enemy = enemyObj as Phaser.GameObjects.PathFollower;
-  bullet.destroy();
-  enemy.destroy();
-}
 // ---------------------------------------------------------------------------
 // 🧟 spawnEnemy(): Spawns one enemy with stats based on type
 // ---------------------------------------------------------------------------
@@ -1127,7 +1084,7 @@ if (imageKey !== null) {
   });
   // 🧱 Update tilemap + tile color
   this.tileMap[row][col] = 2;
-  this.tileSprites[row][col].setFillStyle(0x00B3FF).setAlpha(0.3);
+  this.tileSprites[row][col].setFillStyle(0x00B3FF);
   // 🔁 Fire bullets at interval
   const shootTimer = this.time.addEvent({
     delay: fireRate,
@@ -1140,9 +1097,7 @@ if (imageKey !== null) {
   tower.setData('shootTimer', shootTimer);
   // 🧠 Track this tower so we can clean it up later
 this.towers.push(tower);
-
 }
-
 playPewSound() {
   if (this.isSfxMuted) return;
 
