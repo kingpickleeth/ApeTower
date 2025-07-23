@@ -7,13 +7,14 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-     "start": "vite preview"
+    "start": "vite preview"
   },
   "dependencies": {
     "@haandev/canvasbg": "github:haandev/canvasbg",
     "@rainbow-me/rainbowkit": "^2.2.8",
     "@supabase/supabase-js": "^2.50.5",
     "animated-backgrounds": "^2.0.0",
+    "dotenv": "^17.2.0",
     "ethers": "^6.15.0",
     "next": "^15.4.3",
     "phaser": "^3.90.0",
