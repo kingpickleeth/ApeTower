@@ -1,10 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { id } = req.query;
 
-    // Handle missing or invalid ID
     if (!id || Array.isArray(id)) {
       return res.status(400).json({ error: "Invalid or missing ID" });
     }
@@ -56,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json(metadata);
   } catch (err) {
-    console.error("🔥 API Error at /api/tower/[id]:", err);
+    console.error("🔥 API Error:", err);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 }
