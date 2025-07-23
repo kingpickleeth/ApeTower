@@ -1,8 +1,8 @@
-import type { NextApiRequest, NextApiResponse } from "next";
+import { VercelRequest, VercelResponse } from '@vercel/node';
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    const { id } = req.query;
+    const id = req.query.id;
 
     if (!id || Array.isArray(id)) {
       return res.status(400).json({ error: "Invalid or missing ID" });
@@ -47,7 +47,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       }
     };
 
-    const metadata = towerData[id];
+    const metadata = towerData[id.toString()];
 
     if (!metadata) {
       return res.status(404).json({ error: "Tower not found" });
