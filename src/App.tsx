@@ -239,6 +239,7 @@ for (const id of tokenIds) {
         if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
         if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
         if ((window as any).disableCampaignInput) (window as any).disableCampaignInput(); // ✅ added
+        if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput(); // ✅ added
       }}
       title={profile?.username || 'Profile'}
     >
@@ -251,6 +252,7 @@ for (const id of tokenIds) {
         if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
         if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
         if ((window as any).disableCampaignInput) (window as any).disableCampaignInput(); // ✅ added
+        if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput(); // ✅ added
       }}
       title={profile?.username || 'Profile'}
     >
@@ -266,6 +268,7 @@ for (const id of tokenIds) {
         if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
         if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
         if ((window as any).disableCampaignInput) (window as any).disableCampaignInput(); // ✅ added
+        if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput(); // ✅ added
       }}
     >
       👤 Profile
@@ -277,6 +280,7 @@ for (const id of tokenIds) {
         if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
         if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
         if ((window as any).disableCampaignInput) (window as any).disableCampaignInput(); // ✅ added
+        if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput(); // ✅ added
       }}
     >
       👤
@@ -303,6 +307,7 @@ for (const id of tokenIds) {
       if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
       if ((window as any).enableMainMenuInput) (window as any).enableMainMenuInput(); // ✅ restore input
       if ((window as any).enableCampaignInput) (window as any).enableCampaignInput(); // ✅ restore input
+      if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput(); // ✅ added
     }
   }}
 />
@@ -316,6 +321,7 @@ for (const id of tokenIds) {
       if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
       if ((window as any).enableMainMenuInput) (window as any).enableMainMenuInput(); // ✅ restore input
       if ((window as any).enableCampaignInput) (window as any).enableCampaignInput(); // ✅ restore input
+      if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput(); // ✅ added
     }
   }}
   
@@ -344,6 +350,7 @@ for (const id of tokenIds) {
       if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
       if ((window as any).enableMainMenuInput) (window as any).enableMainMenuInput(); // ✅ restore input
       if ((window as any).enableCampaignInput) (window as any).enableCampaignInput(); // ✅ restore input
+      if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput(); // ✅ added
     }}    
   />
 )}

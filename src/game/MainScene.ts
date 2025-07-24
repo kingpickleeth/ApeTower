@@ -1691,5 +1691,14 @@ triggerVictory() {
     },
     0x3CDFFF
   );
+    // ⛔ Disable input when profile modal is open
+    (window as any).disableMainSceneInput = () => {
+      this.input.enabled = false;
+    };
+    
+    // ✅ Re-enable it when modal is closed
+    (window as any).enableMainSceneInput = () => {
+      this.input.enabled = true;
+    };
 }
 }
