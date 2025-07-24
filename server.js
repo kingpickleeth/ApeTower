@@ -4,10 +4,13 @@ const path = require('path');
 
 const app = express();
 app.use(express.json());
+app.use('/static', express.static(path.join(__dirname, 'metadata')));
 
+// ✅ Generate metadata and save as file *without* `.json` extension
 app.post('/generate-metadata/:id', (req, res) => {
   const id = req.params.id;
-  const filePath = path.join(__dirname, 'public', 'api', 'tower', `${id}.json`);
+  const filePath = path.join(__dirname, 'metadata', 'tower', `${id}`);
+
 
   const metadata = {
     name: `Deng Tower #${id}`,
@@ -23,31 +26,24 @@ app.post('/generate-metadata/:id', (req, res) => {
   res.json({ success: true });
 });
 
-app.listen(3001, () => {
-  console.log('🚀 Metadata server running at http://localhost:3001');
-});
-// In your metadata server (Express)
-app.get('/api/tower/:id', async (req, res) => {
-  const { id } = req.params;
-  const filePath = path.join(__dirname, 'api', 'tower', `${id}.json`);
-
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).json({ error: 'Metadata not found' });
-  }
-
-  res.setHeader('Content-Type', 'application/json');
-  res.sendFile(filePath);
-});
-// In your metadata server (Express)
-app.get('/api/tower/:id', async (req, res) => {
-    const { id } = req.params;
-    const filePath = path.join(__dirname, 'api', 'tower', `${id}.json`);
+app.get(['/metadata/:id', '/metadata/:id.json'], (req, res) => {
+    let id = req.params.id;
+    if (id.endsWith('.json')) id = id.replace('.json', '');
+  
+    const filePath = path.resolve(__dirname, 'metadata', 'tower', `${id}`);
   
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: 'Metadata not found' });
     }
   
-    res.setHeader('Content-Type', 'application/json');
-    res.sendFile(filePath);
+    try {
+      const fileData = fs.readFileSync(filePath, 'utf8');
+      const metadata = JSON.parse(fileData);
+      res.setHeader('Content-Type', 'application/json');
+      res.status(200).json(metadata); // ✅ Return raw JSON directly
+    } catch (err) {
+      console.error('❌ Error reading or parsing metadata:', err);
+      res.status(500).json({ error: 'Failed to load metadata' });
+    }
   });
   
