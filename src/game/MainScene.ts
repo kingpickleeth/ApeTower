@@ -1084,7 +1084,7 @@ if (imageKey !== null) {
   });
   // 🧱 Update tilemap + tile color
   this.tileMap[row][col] = 2;
-  this.tileSprites[row][col].setFillStyle(0x00B3FF);
+  this.tileSprites[row][col].setFillStyle(0x00FFE7);
   // 🔁 Fire bullets at interval
   const shootTimer = this.time.addEvent({
     delay: fireRate,

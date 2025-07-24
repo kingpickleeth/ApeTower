@@ -4,46 +4,61 @@ const path = require('path');
 
 const app = express();
 app.use(express.json());
-app.use('/static', express.static(path.join(__dirname, 'metadata')));
+console.log("🚀 Running NEW server version with upgraded metadata logic");
 
 // ✅ Generate metadata and save as file *without* `.json` extension
 app.post('/generate-metadata/:id', (req, res) => {
-  const id = req.params.id;
-  const filePath = path.join(__dirname, 'metadata', 'tower', `${id}`);
-
-
-  const metadata = {
-    name: `Deng Tower #${id}`,
-    description: "Starter tower in Deng Defense.",
-    image: `https://admin.demwitches.xyz/images/tower/${id}.png`,
-    attributes: [
-      { trait_type: "Type", value: id % 3 === 0 ? "Basic" : id % 3 === 1 ? "Cannon" : "Rapid" },
-      { trait_type: "Level", value: 1 }
-    ]
-  };
-
-  fs.writeFileSync(filePath, JSON.stringify(metadata, null, 2));
-  res.json({ success: true });
-});
-
-app.get(['/metadata/:id', '/metadata/:id.json'], (req, res) => {
-    let id = req.params.id;
-    if (id.endsWith('.json')) id = id.replace('.json', '');
+    const id = parseInt(req.params.id, 10);
+    const filePath = path.join(__dirname, 'public', 'api', 'tower', `${id}.json`);
   
-    const filePath = path.resolve(__dirname, 'metadata', 'tower', `${id}`);
+    const towerTypes = ['Basic', 'Cannon', 'Rapid'];
+    const type = towerTypes[id % 3];
   
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'Metadata not found' });
-    }
+    const descriptions = {
+      Basic: 'A well-balanced tower with moderate stats. Good for all-around defense.',
+      Cannon: 'Fires powerful shots with long range and high damage, but slow.',
+      Rapid: 'Quick-firing tower with short range and low damage per hit.'
+    };
   
-    try {
-      const fileData = fs.readFileSync(filePath, 'utf8');
-      const metadata = JSON.parse(fileData);
-      res.setHeader('Content-Type', 'application/json');
-      res.status(200).json(metadata); // ✅ Return raw JSON directly
-    } catch (err) {
-      console.error('❌ Error reading or parsing metadata:', err);
-      res.status(500).json({ error: 'Failed to load metadata' });
-    }
+    const stats = {
+      Basic: { Speed: 700, Range: 200, Damage: 1 },
+      Cannon: { Speed: 1200, Range: 250, Damage: 2 },
+      Rapid: { Speed: 400, Range: 150, Damage: 0.5 }
+    };
+  
+    const metadata = {
+      name: `${type} Tower`,
+      description: descriptions[type],
+      image: `https://admin.demwitches.xyz/towers/${type.toLowerCase()}.png`,
+      attributes: [
+        { trait_type: "Type", value: type },
+        { trait_type: "Level", value: 1 },
+        { trait_type: "Speed", value: stats[type].Speed },
+        { trait_type: "Range", value: stats[type].Range },
+        { trait_type: "Damage", value: stats[type].Damage }
+      ]
+    };
+  
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, JSON.stringify(metadata, null, 2));
+    res.json({ success: true });
   });
-  
+app.get(['/api/tower/:id', '/api/tower/:id.json'], (req, res) => {
+  console.log('🔍 Incoming request:', req.url);
+  let id = req.params.id;
+
+  if (id.endsWith('.json')) {
+    id = id.replace('.json', '');
+  }
+
+  const filePath = path.join(__dirname, 'public', 'api', 'tower', `${id}.json`);
+  console.log('📁 Looking for file:', filePath);
+
+  if (!fs.existsSync(filePath)) {
+    console.log('❌ File not found');
+    return res.status(404).json({ error: 'Metadata not found' });
+  }
+
+  res.setHeader('Content-Type', 'application/json');
+  res.sendFile(filePath);
+});
