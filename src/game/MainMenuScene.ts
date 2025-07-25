@@ -225,7 +225,7 @@ const modalBlocker = this.add.rectangle(0, 0, this.scale.width, this.scale.heigh
       
     // ❌ Close Button on Rules Modal (styled like Start Game & Rules)
   // ❌ Close Button (styled to match red theme with animation)
-const closeButtonBg = this.add.rectangle(centerX, centerY + 260, 140, 44, 0xFF4F66, 1)
+const closeButtonBg = this.add.rectangle(centerX, centerY + 260, 140, 44, 0xB30000, 1)
 .setOrigin(0.5)
 .setStrokeStyle(2, 0xffffff)
 .setInteractive({ useHandCursor: true })
@@ -436,7 +436,7 @@ noThanksButton.on('pointerover', () => {
   
 // Hover Effects (same as other buttons)// 🎯 Hover effects for red rules modal close button
 closeButtonBg.on('pointerover', () => {
-  closeButtonBg.setFillStyle(0xFF6F80);
+  closeButtonBg.setFillStyle(0xFF4D4D);
   this.tweens.add({
     targets: closeButtonBg,
     scale: 1.05,
@@ -445,7 +445,7 @@ closeButtonBg.on('pointerover', () => {
   });
 });
 closeButtonBg.on('pointerout', () => {
-  closeButtonBg.setFillStyle(0xFF4F66);
+  closeButtonBg.setFillStyle(0xB30000);
   this.tweens.add({
     targets: closeButtonBg,
     scale: 1,
