@@ -896,3 +896,18 @@ textarea {
   z-index: 9999;
   transition: opacity 0.3s ease;
 }
+
+.save-btn,
+.close-btn {
+  font-weight: bold;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.save-btn:hover,
+.close-btn:hover {
+  transform: scale(1.05);
+}

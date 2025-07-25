@@ -53,6 +53,7 @@ interface Props {
   const [pfpUrl, setPfpUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [bio, setBio] = useState('');
+  const [twitterHandle, setTwitterHandle] = useState<string | null>(null);
   const [vineBalance, setVineBalance] = useState<number>(0);
   const [profile, setProfile] = useState<any | null>(null);
   
@@ -90,6 +91,7 @@ interface Props {
         setUsername(profile.username);
         setPfpUrl(profile.pfp_url);
         setBio(profile.bio || '');
+        setTwitterHandle(profile.twitter_handle || null);
         setVineBalance(profile.total_vine || 0);
         setProfile(profile); // ✅ Add this
       }
@@ -126,6 +128,27 @@ useEffect(() => {
 
   return () => clearTimeout(timeout);
 }, [username, walletAddress, hasEditedUsername]);
+
+useEffect(() => {
+  const receiveMessage = async (event: MessageEvent) => {
+    if (event.data?.type === 'twitter_connected') {
+      console.log('🐦 Twitter connected:', event.data.handle);
+      const profile = await getProfile(walletAddress);
+      if (profile) {
+        setTwitterHandle(profile.twitter_handle || null);
+        setPfpUrl(profile.pfp_url || DEFAULT_PFP_URL);
+        setUsername(profile.username || '');
+        setBio(profile.bio || '');
+        setVineBalance(profile.total_vine || 0);
+        setProfile(profile);
+      }
+    }
+  };
+
+  window.addEventListener('message', receiveMessage);
+  return () => window.removeEventListener('message', receiveMessage);
+}, [walletAddress]);
+
 
 // ✅ Move this into its own top-level useEffect
 useEffect(() => {
@@ -214,6 +237,13 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
     onSave?.(); // 🔥 Let the parent know we saved — but do NOT close modal here
     console.log('✅ Profile saved, showing modal');
   };
+  const connectTwitter = () => {
+    if (!walletAddress) return;
+    const encodedWallet = encodeURIComponent(walletAddress);
+    const oauthUrl = `https://nodejs-production-03df.up.railway.app/api/connect?wallet=${encodedWallet}`;
+    window.open(oauthUrl, '_blank', 'width=500,height=600');
+  };
+  
   const handleClaim = async () => {
     if (vineBalance <= 0) return;
   
@@ -355,6 +385,55 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
           />
           <small style={{ color: '#DFFBFF' }}>{bio.length}/100 characters</small>
         </div>
+        <div className="form-group" style={{ marginTop: '20px', marginBottom:'15px' }}>
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <label style={{ marginRight: '12px', fontWeight: 'bold' }}>X Account:</label>
+
+    {twitterHandle ? (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <span style={{ color: '#1DA1F2', fontWeight: 'bold', fontSize: '1rem' }}>
+          @{twitterHandle}
+        </span>
+        <button
+          onClick={() => setTwitterHandle(null)}
+          style={{
+            background: '#ff4d4f',
+            color: '#fff',
+            padding: '6px 12px',
+            borderRadius: '6px',
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            transition: 'transform 0.2s ease'
+          }}
+          onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+          onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1.0)')}
+        >
+          Disconnect
+        </button>
+      </div>
+    ) : (
+      <button
+        onClick={connectTwitter}
+        style={{
+          background: '#1DA1F2',
+          color: '#fff',
+          padding: '6px 12px',
+          borderRadius: '6px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          fontSize: '0.9rem',
+          transition: 'transform 0.2s ease'
+        }}
+        onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+        onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1.0)')}
+      >
+        Connect Twitter
+      </button>
+    )}
+  </div>
+</div>
+
 
         <div className="button-row">
           {onClose && (
