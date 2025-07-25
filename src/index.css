@@ -680,8 +680,18 @@ textarea {
   font-family: 'Outfit', sans-serif;
   font-size: 1.1rem;
   font-weight: 600;
+  text-shadow: 0 0 2px #000, 0 0 4px #000;
   padding: 8px 16px;
-  background: linear-gradient(145deg, #0d1b2a, #1a2e3f);
+  background: linear-gradient(
+    135deg,
+    #0d1b2a,
+    #14293c,
+    #0090cc,
+    #14293c,
+    #0d1b2a
+  );
+  background-size: 600% 600%;
+  animation: backgroundShift 13s ease-in-out infinite;
   border: 2px solid #00B3FF;
   color: #00B3FF;
   border-radius: 12px;
@@ -696,6 +706,8 @@ textarea {
   color: #0d1b2a;
   box-shadow: 0 0 12px #00B3FF, 0 0 24px #00B3FF;
   transform: scale(1.05);
+  text-shadow: none;
+
 }
 
 
@@ -705,9 +717,19 @@ textarea {
   font-family: 'Outfit', sans-serif;
   font-size: 1.1rem;
   font-weight: 600;
+  text-shadow: 0 0 2px #000, 0 0 4px #000;
   max-height: 30px;
   padding: 7px 10px 7px 16px;
-  background: linear-gradient(145deg, #0d1b2a, #1a2e3f);
+  background: linear-gradient(
+    135deg,
+    #0d1b2a,
+    #14293c,
+    #0090cc,
+    #14293c,
+    #0d1b2a
+  );
+  background-size: 600% 600%;
+  animation: backgroundShift 10s ease-in-out infinite;
   border: 2px solid #00B3FF;
   color: #00B3FF;
   border-radius: 12px;
@@ -737,4 +759,29 @@ textarea {
   object-fit: cover;
   display: block;
   transform: scale(1.25);
+}
+@keyframes backgroundShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.my-towers-button:active,
+.profile-with-pfp:active {
+  transform: scale(0.95);
+  transition: transform 0.1s;
+}
+#navbar-title.glitch {
+
+  color: #00B3FF;
+  text-shadow: 0 0 2px #00B3FF, 0 0 10px #00B3FF;
+  animation: glitch 2s infinite;
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-1px, 1px); }
+  40% { transform: translate(-2px, -1px); }
+  60% { transform: translate(1px, 2px); }
+  80% { transform: translate(1px, -1px); }
+  100% { transform: translate(0); }
 }
