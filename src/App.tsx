@@ -10,6 +10,7 @@ import GameModal from './components/GameModal';
 import { updateVineBalance, upgradeCampaignLevel } from './utils/profile'; // ✅ Make sure this is at the top
 import DENG_TOWER_ABI from './abis/Tower.json'; // You can paste ABI inline if needed
 import React from 'react';
+import MyTowersModal from './components/MyTowersModal';
 
 
 const VINE_TOKEN = "0xe6027e786e2ef799316afabae84e072ca73aa97f";
@@ -21,6 +22,7 @@ const ERC20_ABI = [
 function App() {
   const { isConnected, address } = useAccount();
   const [showProfile, setShowProfile] = useState(false);
+  const [showTowers, setShowTowers] = useState(false);
   const [profile, setProfile] = useState<{ username: string; pfp_url: string } | null>(null);
   const [modalMessage, setModalMessage] = useState<string | null>(null);
   const [modalType, setModalType] = useState<'success' | 'error'>('success');
@@ -225,13 +227,26 @@ for (const id of tokenIds) {
       ) : (
         <>
           <div id="navbar">
-            <div id="navbar-title">Deng Defense</div>
+      
+<div id="navbar-title">Deng Defense</div>
             <div id="spacer" />
             <div id="wallet-button-container">
               <ConnectButton showBalance={false} accountStatus="address" />
               {isConnected && (
   profile?.pfp_url ? (
     <>
+    <button
+    className="my-towers-button"
+    onClick={() => {
+      setShowTowers(true);
+      if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
+      if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput();
+      if ((window as any).disableCampaignInput) (window as any).disableCampaignInput();
+      if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput();
+    }}
+  >
+  My Towers
+  </button>
        <button
       className="profile-pfp-button"
       onClick={() => {
@@ -245,6 +260,7 @@ for (const id of tokenIds) {
     >
       <img src={profile.pfp_url} alt="pfp" />
     </button>
+    
     <button
       className="profile-pfp-button-mobile"
       onClick={() => {
@@ -261,6 +277,7 @@ for (const id of tokenIds) {
     </>
   ) : (
     <>
+    
      <button
       className="profile-btn"
       onClick={() => {
@@ -332,9 +349,23 @@ for (const id of tokenIds) {
     setMustCompleteProfile(false); // ✅ User is good to go now
   }}
 />
+
               </div>
             </div>
           )}
+          {showTowers && (
+  <MyTowersModal
+    walletAddress={address!}
+    onClose={() => {
+      setShowTowers(false);
+      if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
+      if ((window as any).enableMainMenuInput) (window as any).enableMainMenuInput();
+      if ((window as any).enableCampaignInput) (window as any).enableCampaignInput();
+      if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput();
+    }}
+  />
+)}
+
         </>
       )}
      {modalMessage && (

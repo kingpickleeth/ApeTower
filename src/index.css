@@ -670,3 +670,38 @@ textarea {
 .vine-balance-row {
   text-align: center;
 }
+
+#navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.my-towers-button {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  background: linear-gradient(145deg, #0d1b2a, #1a2e3f);
+  border: 2px solid #00B3FF;
+  color: #00B3FF;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0, 179, 255, 0.5);
+  transition: all 0.25s ease-in-out;
+  cursor: pointer;
+}
+
+.my-towers-button:hover {
+  background: #00B3FF;
+  color: #0d1b2a;
+  box-shadow: 0 0 12px #00B3FF, 0 0 24px #00B3FF;
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .my-towers-button {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    margin-left: 8px;
+  }
+}
+
