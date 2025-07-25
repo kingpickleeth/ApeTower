@@ -11,6 +11,7 @@ import { updateVineBalance, upgradeCampaignLevel } from './utils/profile'; // âœ
 import DENG_TOWER_ABI from './abis/Tower.json'; // You can paste ABI inline if needed
 import React from 'react';
 import MyTowersModal from './components/MyTowersModal';
+import InteractiveParticles from './components/InteractiveParticles';
 
 
 const VINE_TOKEN = "0xe6027e786e2ef799316afabae84e072ca73aa97f";
@@ -226,6 +227,7 @@ for (const id of tokenIds) {
         </div>
       ) : (
         <>
+        <InteractiveParticles />
           <div id="navbar">
       
 <div id="navbar-title">Deng Defense</div>
