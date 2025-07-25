@@ -700,7 +700,9 @@ textarea {
 @media (max-width: 768px) {
   .my-towers-button {
     font-size: 0.9rem;
-    padding: 6px 12px;
   }
 }
-
+wallet-button-container
+ {
+  display: none !important;
+}

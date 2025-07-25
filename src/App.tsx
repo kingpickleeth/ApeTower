@@ -231,7 +231,8 @@ for (const id of tokenIds) {
 <div id="navbar-title">Deng Defense</div>
             <div id="spacer" />
             <div id="wallet-button-container">
-              <ConnectButton showBalance={false} accountStatus="address" />
+            {!isConnected && <ConnectButton showBalance={false} accountStatus="address" />}
+
               {isConnected && (
   profile?.pfp_url ? (
     <>
