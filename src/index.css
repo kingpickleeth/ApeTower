@@ -730,14 +730,11 @@ textarea {
 
 /* 👤 PFP image inside the button */
 .pfp-inline {
-  width: 20px;
-  height: 20px;
+  max-height: 25px;
   flex-shrink: 0;
   border-radius: 15%;
   margin-left: 5px;
   object-fit: cover;
-  border: 2px solid white;
-  background-color: white;
   display: block;
   transform: scale(1.25);
 }
