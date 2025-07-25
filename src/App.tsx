@@ -173,8 +173,12 @@ console.log("🎯 Minted token IDs:", tokenIds);
 for (const id of tokenIds) {
   try {
     const res = await fetch(`https://metadata-server-production.up.railway.app/generate-metadata/${id}`, {
-      method: 'POST'
+      method: 'POST',
+      headers: {
+        'x-metadata-secret': import.meta.env.VITE_METADATA_SECRET!
+      }
     });
+    
   
     if (!res.ok) {
       const text = await res.text();
