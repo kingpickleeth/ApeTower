@@ -187,7 +187,6 @@ try {
       detail: { wallet: walletAddress }
     }));
     // Optionally wait a moment to ensure mint finishes
-    await new Promise(resolve => setTimeout(resolve, 3000));
   } else {
     console.log("🧱 Towers already owned, skipping mint.");
   }

@@ -87,7 +87,20 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
     <div id="profile-modal" style={{ fontFamily: "'Outfit', sans-serif" }}>
   
       <div id="profile-overlay" onClick={onClose} />
-      <div id="profile-card" style={{ minWidth: '480px', maxWidth: '80vw' }}>
+      <div
+  id="profile-card"
+  style={{
+    width: '90%',
+    maxWidth: towers.length === 0 ? '40vw' : '70vw',
+    padding: '20px',
+    background: '#0D1117',
+    borderRadius: '16px',
+    boxShadow: '0 0 24px rgba(0,179,255,0.1)',
+    border: '2px solid #00B3FF',
+    color: '#fff'
+  }}
+>
+
       <h2
   style={{
     fontSize: '2.2rem',
@@ -105,7 +118,14 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
         {loading ? (
           <p style={{ color: '#fff' }}>Loading towers...</p>
         ) : towers.length === 0 ? (
-          <p style={{ color: '#fff' }}>You don’t own any towers yet.</p>
+            <p
+            style={{
+              color: '#fff',
+              textAlign: 'center',
+              fontSize: '1.1rem',
+              marginTop: '12px'
+            }}
+          >You don’t own any towers yet. What did you do? Who hurt you?</p>
         ) : (
           <div
             style={{
