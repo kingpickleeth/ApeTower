@@ -140,6 +140,7 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
               return (
                 <div
                 key={tower.id}
+                onClick={() => toggleExpand(tower.id)}
                 style={{
                   background: '#1A1F2B',
                   border: '1px solid #3CDFFF',
@@ -149,9 +150,11 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  alignSelf: 'start' // ✅ Add this line
+                  alignSelf: 'start',
+                  cursor: 'pointer'
                 }}
               >
+              
               
                   <div
                     style={{
@@ -177,7 +180,28 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
                       }}
                     />
                   </div>
-                  <div style={{ color: '#00B3FF', fontWeight: 'bold' }}>#{tower.id}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: '#00B3FF', fontWeight: 'bold' }}>
+  #{tower.id}
+  <a
+    href={`https://magiceden.io/item-details/apechain/${TOWER_CONTRACT}/${tower.id}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    title="View on Magic Eden"
+    style={{ display: 'inline-flex' }}
+  >
+    <img src="https://admin.demwitches.xyz/images/me-icon.png" alt="ME" style={{ width: '16px', height: '16px', marginTop: '2px'}} />
+  </a>
+  <a
+    href={`https://opensea.io/item/ape_chain/${TOWER_CONTRACT}/${tower.id}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    title="View on OpenSea"
+    style={{ display: 'inline-flex' }}
+  >
+    <img src="https://admin.demwitches.xyz/images/os-logo.png" alt="OS" style={{ width: '18px', height: '16px',marginTop: '2px' }} />
+  </a>
+</div>
+
                   <div style={{ position: 'relative', marginTop: '4px' }}>
   {/* Centered Type + Level Text */}
   <div
@@ -192,21 +216,24 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
 
   {/* Bottom-Right Toggle Button */}
   <button
-    onClick={() => toggleExpand(tower.id)}
-    style={{
-      position: 'absolute',
-      right: '4px',
-      bottom: '-4px',
-      background: 'transparent',
-      border: 'none',
-      color: '#ccc',
-      fontSize: '14px',
-      cursor: 'pointer',
-      padding: 0,
-      lineHeight: 1,
-      outline: 'none'
-    }}
-    onMouseDown={(e) => e.preventDefault()} // prevent focus ring
+  onClick={(e) => {
+    e.stopPropagation(); // ⛔ Prevents bubble up to the card's onClick
+    toggleExpand(tower.id);
+  }}
+  style={{
+    position: 'absolute',
+    right: '4px',
+    bottom: '-4px',
+    background: 'transparent',
+    border: 'none',
+    color: '#ccc',
+    fontSize: '14px',
+    cursor: 'pointer',
+    padding: 0,
+    lineHeight: 1,
+    outline: 'none'
+  }}
+  onMouseDown={(e) => e.preventDefault()}
   >
     {isExpanded ? '▲' : '▼'}
   </button>
