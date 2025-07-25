@@ -289,7 +289,7 @@ html, body, #root {
   gap: 12px;
   z-index: 1001;
   margin-left: 35px;
-  margin-right: 35px; /* ✅ no shift if spacer is same width */
+  margin-right: 20px; /* ✅ no shift if spacer is same width */
 }
 /* === Canvas === */
 canvas {
@@ -584,7 +584,7 @@ textarea {
   }
 }
 /* === Responsive Overrides === */
-@media (min-width: 950px) {
+@media (min-width: 1000px) {
   .profile-btn-mobile,
   .profile-pfp-button-mobile,
   .profile-pfp-button-mobile img {
@@ -592,7 +592,7 @@ textarea {
   }
 
 }
-@media (min-width: 526px) and (max-width: 949px) {
+@media (min-width: 526px) and (max-width: 999px) {
   #navbar::before {
     display: none !important;
   }
@@ -750,6 +750,48 @@ textarea {
   box-shadow: 0 0 12px #00B3FF, 0 0 24px #00B3FF;
   transform: scale(1.05);
 }
+.logout-button {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-shadow: 0 0 2px #000, 0 0 4px #000;
+  padding: 8px 10px;
+  background: linear-gradient(
+    135deg,
+    #0d1b2a,
+    #14293c,
+    #0090cc,
+    #14293c,
+    #0d1b2a
+  );
+  background-size: 600% 600%;
+  animation: backgroundShift 13s ease-in-out infinite;
+  border: 2px solid #00B3FF;
+  color: #00B3FF;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0, 179, 255, 0.5);
+  transition: all 0.25s ease-in-out;
+  cursor: pointer;
+  max-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+
+.logout-button:hover {
+  background: #00B3FF;
+  color: #0d1b2a;
+  box-shadow: 0 0 12px #00B3FF, 0 0 24px #00B3FF;
+  transform: scale(1.05);
+  text-shadow: none;
+}
+
+.logout-button:hover svg {
+  stroke: #0d1b2a;
+}
+
 
 
 /* 👤 PFP image inside the button */

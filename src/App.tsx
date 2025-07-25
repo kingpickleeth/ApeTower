@@ -2,7 +2,7 @@ import './index.css';
 import GameCanvas from './components/GameCanvas';
 import ProfileEditor from './components/ProfileEditor';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount } from 'wagmi';
+import { useAccount, useDisconnect } from 'wagmi';
 import { useEffect, useState } from 'react';
 import { JsonRpcProvider, Wallet, Contract, parseUnits, getAddress } from 'ethers';
 import { getProfile } from './utils/profile';
@@ -22,6 +22,7 @@ const ERC20_ABI = [
 ];
 function App() {
   const { isConnected, address } = useAccount();
+  const { disconnect } = useDisconnect();
   const [showProfile, setShowProfile] = useState(false);
   const [showTowers, setShowTowers] = useState(false);
   const [profile, setProfile] = useState<{ username: string; pfp_url: string } | null>(null);
@@ -268,6 +269,28 @@ for (const id of tokenIds) {
   Profile
   <img src={profile.pfp_url} alt="pfp" className="pfp-inline" />
 </button>
+<button
+        className="my-towers-button logout-button"
+        onClick={() => disconnect()}
+        title="Disconnect Wallet"
+      >
+        {/* Logout icon (door with arrow) */}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#00B3FF"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+          <polyline points="10 17 15 12 10 7" />
+          <line x1="15" y1="12" x2="3" y2="12" />
+        </svg>
+      </button>
 
     
     </>
@@ -286,6 +309,7 @@ for (const id of tokenIds) {
     >
       👤 Profile
     </button>
+    
    </>
   )
 )}
