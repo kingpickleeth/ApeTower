@@ -248,33 +248,22 @@ for (const id of tokenIds) {
   >
   My Towers
   </button>
-       <button
-      className="profile-pfp-button"
-      onClick={() => {
-        setShowProfile(true);
-        if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
-        if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
-        if ((window as any).disableCampaignInput) (window as any).disableCampaignInput(); // ✅ added
-        if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput(); // ✅ added
-      }}
-      title={profile?.username || 'Profile'}
-    >
-      <img src={profile.pfp_url} alt="pfp" />
-    </button>
+  <button
+  className="my-towers-button profile-with-pfp"
+  onClick={() => {
+    setShowProfile(true);
+    if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
+    if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput();
+    if ((window as any).disableCampaignInput) (window as any).disableCampaignInput();
+    if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput();
+  }}
+  title={profile?.username || 'Profile'}
+>
+  Profile
+  <img src={profile.pfp_url} alt="pfp" className="pfp-inline" />
+</button>
+
     
-    <button
-      className="profile-pfp-button-mobile"
-      onClick={() => {
-        setShowProfile(true);
-        if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
-        if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
-        if ((window as any).disableCampaignInput) (window as any).disableCampaignInput(); // ✅ added
-        if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput(); // ✅ added
-      }}
-      title={profile?.username || 'Profile'}
-    >
-      <img src={profile.pfp_url} alt="pfp" />
-    </button>
     </>
   ) : (
     <>
@@ -291,18 +280,7 @@ for (const id of tokenIds) {
     >
       👤 Profile
     </button>
-    <button
-      className="profile-btn-mobile"
-      onClick={() => {
-        setShowProfile(true);
-        if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
-        if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput(); // ✅ added
-        if ((window as any).disableCampaignInput) (window as any).disableCampaignInput(); // ✅ added
-        if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput(); // ✅ added
-      }}
-    >
-      👤
-    </button></>
+   </>
   )
 )}
             </div>

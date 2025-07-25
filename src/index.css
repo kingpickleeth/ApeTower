@@ -582,7 +582,7 @@ textarea {
   }
 }
 /* === Responsive Overrides === */
-@media (min-width: 750px) {
+@media (min-width: 950px) {
   .profile-btn-mobile,
   .profile-pfp-button-mobile,
   .profile-pfp-button-mobile img {
@@ -590,7 +590,7 @@ textarea {
   }
 
 }
-@media (min-width: 410px) and (max-width: 749px) {
+@media (min-width: 526px) and (max-width: 949px) {
   #navbar::before {
     display: none !important;
   }
@@ -624,7 +624,7 @@ textarea {
     flex-shrink: 0;
   }
 }
-@media (max-width: 409px) {
+@media (max-width: 525px) {
   #navbar::before {
     display: none !important;
   }
@@ -688,6 +688,7 @@ textarea {
   box-shadow: 0 0 8px rgba(0, 179, 255, 0.5);
   transition: all 0.25s ease-in-out;
   cursor: pointer;
+  max-height:30px;
 }
 
 .my-towers-button:hover {
@@ -697,12 +698,46 @@ textarea {
   transform: scale(1.05);
 }
 
-@media (max-width: 768px) {
-  .my-towers-button {
-    font-size: 0.9rem;
-  }
+
+
+/* 🔁 Reuse base button styling */
+.profile-with-pfp {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  max-height: 30px;
+  padding: 7px 10px 7px 16px;
+  background: linear-gradient(145deg, #0d1b2a, #1a2e3f);
+  border: 2px solid #00B3FF;
+  color: #00B3FF;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0, 179, 255, 0.5);
+  transition: all 0.25s ease-in-out;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-wallet-button-container
- {
-  display: none !important;
+
+.profile-with-pfp:hover {
+  background: #00B3FF;
+  color: #0d1b2a;
+  box-shadow: 0 0 12px #00B3FF, 0 0 24px #00B3FF;
+  transform: scale(1.05);
+}
+
+
+/* 👤 PFP image inside the button */
+.pfp-inline {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 15%;
+  margin-left: 5px;
+  object-fit: cover;
+  border: 2px solid white;
+  background-color: white;
+  display: block;
+  transform: scale(1.25);
 }
