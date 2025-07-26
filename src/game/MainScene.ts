@@ -216,12 +216,23 @@ create() {
   this.mapOffsetX = (screenWidth - mapWidth) / 2;
   this.mapOffsetY = (screenHeight - mapHeight) / 2;
   // Load Background Music
-  this.load.audio('bgMusic', ['https://admin.demwitches.xyz/assets/music.mp3']);
-  this.load.once('complete', () => {
-  const music = this.sound.add('bgMusic', { loop: true, volume: 0.5 });
-  music.play();
+  const existingMusic = this.sound.get('bgMusic');
+
+  if (existingMusic) {
+    this.bgMusic = existingMusic;
+    if (!this.isMusicMuted) {
+      existingMusic.play({ loop: true, volume: 0.5 });
+    }
+  } else {
+    this.load.audio('bgMusic', ['https://admin.demwitches.xyz/assets/music.mp3']);
+    this.load.once('complete', () => {
+      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.5 });
+      if (!this.isMusicMuted) {
+        this.bgMusic.play();
+      }
     });
-  this.load.start();
+    this.load.start();
+  }  
   // External Pause / Resume Game Functions
   (window as any).pauseGameFromUI = () => {
     this.isPaused = true;
