@@ -216,23 +216,25 @@ create() {
   this.mapOffsetX = (screenWidth - mapWidth) / 2;
   this.mapOffsetY = (screenHeight - mapHeight) / 2;
   // Load Background Music
-  const existingMusic = this.sound.get('bgMusic');
+// Destroy any existing bgMusic reference
+const existing = this.sound.get('bgMusic');
+if (existing) {
+  existing.destroy();
+}
 
-  if (existingMusic) {
-    this.bgMusic = existingMusic;
-    if (!this.isMusicMuted) {
-      existingMusic.play({ loop: true, volume: 0.5 });
-    }
-  } else {
-    this.load.audio('bgMusic', ['https://admin.demwitches.xyz/assets/music.mp3']);
-    this.load.once('complete', () => {
-      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.5 });
-      if (!this.isMusicMuted) {
-        this.bgMusic.play();
-      }
-    });
-    this.load.start();
-  }  
+// Load and play the music
+if (!this.cache.audio.has('bgMusic')) {
+  this.load.audio('bgMusic', ['https://admin.demwitches.xyz/assets/music.mp3']);
+  this.load.once('complete', () => {
+    this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.5 });
+    this.bgMusic.play(); // ✅ ALWAYS PLAY on scene entry
+  });
+  this.load.start();
+} else {
+  this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.5 });
+  this.bgMusic.play(); // ✅ ALWAYS PLAY on scene entry
+}
+
   // External Pause / Resume Game Functions
   (window as any).pauseGameFromUI = () => {
     this.isPaused = true;
