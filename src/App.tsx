@@ -11,6 +11,7 @@ import { updateVineBalance, upgradeCampaignLevel } from './utils/profile'; // âœ
 import DENG_TOWER_ABI from './abis/Tower.json'; // You can paste ABI inline if needed
 import React from 'react';
 import MyTowersModal from './components/MyTowersModal';
+import ShopModal from './components/ShopModal';
 import InteractiveParticles from './components/InteractiveParticles';
 
 
@@ -23,6 +24,7 @@ const ERC20_ABI = [
 function App() {
   const { isConnected, address } = useAccount();
   const { disconnect } = useDisconnect();
+  const [showShop, setShowShop] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showTowers, setShowTowers] = useState(false);
   const [profile, setProfile] = useState<{ username: string; pfp_url: string } | null>(null);
@@ -244,6 +246,18 @@ for (const id of tokenIds) {
   profile?.pfp_url ? (
     <>
     <button
+  className="my-towers-button"
+  onClick={() => {
+    setShowShop(true);
+    if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
+    if ((window as any).disableMainMenuInput) (window as any).disableMainMenuInput();
+    if ((window as any).disableCampaignInput) (window as any).disableCampaignInput();
+    if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput();
+  }}
+>
+ The Shop
+</button>
+    <button
     className="my-towers-button"
     onClick={() => {
       setShowTowers(true);
@@ -371,6 +385,7 @@ for (const id of tokenIds) {
               </div>
             </div>
           )}
+          
           {showTowers && (
   <MyTowersModal
     walletAddress={address!}
@@ -383,6 +398,19 @@ for (const id of tokenIds) {
     }}
   />
 )}
+{showShop && (
+  <ShopModal
+    walletAddress={address || ''}
+    onClose={() => {
+      setShowShop(false);
+      if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
+      if ((window as any).enableMainMenuInput) (window as any).enableMainMenuInput();
+      if ((window as any).enableCampaignInput) (window as any).enableCampaignInput();
+      if ((window as any).disableMainSceneInput) (window as any).disableMainSceneInput();
+    }}
+  />
+)}
+
 
         </>
       )}

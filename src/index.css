@@ -285,6 +285,7 @@ html, body, #root {
 #wallet-button-container {
   display: flex;
   overflow: visible;
+  flex-wrap: wrap; /* ✅ This allows buttons to wrap */
 
   align-items: center;
   flex-shrink: 0;
@@ -586,7 +587,7 @@ textarea {
   }
 }
 /* === Responsive Overrides === */
-@media (min-width: 1000px) {
+@media (min-width: 1350px) {
   .profile-btn-mobile,
   .profile-pfp-button-mobile,
   .profile-pfp-button-mobile img {
@@ -594,7 +595,7 @@ textarea {
   }
 
 }
-@media (min-width: 526px) and (max-width: 999px) {
+@media (min-width: 740px) and (max-width: 1349px) {
   #navbar::before {
     display: none !important;
   }
@@ -628,7 +629,7 @@ textarea {
     flex-shrink: 0;
   }
 }
-@media (max-width: 525px) {
+@media (max-width: 739px) {
   #navbar::before {
     display: none !important;
   }
@@ -678,6 +679,7 @@ textarea {
 #navbar-left {
   display: flex;
   align-items: center;
+  
   gap: 16px;
 }
 .my-towers-button {
@@ -1038,4 +1040,104 @@ textarea {
 .glow-button.danger:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.4);
+}
+.glow-button.green {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  background: linear-gradient(
+    135deg,
+    #0d2a1b,
+    #145c3c,
+    #00cc88,
+    #145c3c,
+    #0d2a1b
+  );
+  background-size: 600% 600%;
+  animation: backgroundShift 13s ease-in-out infinite;
+
+  border: 2px solid #00cc88;
+  outline: 1px solid #00cc88;
+  outline-offset: -1px;
+  color: #00cc88;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0, 204, 136, 0.5);
+  transition: all 0.25s ease-in-out;
+  cursor: pointer;
+}
+
+.glow-button.green:hover {
+  background: #00cc88;
+  color: #0d1b2a;
+  box-shadow: 0 0 12px #00cc88, 0 0 24px #00cc88;
+}
+
+.glow-button.green:focus,
+.glow-button.green:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 204, 136, 0.4);
+}
+.shop-tab-button {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 10px 18px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #888;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.shop-tab-button:hover {
+  color: #00B3FF;
+  border-bottom: 2px solid rgba(0, 179, 255, 0.4);
+}
+
+.shop-tab-button.active {
+  color: #00B3FF;
+  border-bottom: 3px solid #00B3FF;
+  text-shadow: 0 0 6px #00B3FF;
+}
+/* Base tab inherits glow-button */
+/* Inactive tab base style (inherits glow-button core feel, no animation) */
+.glow-button.tab {
+  padding: 8px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: #0d1b2a;
+  color: #00B3FF;
+  border: 2px solid #00B3FF;
+  outline: 1px solid #00B3FF;
+  outline-offset: -1px;
+  border-radius: 12px;
+  box-shadow: 0 0 4px rgba(0, 179, 255, 0.3);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: all 0.25s ease-in-out;
+}
+
+/* Hover effect for inactive tabs */
+.glow-button.tab:hover {
+  opacity: 0.85;
+  transform: scale(1.04);
+}
+
+/* Active tab gets animation and glow */
+.glow-button.tab.active {
+  background: linear-gradient(
+    135deg,
+    #0d1b2a,
+    #14293c,
+    #0090cc,
+    #14293c,
+    #0d1b2a
+  );
+  background-size: 600% 600%;
+  animation: backgroundShift 13s ease-in-out infinite;
+
+  opacity: 1;
+  box-shadow: 0 0 12px #00B3FF, 0 0 24px #00B3FF;
 }
