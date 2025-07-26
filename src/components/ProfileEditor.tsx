@@ -325,15 +325,10 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
               <div style={{ fontSize: '18px', color: '#5CFFA3' }}>
                 Game Balance: {vineBalance} $VINE
               </div>
-              <button
+              <button className="glow-button green"
                 onClick={handleClaim}
                 style={{
-                  background: '#5CFFA3',
-                  color: '#1A1F2B',
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer'
+                 
                 }}
               >
                 Claim
