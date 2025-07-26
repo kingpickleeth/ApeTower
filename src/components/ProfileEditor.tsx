@@ -385,25 +385,24 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
           />
           <small style={{ color: '#DFFBFF' }}>{bio.length}/100 characters</small>
         </div>
-        <div className="form-group" style={{ marginTop: '20px', marginBottom:'15px' }}>
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-    <label style={{ marginRight: '12px', fontWeight: 'bold' }}>X Account:</label>
+        <div className="form-group twitter-row">
+  <div className="twitter-row-inner">
+    <div className="twitter-label-handle">
+      <label>X Account:</label>
+      {twitterHandle && (
+        <span className="twitter-handle">@{twitterHandle}</span>
+      )}
+    </div>
 
     {twitterHandle ? (
-  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-    <span style={{ color: '#1DA1F2', fontWeight: 'bold', fontSize: '1rem' }}>
-      @{twitterHandle}
-    </span>
-    <button className="glow-button danger" onClick={() => setTwitterHandle(null)}>
-      Disconnect
-    </button>
-  </div>
-) : (
-  <button className="glow-button twitter" onClick={connectTwitter}>
-    Connect Twitter
-  </button>
-)}
-
+      <button className="glow-button danger" onClick={() => setTwitterHandle(null)}>
+        Disconnect
+      </button>
+    ) : (
+      <button className="glow-button twitter" onClick={connectTwitter}>
+        Connect Twitter
+      </button>
+    )}
   </div>
 </div>
 
