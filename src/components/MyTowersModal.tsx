@@ -1,15 +1,12 @@
 import { useEffect, useState } from 'react';
 import { JsonRpcProvider, Contract } from 'ethers';
 import DENG_TOWER_ABI from '../abis/Tower.json';
-
 const TOWER_CONTRACT = '0xeDed3FA692Bf921B9857F86CC5BB21419F5f77ec';
 const RPC = 'https://rpc.apechain.com';
-
 interface Props {
   walletAddress: string;
   onClose: () => void;
 }
-
 interface Tower {
   id: number;
   image: string;
@@ -19,36 +16,29 @@ interface Tower {
   range?: number;
   damage?: number;
 }
-
 export default function MyTowersModal({ walletAddress, onClose }: Props) {
   const [towers, setTowers] = useState<Tower[]>([]);
   const [expandedSet, setExpandedSet] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const fetchTowers = async () => {
       try {
         const provider = new JsonRpcProvider(RPC);
         const contract = new Contract(TOWER_CONTRACT, DENG_TOWER_ABI.abi, provider);
         const ids: number[] = await contract.getOwnedTowers(walletAddress);
-
         const towersWithMetadata: Tower[] = await Promise.all(
           ids.map(async (id) => {
             const metaUrl = `https://metadata-server-production.up.railway.app/api/tower/${id}.json`;
-
             try {
               const res = await fetch(metaUrl);
               if (!res.ok) throw new Error('Failed to fetch metadata');
               const data = await res.json();
-
               const type = data.attributes?.find((a: any) => a.trait_type === 'Type')?.value || 'Unknown';
               const level = data.attributes?.find((a: any) => a.trait_type === 'Level')?.value || 1;
               const speed = data.attributes?.find((a: any) => a.trait_type === 'Speed')?.value;
               const range = data.attributes?.find((a: any) => a.trait_type === 'Range')?.value;
               const damage = data.attributes?.find((a: any) => a.trait_type === 'Damage')?.value;
-
               const image = `https://admin.demwitches.xyz/images/tower/${type.toLowerCase()}.png`;
-
               return { id, image, type, level, speed, range, damage };
             } catch (err) {
               console.warn(`⚠️ Failed to load metadata for Tower #${id}`, err);
@@ -61,7 +51,6 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
             }
           })
         );
-
         setTowers(towersWithMetadata);
       } catch (err) {
         console.error('❌ Failed to fetch towers:', err);
@@ -69,10 +58,8 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
         setLoading(false);
       }
     };
-
     fetchTowers();
   }, [walletAddress]);
-
   const toggleExpand = (id: number) => {
     const newSet = new Set(expandedSet);
     if (newSet.has(id)) {
@@ -82,10 +69,8 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
     }
     setExpandedSet(newSet);
   };
-
   return (
     <div id="profile-modal" style={{ fontFamily: "'Outfit', sans-serif" }}>
-  
       <div id="profile-overlay" onClick={onClose} />
       <div
   id="profile-card"
@@ -100,7 +85,6 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
     color: '#fff'
   }}
 >
-
       <h2
   style={{
     fontSize: '2.2rem',
@@ -114,7 +98,6 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
 >
   My Towers
 </h2>
-
         {loading ? (
           <p style={{ color: '#fff' }}>Loading towers...</p>
         ) : towers.length === 0 ? (
@@ -201,7 +184,6 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
     <img src="https://admin.demwitches.xyz/images/os-logo.png" alt="OS" style={{ width: '18px', height: '16px',marginTop: '2px' }} />
   </a>
 </div>
-
                   <div style={{ position: 'relative', marginTop: '4px' }}>
   {/* Centered Type + Level Text */}
   <div
@@ -238,8 +220,6 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
     {isExpanded ? '▲' : '▼'}
   </button>
 </div>
-
-
               {isExpanded && (
   <div
     style={{
@@ -287,15 +267,13 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
     </button>
   </div>
 )}
-
-
                 </div>
               );
             })}
           </div>
         )}
         <div className="button-row" style={{ marginTop: '20px' }}>
-          <button className="close-btn" onClick={onClose}>❌ Close</button>
+          <button className="glow-button danger" onClick={onClose}>❌ Close</button>
         </div>
       </div>
     </div>
