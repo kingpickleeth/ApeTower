@@ -942,10 +942,8 @@ textarea {
 }
 
 .glow-button:hover {
-  background: #00B3FF;
-  color: #0d1b2a;
+  transform: scale(1.04);
   box-shadow: 0 0 12px #00B3FF, 0 0 24px #00B3FF;
-  transform: scale(1.05);
   text-shadow: none;
 }
 
@@ -981,8 +979,7 @@ textarea {
 }
 
 .glow-button.danger:hover {
-  background: #ff4d4f;
-  color: #0d1b2a;
+  transform: scale(1.04);
   box-shadow: 0 0 12px #ff4d4f, 0 0 24px #ff4d4f;
 }
 
@@ -1068,8 +1065,7 @@ textarea {
 }
 
 .glow-button.green:hover {
-  background: #00cc88;
-  color: #0d1b2a;
+  transform: scale(1.04);
   box-shadow: 0 0 12px #00cc88, 0 0 24px #00cc88;
 }
 
