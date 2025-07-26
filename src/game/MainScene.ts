@@ -226,12 +226,12 @@ if (existing) {
 if (!this.cache.audio.has('bgMusic')) {
   this.load.audio('bgMusic', ['https://admin.demwitches.xyz/assets/music.mp3']);
   this.load.once('complete', () => {
-    this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.5 });
+    this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 });
     this.bgMusic.play(); // ✅ ALWAYS PLAY on scene entry
   });
   this.load.start();
 } else {
-  this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.5 });
+  this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 });
   this.bgMusic.play(); // ✅ ALWAYS PLAY on scene entry
 }
 
@@ -1116,7 +1116,7 @@ playPewSound() {
 
   if (this.sound.get('pew')) {
     this.sound.play('pew', {
-      volume: 0.8,
+      volume: 0.5,
       rate: Phaser.Math.FloatBetween(0.95, 1.05),
     });
   } else {
@@ -1124,7 +1124,7 @@ playPewSound() {
     this.load.once('complete', () => {
       const pew = this.sound.add('pew');
       pew.play({
-        volume: 0.8,
+        volume: 0.5,
         rate: Phaser.Math.FloatBetween(0.95, 1.05),
       });
     });
@@ -1480,7 +1480,7 @@ this.currentEnemyReward = config.reward;
   
     this.load.audio('bgMusic', ['https://admin.demwitches.xyz/assets/music.mp3']);
     this.load.once('complete', () => {
-      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.5 });
+      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 });
       this.bgMusic.play();
     });
     this.load.start();
