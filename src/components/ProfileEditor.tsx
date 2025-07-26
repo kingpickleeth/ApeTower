@@ -312,7 +312,6 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
           }}>
             {username || 'Your Username'}
           </span>
-
           {/* 🌿 Game Balance + Claim (only if > 0) */}
           {vineBalance > 0 && (
             <div className="vine-balance-row" style={{
@@ -342,6 +341,27 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
               Wallet Balance: {Math.floor(walletVineBalance)} $VINE
             </div>
           )}
+                   <div className="form-group twitter-row">
+  <div className="twitter-row-inner">
+    <div className="twitter-label-handle">
+      <label>X Account:</label>
+      {twitterHandle && (
+        <span className="twitter-handle">@{twitterHandle}</span>
+      )}
+    </div>
+
+    {twitterHandle ? (
+      <button className="glow-button danger" onClick={() => setTwitterHandle(null)}>
+        Disconnect
+      </button>
+    ) : (
+      <button className="glow-button twitter" onClick={connectTwitter}>
+        Connect Twitter
+      </button>
+    )}
+  </div>
+</div>
+
         </>
 
         <div className="form-group">
@@ -386,28 +406,7 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
           />
           <small style={{ color: '#DFFBFF' }}></small>
         </div>
-        <div className="form-group twitter-row">
-  <div className="twitter-row-inner">
-    <div className="twitter-label-handle">
-      <label>X Account:</label>
-      {twitterHandle && (
-        <span className="twitter-handle">@{twitterHandle}</span>
-      )}
-    </div>
-
-    {twitterHandle ? (
-      <button className="glow-button danger" onClick={() => setTwitterHandle(null)}>
-        Disconnect
-      </button>
-    ) : (
-      <button className="glow-button twitter" onClick={connectTwitter}>
-        Connect Twitter
-      </button>
-    )}
-  </div>
-</div>
-
-<div className="button-row">
+        <div className="button-row">
   {onClose && (
     <button className="glow-button danger" onClick={onClose}>
       ❌ Close
