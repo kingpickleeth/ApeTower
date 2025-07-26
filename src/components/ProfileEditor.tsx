@@ -48,7 +48,7 @@ interface Props {
 
   export default function ProfileEditor({ walletAddress, onClose, onSave }: Props) {
 
-  
+  const [towerBalance, setTowerBalance] = useState<number | null>(null);
   const [username, setUsername] = useState('');
   const [pfpUrl, setPfpUrl] = useState('');
   const [loading, setLoading] = useState(true);
@@ -93,10 +93,16 @@ interface Props {
         setBio(profile.bio || '');
         setTwitterHandle(profile.twitter_handle || null);
         setVineBalance(profile.total_vine || 0);
-        setProfile(profile); // ✅ Add this
+        setProfile(profile);
       }
+    
+      // ✅ Fetch tower balance right after loading profile
+      const balance = await checkTowerBalance(walletAddress);
+      setTowerBalance(balance);
+    
       setLoading(false);
     }
+    
     fetch();
   }, [walletAddress]);
   useEffect(() => {
@@ -383,7 +389,7 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
             placeholder="Write something cool (max 100 characters)"
             rows={3}
           />
-          <small style={{ color: '#DFFBFF' }}>{bio.length}/100 characters</small>
+          <small style={{ color: '#DFFBFF' }}></small>
         </div>
         <div className="form-group twitter-row">
   <div className="twitter-row-inner">
@@ -413,8 +419,8 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
     </button>
   )}
   <button className="glow-button" onClick={saveProfile}>
-    💾 Save
-  </button>
+  💾 {towerBalance === 0 ? 'Save & Mint Free Towers' : 'Save'}
+</button>
 </div>
 
       </div>
