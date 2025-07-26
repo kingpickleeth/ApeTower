@@ -337,7 +337,7 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
 
           {/* 💼 Wallet Balance (only if > 0) */}
           {walletVineBalance > 0 && (
-            <div style={{ fontSize: '18px', color: '#5CFFA3', textAlign: 'center', marginTop: '4px' }}>
+            <div style={{ fontSize: '18px', color: '#5CFFA3', textAlign: 'center' }}>
               Wallet Balance: {Math.floor(walletVineBalance)} $VINE
             </div>
           )}
