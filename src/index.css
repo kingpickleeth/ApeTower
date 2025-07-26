@@ -953,10 +953,29 @@ textarea {
 
 /* Optional: Danger and Twitter variants */
 .glow-button.danger {
-  border-color: #ff4d4f !important;
-  border: 2px solid #ff4d4f;           /* ✅ Keeps the border */
-  outline: 1px solid #ff4d4f;          /* ✅ Adds subtle hard edge */
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  background: linear-gradient(
+    135deg,
+    #2b0d0d,
+    #3c1414,
+    #cc0000,
+    #3c1414,
+    #2b0d0d
+  );
+  background-size: 600% 600%;
+  animation: backgroundShift 13s ease-in-out infinite;
+
+  border: 2px solid #ff4d4f;
+  outline: 1px solid #ff4d4f;
+  outline-offset: -1px;
   color: #ff4d4f;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(255, 77, 79, 0.5);
+  transition: all 0.25s ease-in-out;
+  cursor: pointer;
 }
 
 .glow-button.danger:hover {
