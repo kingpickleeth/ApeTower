@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useWalletClient } from 'wagmi';
+import { parseEther } from 'viem';
+import { buyMoo } from '../utils/buyMoo';
 
 interface Props {
   walletAddress: string;
@@ -6,38 +9,52 @@ interface Props {
 }
 
 export default function ShopModal({ walletAddress, onClose }: Props) {
-  const [activeTab, setActiveTab] = useState<'towers' | 'vine'>('towers');
+  const [activeTab, setActiveTab] = useState<'towers' | 'moo'>('towers');
 
   const towerItems = [
     {
       type: 'Basic',
       image: 'https://admin.demwitches.xyz/images/tower/basic.png',
-      cost: '300 $VINE',
+      cost: '50 $MOO',
       description: 'Reliable and balanced starter tower.',
       stats: { speed: 3, range: 4, damage: 3 }
     },
     {
       type: 'Rapid',
       image: 'https://admin.demwitches.xyz/images/tower/rapid.png',
-      cost: '450 $VINE',
+      cost: '150 $MOO',
       description: 'High speed, lower damage.',
       stats: { speed: 5, range: 3, damage: 2 }
     },
     {
       type: 'Cannon',
       image: 'https://admin.demwitches.xyz/images/tower/cannon.png',
-      cost: '600 $VINE',
+      cost: '200 $MOO',
       description: 'Massive damage, slow fire rate.',
       stats: { speed: 1, range: 4, damage: 5 }
     }
   ];
 
-  const vineBundles = [
-    { amount: 500, cost: '0.0025 $APE', image: 'https://admin.demwitches.xyz/images/VineBundle.png' },
-    { amount: 1000, cost: '0.0045 $APE', image: 'https://admin.demwitches.xyz/images/VineBundle.png' },
-    { amount: 2500, cost: '0.0099 $APE', image: 'https://admin.demwitches.xyz/images/VineBundle.png' }
+  const mooBundles = [
+    { amount: 50, cost: '0.25 $APE', image: 'https://admin.demwitches.xyz/images/VineBundle.png' },
+    { amount: 100, cost: '0.5 $APE', image: 'https://admin.demwitches.xyz/images/VineBundle.png' },
+    { amount: 200, cost: '1 $APE', image: 'https://admin.demwitches.xyz/images/VineBundle.png' }
   ];
+  const { data: walletClient } = useWalletClient();
 
+  const handleBuyMoo = async (amountEth: string) => {
+    if (!walletClient) return alert('Connect your wallet');
+  
+    const amountInWei = parseEther(amountEth);
+    try {
+      const tx = await buyMoo({ walletClient, amount: amountInWei });
+      console.log('MOO purchase TX:', tx);
+      alert('Purchase submitted!');
+    } catch (err) {
+      console.error(err);
+      alert('Transaction failed');
+    }
+  };  
   return (
     <div id="profile-modal" style={{ fontFamily: "'Outfit', sans-serif" }}>
       <div id="profile-overlay" onClick={onClose} />
@@ -76,10 +93,10 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
     🧱 Buy Towers
   </button>
   <button
-    className={`glow-button tab ${activeTab === 'vine' ? 'active' : ''}`}
-    onClick={() => setActiveTab('vine')}
+    className={`glow-button tab ${activeTab === 'moo' ? 'active' : ''}`}
+    onClick={() => setActiveTab('moo')}
   >
-    🍃 Buy $VINE
+    🍃 Buy $MOO
   </button>
 </div>
 
@@ -150,7 +167,7 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
               gap: '16px'
             }}
           >
-            {vineBundles.map((bundle, i) => (
+            {mooBundles.map((bundle, i) => (
               <div
                 key={i}
                 style={{
@@ -177,7 +194,7 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
                 >
                  <img
   src={bundle.image}
-  alt={`${bundle.amount} vine`}
+  alt={`${bundle.amount} moo`}
   style={{
     width: '100%',
     height: '100%',
@@ -186,9 +203,14 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
   }}
 />
 </div>
-                <h3 style={{ fontSize: '1.2rem', marginBottom: '6px', color: '#00B3FF' }}>{bundle.amount} $VINE</h3>
+                <h3 style={{ fontSize: '1.2rem', marginBottom: '6px', color: '#00B3FF' }}>{bundle.amount} $MOO</h3>
                 <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#5CFFA3' }}>{bundle.cost}</div>
-                <button className="glow-button green">Buy</button>
+                <button
+  className="glow-button green"
+  onClick={() => handleBuyMoo(bundle.cost.split(' ')[0])} // only extract the number
+>
+  Buy
+</button>
               </div>
             ))}
           </div>
