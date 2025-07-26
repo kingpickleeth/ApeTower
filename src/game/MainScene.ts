@@ -1470,29 +1470,20 @@ this.currentEnemyReward = config.reward;
     console.log('🔁 Restarting game...');
     this.cleanupGameObjects(true);
     this.startNextWave();
-    this.physics.resume();    
+    this.physics.resume();
   
-    // 🎵 Restart music if not muted
-    if (!this.isMusicMuted) {
-      const existingMusic = this.sound.get('bgMusic');
-  
-      if (existingMusic) {
-        existingMusic.play(); // will auto-loop
-      } else {
-        // Reload if somehow destroyed
-        if (!this.cache.audio.has('bgMusic')) {
-          this.load.audio('bgMusic', ['https://admin.demwitches.xyz/assets/music.mp3']);
-          this.load.once('complete', () => {
-            this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.5 });
-            this.bgMusic.play();
-          });
-          this.load.start();
-        } else {
-          this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.5 });
-          this.bgMusic.play();
-        }
-      }
+    // 🔁 Always reload & play bgMusic (no mute state persists)
+    const existing = this.sound.get('bgMusic');
+    if (existing) {
+      existing.destroy(); // 💣 fully remove stale reference
     }
+  
+    this.load.audio('bgMusic', ['https://admin.demwitches.xyz/assets/music.mp3']);
+    this.load.once('complete', () => {
+      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.5 });
+      this.bgMusic.play();
+    });
+    this.load.start();
   }
   
 // ---------------------------------------------------------------------------
