@@ -5,12 +5,12 @@ import GameModal from './GameModal'; // 👈 Add this at the top
 import { updateVineBalance } from '../utils/profile'; // ⬅️ Make sure this exists
 import { getProfileByUsername } from '../utils/profile';
 import { JsonRpcProvider, Contract, formatUnits } from 'ethers';
-import VINE_ABI from '../abis/VineToken.json'; // create this if needed
+import MOO_ABI from '../abis/MooToken.json';
 import { checkTowerBalance } from '../utils/profile'; // adjust path if needed
 
 
 const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/avatar.svg';
-const VINE_CONTRACT = '0xe6027e786e2Ef799316aFabAE84E072cA73AA97f';
+const MOO_CONTRACT = '0x932b8eF025c6bA2D44ABDc1a4b7CBAEdb5DE1582';
 const FALLBACK_RPC = "https://rpc.apechain.com"; // or your custom node
 
 const retryUntilBalanceUpdates = async (
@@ -21,7 +21,7 @@ const retryUntilBalanceUpdates = async (
   delay = 7000
 ) => {
   const provider = new JsonRpcProvider(FALLBACK_RPC);
-  const contract = new Contract(VINE_CONTRACT, VINE_ABI, provider);
+  const contract = new Contract(MOO_CONTRACT, MOO_ABI.abi, provider);
 
   for (let i = 0; i < retries; i++) {
     console.log(`⏳ Retry ${i + 1}/${retries}...`);
@@ -67,7 +67,7 @@ interface Props {
     if (!window.ethereum || !walletAddress) return;
   
     const provider = new JsonRpcProvider(FALLBACK_RPC);
-    const contract = new Contract(VINE_CONTRACT, VINE_ABI, provider);
+    const contract = new Contract(MOO_CONTRACT, MOO_ABI.abi, provider);  
   
     try {
       const rawBalance = await contract.balanceOf(walletAddress, {
@@ -79,7 +79,7 @@ interface Props {
       // 🔁 Force state update even if value doesn't change
       setWalletVineBalance(prev => (formatted !== prev ? formatted : prev + 0.000001));
     } catch (err) {
-      console.error('Error fetching wallet VINE:', err);
+      console.error('Error fetching wallet MOO:', err);
     }
   };
   
@@ -262,10 +262,10 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
     const result = await updateVineBalance(walletAddress, -vineBalance); // subtract
   
     if (result?.error) {
-      console.error("❌ Failed to reset vine in Supabase:", result.error);
+      console.error("❌ Failed to reset MOO in Supabase:", result.error);
     } else {
       setVineBalance(0); // ✅ Update UI immediately
-      console.log("✅ Vine claimed and reset");
+      console.log("✅ MOO claimed and reset");
      await fetchWalletBalance(); // ✅ This is what updates the wallet UI
 
     }
@@ -322,7 +322,7 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
               margin: '0'
             }}>
               <div style={{ fontSize: '18px', color: '#5CFFA3' }}>
-                Game Balance: {vineBalance} $VINE
+                Game Balance: {vineBalance} $MOO
               </div>
               <button className="glow-button green"
                 onClick={handleClaim}
@@ -338,7 +338,7 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
           {/* 💼 Wallet Balance (only if > 0) */}
           {walletVineBalance > 0 && (
             <div style={{ fontSize: '18px', color: '#5CFFA3', textAlign: 'center' }}>
-              Wallet Balance: {Math.floor(walletVineBalance)} $VINE
+              Wallet Balance: {Math.floor(walletVineBalance)} $MOO
             </div>
           )}
                    <div className="form-group twitter-row">

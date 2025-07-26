@@ -112,7 +112,7 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
     className={`glow-button tab ${activeTab === 'moo' ? 'active' : ''}`}
     onClick={() => setActiveTab('moo')}
   >
-    🍃 Buy $MOO
+    🦛 Buy $MOO
   </button>
 </div>
 
