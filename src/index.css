@@ -911,3 +911,65 @@ textarea {
 .close-btn:hover {
   transform: scale(1.05);
 }
+
+.glow-button {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  text-shadow: 0 0 2px #000, 0 0 4px #000;
+  padding: 8px 16px;
+  background: linear-gradient(
+    135deg,
+    #0d1b2a,
+    #14293c,
+    #0090cc,
+    #14293c,
+    #0d1b2a
+  );
+  background-size: 600% 600%;
+  animation: backgroundShift 13s ease-in-out infinite;
+ 
+  border: 2px solid #00B3FF;           /* ✅ Keeps the border */
+  outline: 1px solid #00B3FF;          /* ✅ Adds subtle hard edge */
+  outline-offset: -1px;                /* ✅ Prevents spacing gaps */
+  color: #00B3FF;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0, 179, 255, 0.5);
+  transition: all 0.25s ease-in-out;
+  cursor: pointer;
+}
+
+.glow-button:hover {
+  background: #00B3FF;
+  color: #0d1b2a;
+  box-shadow: 0 0 12px #00B3FF, 0 0 24px #00B3FF;
+  transform: scale(1.05);
+  text-shadow: none;
+}
+
+.glow-button:active {
+  transform: scale(0.95);
+}
+
+/* Optional: Danger and Twitter variants */
+.glow-button.danger {
+  border-color: #ff4d4f;
+  color: #ff4d4f;
+}
+
+.glow-button.danger:hover {
+  background: #ff4d4f;
+  color: #0d1b2a;
+  box-shadow: 0 0 12px #ff4d4f, 0 0 24px #ff4d4f;
+}
+
+.glow-button.twitter {
+  border-color: #1DA1F2;
+  color: #1DA1F2;
+}
+
+.glow-button.twitter:hover {
+  background: #1DA1F2;
+  color: #0d1b2a;
+  box-shadow: 0 0 12px #1DA1F2, 0 0 24px #1DA1F2;
+}

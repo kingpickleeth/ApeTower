@@ -390,61 +390,34 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
     <label style={{ marginRight: '12px', fontWeight: 'bold' }}>X Account:</label>
 
     {twitterHandle ? (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <span style={{ color: '#1DA1F2', fontWeight: 'bold', fontSize: '1rem' }}>
-          @{twitterHandle}
-        </span>
-        <button
-          onClick={() => setTwitterHandle(null)}
-          style={{
-            background: '#ff4d4f',
-            color: '#fff',
-            padding: '6px 12px',
-            borderRadius: '6px',
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            transition: 'transform 0.2s ease'
-          }}
-          onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
-          onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1.0)')}
-        >
-          Disconnect
-        </button>
-      </div>
-    ) : (
-      <button
-        onClick={connectTwitter}
-        style={{
-          background: '#1DA1F2',
-          color: '#fff',
-          padding: '6px 12px',
-          borderRadius: '6px',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          fontSize: '0.9rem',
-          transition: 'transform 0.2s ease'
-        }}
-        onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
-        onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1.0)')}
-      >
-        Connect Twitter
-      </button>
-    )}
+  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <span style={{ color: '#1DA1F2', fontWeight: 'bold', fontSize: '1rem' }}>
+      @{twitterHandle}
+    </span>
+    <button className="glow-button danger" onClick={() => setTwitterHandle(null)}>
+      Disconnect
+    </button>
+  </div>
+) : (
+  <button className="glow-button twitter" onClick={connectTwitter}>
+    Connect Twitter
+  </button>
+)}
+
   </div>
 </div>
 
+<div className="button-row">
+  {onClose && (
+    <button className="glow-button danger" onClick={onClose}>
+      ❌ Close
+    </button>
+  )}
+  <button className="glow-button" onClick={saveProfile}>
+    💾 Save
+  </button>
+</div>
 
-        <div className="button-row">
-          {onClose && (
-            <button className="close-btn" onClick={onClose}>
-              ❌ Close
-            </button>
-          )}
-          <button className="save-btn" onClick={saveProfile}>
-            💾 Save
-          </button>
-        </div>
       </div>
     </>
   );
