@@ -1471,13 +1471,11 @@ this.currentEnemyReward = config.reward;
     this.cleanupGameObjects(true);
     this.startNextWave();
     this.physics.resume();
-  
     // 🔁 Always reload & play bgMusic (no mute state persists)
     const existing = this.sound.get('bgMusic');
     if (existing) {
       existing.destroy(); // 💣 fully remove stale reference
     }
-  
     this.load.audio('bgMusic', ['https://admin.demwitches.xyz/assets/music.mp3']);
     this.load.once('complete', () => {
       this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 });
@@ -1485,7 +1483,6 @@ this.currentEnemyReward = config.reward;
     });
     this.load.start();
   }
-  
 // ---------------------------------------------------------------------------
 // 🔼 showUpgradePanel(): Displays tower upgrade UI
 // ---------------------------------------------------------------------------

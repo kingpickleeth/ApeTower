@@ -953,7 +953,9 @@ textarea {
 
 /* Optional: Danger and Twitter variants */
 .glow-button.danger {
-  border-color: #ff4d4f;
+  border-color: #ff4d4f !important;
+  border: 2px solid #ff4d4f;           /* ✅ Keeps the border */
+  outline: 1px solid #ff4d4f;          /* ✅ Adds subtle hard edge */
   color: #ff4d4f;
 }
 
