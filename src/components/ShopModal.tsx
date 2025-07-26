@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useWalletClient } from 'wagmi';
 import { parseEther } from 'viem';
 import { buyMoo } from '../utils/buyMoo';
+import { useTowerContract } from '../utils/contracts';
 
 interface Props {
   walletAddress: string;
@@ -22,7 +23,7 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
     {
       type: 'Rapid',
       image: 'https://admin.demwitches.xyz/images/tower/rapid.png',
-      cost: '150 $MOO',
+      cost: '100 $MOO',
       description: 'High speed, lower damage.',
       stats: { speed: 5, range: 3, damage: 2 }
     },
@@ -41,6 +42,8 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
     { amount: 200, cost: '1 $APE', image: 'https://admin.demwitches.xyz/images/VineBundle.png' }
   ];
   const { data: walletClient } = useWalletClient();
+  const towerContract = useTowerContract(); // ✅ SAFE hook call
+  
 
   const handleBuyMoo = async (amountEth: string) => {
     if (!walletClient) return alert('Connect your wallet');
@@ -55,6 +58,19 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
       alert('Transaction failed');
     }
   };  
+  const handleBuyTower = async (towerType: number) => {
+    if (!walletClient || !towerContract) return alert('Wallet or contract not ready');
+  
+    try {
+      const tx = await towerContract.write.buyTower([towerType]);
+      console.log('Tower mint TX:', tx);
+      alert('Tower purchase submitted!');
+    } catch (err) {
+      console.error(err);
+      alert('Tower transaction failed');
+    }
+  };
+  
   return (
     <div id="profile-modal" style={{ fontFamily: "'Outfit', sans-serif" }}>
       <div id="profile-overlay" onClick={onClose} />
@@ -155,7 +171,9 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
                   🔹 <strong>Damage:</strong> {tower.stats.damage}
                 </div>
                 <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#5CFFA3' }}>Cost: {tower.cost}</div>
-                <button className="glow-button green">Buy / Mint</button>
+                <button className="glow-button green" onClick={() => handleBuyTower(i)}>
+  Buy / Mint
+</button>
               </div>
             ))}
           </div>
