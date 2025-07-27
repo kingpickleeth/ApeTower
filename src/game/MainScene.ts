@@ -32,7 +32,7 @@ lives: number = 10;
 livesText!: Phaser.GameObjects.Text;
 totalEnemiesDestroyed = 0;
 totalEnemiesKilledByPhysics = 0;
-vineBalance: number = 40; // Starting VINE
+vineBalance: number = 40; // Starting MOO
 vineText!: Phaser.GameObjects.Text;
 waveText!: Phaser.GameObjects.Text;
 // ---------------------------------------------------------------------------
@@ -97,7 +97,7 @@ preload() {
 // showRewardText(): Displays a floating reward text at a given position
 // ---------------------------------------------------------------------------
 showRewardText(x: number, y: number, amount: number) {
-  const rewardText = this.add.text(x, y - 12, `+${amount} $VINE`, {
+  const rewardText = this.add.text(x, y - 12, `+${amount} $MOO`, {
     fontSize: '18px',
     fontFamily: 'Outfit',
     fontStyle: 'bold',
@@ -122,7 +122,7 @@ killEnemy(enemy: Phaser.GameObjects.Arc) {
   this.vineBalance += reward;
   const { x, y } = enemy.getCenter();
   this.showRewardText(x, y, reward);
-  this.vineText.setText(`$VINE: ${this.vineBalance}`);
+  this.vineText.setText(`$MOO: ${this.vineBalance}`);
   const bar = enemy.getData('hpBar') as Phaser.GameObjects.Rectangle;
   const barBg = enemy.getData('hpBarBg') as Phaser.GameObjects.Rectangle;
   bar?.destroy();
@@ -182,7 +182,7 @@ cleanupGameObjects(fullReset = false) {
     this.gameOver = false;
     this.isPaused = false;
     this.updateLivesDisplay(this.lives);
-    this.vineText.setText(`$VINE: ${this.vineBalance}`);
+    this.vineText.setText(`$MOO: ${this.vineBalance}`);
     this.waveText.setText(`Wave: 1`);
   } else {
     this.physics.pause();
@@ -284,7 +284,7 @@ if (!this.cache.audio.has('bgMusic')) {
       this.mapOffsetY + row * this.tileSize + this.tileSize / 2
     );
   }
-  // HUD: VINE, Wave, Lives, Heart Icons
+  // HUD: MOO, Wave, Lives, Heart Icons
   const hudY = 10;
   const textStyle = {
   fontSize: '45px',
@@ -292,7 +292,7 @@ if (!this.cache.audio.has('bgMusic')) {
   color: '#DFFBFF',
   resolution: window.devicePixelRatio || 1
   };
-  const vineText = this.add.text(0, 0, '$VINE: 40', textStyle).setScale(0.5);
+  const vineText = this.add.text(0, 0, '$MOO: 40', textStyle).setScale(0.5);
   const waveText = this.add.text(0, 0, 'Wave: 1', textStyle).setScale(0.5);
   const livesLabel = this.add.text(0, 0, 'Lives:', textStyle).setScale(0.5);
   const padding = 64;
@@ -404,7 +404,7 @@ if (!this.cache.audio.has('bgMusic')) {
       this.vineBalance += reward;
       const { x, y } = enemy.getCenter();
       this.showRewardText(x, y, reward);
-      this.vineText.setText(`$VINE: ${this.vineBalance}`);
+      this.vineText.setText(`$MOO: ${this.vineBalance}`);
       enemy.getData('hpBar')?.destroy();
       enemy.getData('hpBarBg')?.destroy();
       enemy.destroy();
@@ -800,7 +800,7 @@ showTowerSelectPanel(col: number, row: number) {
       align: 'center',
     }).setOrigin(0.5);
 
-    const labelCost = this.add.text(0, 10, `${cost} $VINE`, {
+    const labelCost = this.add.text(0, 10, `${cost} $MOO`, {
       fontSize: '16px',
       fontFamily: 'Outfit',
       color: costColor,
@@ -1013,7 +1013,7 @@ bullet.setData('despawnTimer', bulletTimer);
   if (this.currentTowerType === 'rapid') cost = 15;
   if (this.currentTowerType === 'cannon') cost = 35;
   if (this.vineBalance < cost) {
-    const warning = this.add.text(Number(this.game.config.width) / 2, 40, '❌ Not enough $VINE', {
+    const warning = this.add.text(Number(this.game.config.width) / 2, 40, '❌ Not enough $MOO', {
       fontSize: '16px',
       color: '#FF4F66',
       fontStyle: 'bold',
@@ -1022,7 +1022,7 @@ bullet.setData('despawnTimer', bulletTimer);
     return;
   }
   this.vineBalance -= cost;
-  this.vineText.setText(`$VINE: ${this.vineBalance}`);
+  this.vineText.setText(`$MOO: ${this.vineBalance}`);
   const x = this.mapOffsetX + col * this.tileSize + this.tileSize / 2;
   const y = this.mapOffsetY + row * this.tileSize + this.tileSize / 2;
   let tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform;
@@ -1166,7 +1166,7 @@ console.log(`🚫 Non-HP enemy destroy #${this.totalEnemiesDestroyed}`);
 if (this.lives <= 0 && !this.gameOver) {
   // FULL GAME RESET
 this.cleanupGameObjects(); // fullReset = false
-   // 💾 Save vine to Supabase
+   // 💾 Save MOO to Supabase
  this.time.delayedCall(100, () => {
   if (!this.hasSavedVine && this.walletAddress && this.vineBalance > 0) {
     this.hasSavedVine = true;
@@ -1199,7 +1199,7 @@ const gameOverText = this.add.text(centerX, centerY - 60, '💀 Game Over 💀',
 }).setOrigin(0.5).setDepth(1006);
 
 // 🌿 Vine Earned
-const vineText = this.add.text(centerX, centerY - 20, `You still earned ${this.vineBalance} $VINE`, {
+const vineText = this.add.text(centerX, centerY - 20, `You still earned ${this.vineBalance} $MOO`, {
   fontSize: '20px',
   fontFamily: 'Outfit',
   color: '#5CFFA3'
@@ -1300,10 +1300,10 @@ const mainMenuBtn = this.createStyledButton(
         if (newHp <= 0) {
           const rewardAmount = target.getData('reward') || 0;
           this.vineBalance += rewardAmount;
-          this.vineText.setText(`$VINE: ${this.vineBalance}`);
+          this.vineText.setText(`$MOO: ${this.vineBalance}`);
     
           // 💸 Floating reward popup
-          const popup = this.add.text(target.x, target.y - 20, `+${rewardAmount} $VINE`, {
+          const popup = this.add.text(target.x, target.y - 20, `+${rewardAmount} $MOO`, {
             fontSize: '16px',
             fontFamily: 'Outfit',
             color: '#5CFFA3'
@@ -1553,7 +1553,7 @@ showUpgradePanel(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compo
     .on('pointerdown', () => {
       if (this.vineBalance >= upgradeCost) {
         this.vineBalance -= upgradeCost;
-        this.vineText.setText(`$VINE: ${this.vineBalance}`);
+        this.vineText.setText(`$MOO: ${this.vineBalance}`);
         tower.setData('level', level + 1);
         tower.setData('damage', nextDmg);
         tower.setData('range', nextRng);
@@ -1566,7 +1566,7 @@ showUpgradePanel(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compo
         this.nextRangeCircle = undefined;
         this.showUpgradePanel(tower);
       } else {
-        upgradeBtn.setText('❌ Not enough $VINE');
+        upgradeBtn.setText('❌ Not enough $MOO');
       }
     });
   this.activeUpgradeButton = upgradeBtn;
@@ -1647,7 +1647,7 @@ triggerVictory() {
     color: '#5CFFA3'
   }).setOrigin(0.5).setDepth(1006);
   // Victory Earnings Message
-  const vineAmount = this.add.text(cx, cy - 18, `${this.vineBalance + 1000} $VINE`, {
+  const vineAmount = this.add.text(cx, cy - 18, `${this.vineBalance + 1000} $MOO`, {
     fontSize: '22px',
     fontFamily: 'Outfit',
     fontStyle: 'bold',
@@ -1667,7 +1667,7 @@ triggerVictory() {
     'Campaign',
     0x00B3FF,
     () => {
-      console.log('📦 Saving vine from victory (to campaign)...');
+      console.log('📦 Saving moo from victory (to campaign)...');
       if (this.walletAddress && this.vineBalance > 0) {
         window.dispatchEvent(new CustomEvent('upgrade-campaign', {
           detail: { level: 2 }
@@ -1703,7 +1703,7 @@ triggerVictory() {
   // Victory Main Menu Button
   const mainMenuBtn = this.createStyledButton(cx,cy + 94,'Main Menu', 0x00B3FF,
     () => {
-      console.log('📦 Saving vine from victory (to campaign)...');
+      console.log('📦 Saving MOO from victory (to campaign)...');
       if (this.walletAddress && this.vineBalance > 0) {
         window.dispatchEvent(new CustomEvent('upgrade-campaign', {
           detail: { level: 2 }
