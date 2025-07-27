@@ -172,26 +172,32 @@ for (const log of receipt.logs) {
 }
 
 console.log("🎯 Minted token IDs:", tokenIds);
+const towerTypes = [0, 1, 2]; // Minted in order: Basic, Cannon, Rapid
 
-for (const id of tokenIds) {
+for (let i = 0; i < tokenIds.length; i++) {
+  const id = tokenIds[i];
+  const type = towerTypes[i];
+
   try {
     const res = await fetch(`https://metadata-server-production.up.railway.app/generate-metadata/${id}`, {
       method: 'POST',
       headers: {
-        'x-metadata-secret': import.meta.env.VITE_METADATA_SECRET!
-      }
+        'x-metadata-secret': import.meta.env.VITE_METADATA_SECRET!,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ type })
     });
-    
-  
+
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`Server returned ${res.status}: ${text}`);
     }
-    console.log(`📁 Metadata generated for tower #${id}`);
+    console.log(`📁 Metadata generated for tower #${id} (type ${type})`);
   } catch (err) {
     console.error(`❌ Metadata generation failed for ID ${id}:`, err);
   }
 }
+
 
 
 
