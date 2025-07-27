@@ -51,10 +51,26 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
     }
   ];
   const mooBundles = [
-    { amount: 50, cost: '0.25 $APE', image: 'https://admin.demwitches.xyz/images/MooBundle.png' },
-    { amount: 100, cost: '0.5 $APE', image: 'https://admin.demwitches.xyz/images/MooBundle3.png' },
-    { amount: 200, cost: '1 $APE', image: 'https://admin.demwitches.xyz/images/MooBundle5.png' }
+    {
+      amount: 50,
+      cost: '0.25 $APE',
+      price: parseEther('0.25'),
+      image: 'https://admin.demwitches.xyz/images/MooBundle.png'
+    },
+    {
+      amount: 100,
+      cost: '0.5 $APE',
+      price: parseEther('0.5'),
+      image: 'https://admin.demwitches.xyz/images/MooBundle3.png'
+    },
+    {
+      amount: 200,
+      cost: '1 $APE',
+      price: parseEther('1'),
+      image: 'https://admin.demwitches.xyz/images/MooBundle5.png'
+    }
   ];
+  
   const { data: walletClient } = useWalletClient();
   const towerContract = useTowerContract(); // ✅ SAFE hook call
   useEffect(() => {
@@ -478,13 +494,32 @@ const handleBuyTower = async (towerType: number) => {
 />
 </div>
                 <h3 style={{ fontSize: '1.2rem', marginBottom: '6px', color: '#00B3FF' }}>{bundle.amount} $MOO</h3>
-                <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#5CFFA3' }}>{bundle.cost}</div>
-                <button
-  className="glow-button green"
-  onClick={() => handleBuyMoo(bundle.cost.split(' ')[0])} // only extract the number
->
-  Buy
-</button>
+                {apeBalance < bundle.price ? (
+  <>
+    <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#FF4D4F' }}>
+      {bundle.cost}
+    </div>
+    <button
+      className="glow-button danger"
+      disabled
+      style={{ opacity: 0.6, cursor: 'not-allowed' }}
+    >
+      Not Enough $APE
+    </button>
+  </>
+) : (
+  <>
+    <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#5CFFA3' }}>
+      {bundle.cost}
+    </div>
+    <button
+      className="glow-button green"
+      onClick={() => handleBuyMoo(bundle.cost.split(' ')[0])}
+    >
+      Buy
+    </button>
+  </>
+)}
               </div>
             ))}
           </div>
