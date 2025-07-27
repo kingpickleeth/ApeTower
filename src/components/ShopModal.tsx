@@ -107,46 +107,86 @@ useEffect(() => {
 }, [publicClient, address]);
 
   
-  const handleBuyTower = async (towerType: number) => {
-    if (!walletClient || !towerContract || !address || !publicClient) {
-      return alert('Wallet or contract not ready');
-    }
-    
-    const mooCosts = ['50', '100', '200'];
-    const cost = parseEther(mooCosts[towerType]);
-  
-    try {
-      // Check $MOO allowance
-      const allowance = await publicClient.readContract({
+const handleBuyTower = async (towerType: number) => {
+  if (!walletClient || !towerContract || !address || !publicClient) {
+    return alert('Wallet or contract not ready');
+  }
+
+  const mooCosts = ['50', '100', '200'];
+  const cost = parseEther(mooCosts[towerType]);
+
+  try {
+    // 1. Check $MOO allowance
+    const allowance = await publicClient.readContract({
+      address: MOO_ADDRESS,
+      abi: ERC20_ABI,
+      functionName: 'allowance',
+      args: [address, TOWER_CONTRACT],
+    });
+
+    if ((allowance as bigint) < cost) {
+      const approveTx = await write({
         address: MOO_ADDRESS,
         abi: ERC20_ABI,
-        functionName: 'allowance',
-        args: [address, TOWER_CONTRACT],
+        functionName: 'approve',
+        args: [TOWER_CONTRACT, MAX_UINT],
       });
-  
-      if ((allowance as bigint) < cost) {
-        const approveTx = await write({
-          address: MOO_ADDRESS,
-          abi: ERC20_ABI,
-          functionName: 'approve',
-          args: [TOWER_CONTRACT, MAX_UINT],
-        });
-  
-        alert('Approval submitted...');
-        const approvalReceipt = await publicClient.waitForTransactionReceipt({ hash: approveTx });
 
-        if (approvalReceipt.status !== 'success') throw new Error('Approval failed');
-      }
-  
-      // Now call buyTower
-      const tx = await towerContract.write.buyTower([towerType]);
-      console.log('Tower mint TX:', tx);
-      alert('Tower purchase submitted!');
-    } catch (err) {
-      console.error(err);
-      alert('Transaction failed');
+      alert('Approval submitted...');
+      const approvalReceipt = await publicClient.waitForTransactionReceipt({ hash: approveTx });
+      if (approvalReceipt.status !== 'success') throw new Error('Approval failed');
     }
-  };  
+
+    // 2. Buy tower
+    const txHash = await towerContract.write.buyTower([towerType]);
+    alert('Tower purchase submitted!');
+    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+    // 3. Extract tokenId from Transfer logs
+    const tokenIds: number[] = [];
+    for (const log of receipt.logs) {
+      if (
+        log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' &&
+        log.address.toLowerCase() === TOWER_CONTRACT.toLowerCase()
+      ) {
+        const tokenIdHex = log.topics[3];
+        const tokenId = parseInt(tokenIdHex!, 16);
+        tokenIds.push(tokenId);
+      }
+    }
+
+    // 4. Call metadata generation for each new token
+    for (const id of tokenIds) {
+      try {
+        const res = await fetch(`https://metadata-server-production.up.railway.app/generate-metadata/${id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-metadata-secret': import.meta.env.VITE_METADATA_SECRET!
+          },
+          body: JSON.stringify({ type: towerType })
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Server returned ${res.status}: ${text}`);
+        }
+
+        console.log(`📁 Metadata generated for tower #${id}`);
+      } catch (err) {
+        console.error(`❌ Metadata generation failed for ID ${id}:`, err);
+      }
+    }
+
+    // ✅ Optionally refresh $MOO balance
+    await fetchMooBalance();
+
+  } catch (err) {
+    console.error(err);
+    alert('Transaction failed');
+  }
+};
+
   const handleClaim = async () => {
     if (vineBalance <= 0 || !walletAddress || !walletClient || !towerContract) return;
   

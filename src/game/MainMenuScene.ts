@@ -207,10 +207,10 @@ const modalBlocker = this.add.rectangle(0, 0, this.scale.width, this.scale.heigh
       const rulesText = this.add.text(centerX, centerY, 
         `1. Defend The Motherland!\nThe Smoove Brains are trying to sneak by you and destory DengLand. Your mission is to stop them before they reach the end!\n\n` +
         `2. Build & Upgrade Towers\nYou are't helpless. Click green tiles to build different towers. Then click on those towers to upgrade their strength/range.\n\n` +
-        `3. Earn $VINE\nDestroy enemies to earn $VINE and spend it to build/upgrade. Whatever $VINE you end the round with, gets added to your profile\n\n` +
+        `3. Earn $MOO\nDestroy enemies to earn $MOO and spend it to build/upgrade. Whatever $MOO you end the round with, gets added to your profile\n\n` +
         `4. Enemies Get Tougher\nEnemies get faster and tankier with each wave. Each level has more and more waves. You must survive all waves.\n\n` +
         `5. You Have 10 Lives ❤️\nEach escaped enemy costs 1 life. Lose all = Game Over.\n\n` +
-        `6. Claim Glory\nYou can go to your profile to claim your $VINE anytime you'd like. This sends it to your wallet automatically (onchain)`,
+        `6. Claim Glory\nYou can go to your profile to claim your $MOO anytime you'd like. This sends it to your wallet automatically (onchain)`,
         {
           fontFamily: 'Outfit',
           fontSize: '16px',
