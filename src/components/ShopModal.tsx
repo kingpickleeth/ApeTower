@@ -1,17 +1,28 @@
 import React, { useState } from 'react';
-import { useWalletClient } from 'wagmi';
+import { useWalletClient, useAccount, useWriteContract } from 'wagmi';
 import { parseEther } from 'viem';
 import { buyMoo } from '../utils/buyMoo';
 import { useTowerContract } from '../utils/contracts';
+import { usePublicClient } from 'wagmi';
+import ERC20_ABI from '../abis/ERC20.json';
+import { useEffect } from 'react';
+import { updateVineBalance, getProfile } from '../utils/profile'; // ✅ If not already present
 
+const MOO_ADDRESS = '0x932b8eF025c6bA2D44ABDc1a4b7CBAEdb5DE1582';
+const TOWER_CONTRACT = '0xeDed3FA692Bf921B9857F86CC5BB21419F5f77ec';
+const MAX_UINT = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
 interface Props {
   walletAddress: string;
   onClose: () => void;
 }
 
+
 export default function ShopModal({ walletAddress, onClose }: Props) {
   const [activeTab, setActiveTab] = useState<'towers' | 'moo'>('towers');
-
+  const publicClient = usePublicClient();
+  const [mooBalance, setMooBalance] = useState(BigInt(0));
+  const [loadingBalance, setLoadingBalance] = useState(true);
+  const [vineBalance, setVineBalance] = useState<number>(0); // ✅ if not already in scope
   const towerItems = [
     {
       type: 'Basic',
@@ -43,7 +54,18 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
   ];
   const { data: walletClient } = useWalletClient();
   const towerContract = useTowerContract(); // ✅ SAFE hook call
+  useEffect(() => {
+    const fetchProfileBalance = async () => {
+      const profile = await getProfile(walletAddress);
+      if (profile?.total_vine != null) {
+        setVineBalance(profile.total_vine);
+      }
+    };
   
+    if (walletAddress) {
+      fetchProfileBalance();
+    }
+  }, [walletAddress]);
 
   const handleBuyMoo = async (amountEth: string) => {
     if (!walletClient) return alert('Connect your wallet');
@@ -58,18 +80,151 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
       alert('Transaction failed');
     }
   };  
+  const { address } = useAccount();
+  const { writeContractAsync: write } = useWriteContract();
+  useEffect(() => {
+    if (!publicClient || !address) return;
+  
+    const fetchMooBalance = async () => {
+      try {
+        const balance = await publicClient.readContract({
+          address: MOO_ADDRESS,
+          abi: ERC20_ABI,
+          functionName: 'balanceOf',
+          args: [address],
+        });
+        setMooBalance(balance as bigint);
+      } catch (err) {
+        console.error('Failed to fetch $MOO balance:', err);
+      } finally {
+        setLoadingBalance(false);
+      }
+    };
+  
+    fetchMooBalance();
+  }, [publicClient, address]);
+  
   const handleBuyTower = async (towerType: number) => {
-    if (!walletClient || !towerContract) return alert('Wallet or contract not ready');
+    if (!walletClient || !towerContract || !address || !publicClient) {
+      return alert('Wallet or contract not ready');
+    }
+    
+    const mooCosts = ['50', '100', '200'];
+    const cost = parseEther(mooCosts[towerType]);
   
     try {
+      // Check $MOO allowance
+      const allowance = await publicClient.readContract({
+        address: MOO_ADDRESS,
+        abi: ERC20_ABI,
+        functionName: 'allowance',
+        args: [address, TOWER_CONTRACT],
+      });
+  
+      if ((allowance as bigint) < cost) {
+        const approveTx = await write({
+          address: MOO_ADDRESS,
+          abi: ERC20_ABI,
+          functionName: 'approve',
+          args: [TOWER_CONTRACT, MAX_UINT],
+        });
+  
+        alert('Approval submitted...');
+        const approvalReceipt = await publicClient.waitForTransactionReceipt({ hash: approveTx });
+
+        if (approvalReceipt.status !== 'success') throw new Error('Approval failed');
+      }
+  
+      // Now call buyTower
       const tx = await towerContract.write.buyTower([towerType]);
       console.log('Tower mint TX:', tx);
       alert('Tower purchase submitted!');
     } catch (err) {
       console.error(err);
-      alert('Tower transaction failed');
+      alert('Transaction failed');
+    }
+  };  
+  const handleClaim = async () => {
+    if (vineBalance <= 0 || !walletAddress || !walletClient || !towerContract) return;
+  
+    const expiry = Math.floor(Date.now() / 1000) + 300;
+  
+    try {
+      const response = await fetch("https://metadata-server-production.up.railway.app/api/sign-claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet: walletAddress, amount: vineBalance, expiry })
+      });
+  
+      const { signature, error } = await response.json();
+      if (!signature || error) {
+        console.error("❌ Signature fetch failed:", error);
+        return;
+      }
+  
+      const tx = await towerContract.write.claim([
+        BigInt(Math.floor(vineBalance * 1e18)),
+        BigInt(expiry),
+        signature
+      ]);
+  
+      console.log("🎉 Claim TX:", tx);
+  
+      const supabaseResult = await updateVineBalance(walletAddress, -vineBalance);
+      if (supabaseResult?.error) {
+        console.error("❌ Supabase reset failed:", supabaseResult.error);
+      } else {
+        setVineBalance(0);
+        setMooBalance(0n); // Hide blocker after claim
+      }
+  
+    } catch (err) {
+      console.error("❌ Claim failed:", err);
     }
   };
+  
+  if (vineBalance > 0) {
+    return (
+      <div id="profile-modal" style={{ fontFamily: "'Outfit', sans-serif" }}>
+        <div id="profile-overlay" onClick={onClose} />
+        <div
+          id="profile-card"
+          style={{
+            width: '90%',
+            maxWidth: '500px',
+            padding: '20px',
+            background: '#0D1117',
+            borderRadius: '16px',
+            boxShadow: '0 0 24px rgba(0,255,163,0.1)',
+            border: '2px solid #5CFFA3',
+            color: '#fff',
+            textAlign: 'center'
+          }}
+        >
+          <h2 style={{ fontSize: '2rem', color: '#5CFFA3', marginBottom: '16px' }}>
+            🦛 First, Claim Your $MOO 🦛
+          </h2>
+          <p style={{ fontSize: '1rem', marginBottom: '24px' }}>
+  You have <strong>{vineBalance}</strong> unclaimed $MOO. You must claim it before you run off and start buying shit!
+</p>
+
+<button
+  onClick={handleClaim}
+  className="glow-button green"
+  style={{ width: '100%', maxWidth: '175px', margin: '0 auto' }}
+>
+  Claim {vineBalance} $MOO
+</button>
+
+          <div className="button-row" style={{ marginTop: '20px' }}>
+            <button className="glow-button danger" onClick={onClose}>
+              ❌ Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div id="profile-modal" style={{ fontFamily: "'Outfit', sans-serif" }}>
@@ -84,9 +239,11 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
           borderRadius: '16px',
           boxShadow: '0 0 24px rgba(0,179,255,0.1)',
           border: '2px solid #00B3FF',
-          color: '#fff'
+          color: '#fff',
+          position: 'relative' // 👈 Add this line!
         }}
       >
+        
         <h2
           style={{
             fontSize: '2.2rem',
@@ -99,6 +256,26 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
         >
           The Shop
         </h2>
+        <div
+  style={{
+    position: 'absolute',
+    top: '16px',
+    right: '16px',
+   
+    padding: '4px 10px',
+    fontSize: 'clamp(0.75rem, 2.5vw, 1.05rem)', // 👈 Responsive font size
+    fontWeight: 600,
+    color: '#5CFFA3',
+    maxWidth: '45%', // 👈 Prevent overflow on tiny screens
+    textAlign: 'right',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  }}
+>
+  Balance: {Number(mooBalance) / 1e18} $MOO
+</div>
+
 
         {/* Tabs */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '20px' }}>
