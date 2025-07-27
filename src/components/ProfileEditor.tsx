@@ -7,7 +7,8 @@ import { getProfileByUsername } from '../utils/profile';
 import { JsonRpcProvider, Contract, formatUnits } from 'ethers';
 import MOO_ABI from '../abis/MooToken.json';
 import { checkTowerBalance } from '../utils/profile'; // adjust path if needed
-
+import { useWalletClient } from 'wagmi';
+import { useTowerContract } from '../utils/contracts'; // assuming you already have this
 
 const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/avatar.svg';
 const MOO_CONTRACT = '0x932b8eF025c6bA2D44ABDc1a4b7CBAEdb5DE1582';
@@ -47,7 +48,8 @@ interface Props {
 }
 
   export default function ProfileEditor({ walletAddress, onClose, onSave }: Props) {
-
+    const { data: walletClient } = useWalletClient();
+    const towerContract = useTowerContract();
   const [towerBalance, setTowerBalance] = useState<number | null>(null);
   const [username, setUsername] = useState('');
   const [pfpUrl, setPfpUrl] = useState('');
@@ -249,27 +251,52 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
     const oauthUrl = `https://nodejs-production-03df.up.railway.app/api/connect?wallet=${encodedWallet}`;
     window.open(oauthUrl, '_blank', 'width=500,height=600');
   };
-  
   const handleClaim = async () => {
-    if (vineBalance <= 0) return;
+    if (vineBalance <= 0 || !walletAddress || !walletClient || !towerContract) return;
   
-    // 🌿 Dispatch claim-vine event to App.tsx (handles transaction)
-    window.dispatchEvent(new CustomEvent("claim-vine", {
-      detail: { amount: vineBalance }
-    }));
+    const expiry = Math.floor(Date.now() / 1000) + 300; // 5 minutes
   
-    // 🧼 Reset vine balance in Supabase directly
-    const result = await updateVineBalance(walletAddress, -vineBalance); // subtract
+    try {
+      // 🔐 Request signature from your backend
+      const response = await fetch("https://metadata-server-production.up.railway.app/api/sign-claim", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          wallet: walletAddress,
+          amount: vineBalance,
+          expiry
+        })
+      });      
   
-    if (result?.error) {
-      console.error("❌ Failed to reset MOO in Supabase:", result.error);
-    } else {
-      setVineBalance(0); // ✅ Update UI immediately
-      console.log("✅ MOO claimed and reset");
-     await fetchWalletBalance(); // ✅ This is what updates the wallet UI
-
+      const { signature, error } = await response.json();
+      if (!signature || error) {
+        console.error("❌ Signature fetch failed:", error);
+        return;
+      }
+  
+      // 🎯 Direct contract call using wagmi hook
+      const tx = await towerContract.write.claim([
+        BigInt(Math.floor(vineBalance * 1e18)), // Always use Math.floor before BigInt
+        BigInt(expiry),
+        signature
+      ]);
+      
+      console.log("🎉 Claim TX:", tx);
+  
+      const supabaseResult = await updateVineBalance(walletAddress, -vineBalance);
+      if (supabaseResult?.error) {
+        console.error("❌ Supabase reset failed:", supabaseResult.error);
+      } else {
+        setVineBalance(0);
+        await fetchWalletBalance(); // Refresh wallet UI
+      }
+  
+    } catch (err) {
+      console.error("❌ Claim failed:", err);
     }
-  };
+  };  
   
   if (loading) return <p>Loading profile...</p>;
   return (
