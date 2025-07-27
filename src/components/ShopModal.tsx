@@ -29,6 +29,7 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
       type: 'Basic',
       image: 'https://admin.demwitches.xyz/images/tower/basic.png',
       cost: '50 $MOO',
+      price: 50n * 10n ** 18n, // Add this line
       description: 'Reliable and balanced.',
       stats: { speed: 3, range: 4, damage: 3 }
     },
@@ -36,6 +37,7 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
       type: 'Rapid',
       image: 'https://admin.demwitches.xyz/images/tower/rapid.png',
       cost: '100 $MOO',
+      price: 100n * 10n ** 18n,
       description: 'High speed, lower damage.',
       stats: { speed: 5, range: 3, damage: 2 }
     },
@@ -43,11 +45,11 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
       type: 'Cannon',
       image: 'https://admin.demwitches.xyz/images/tower/cannon.png',
       cost: '200 $MOO',
+      price: 200n * 10n ** 18n,
       description: 'Massive damage, slow fire rate.',
       stats: { speed: 1, range: 4, damage: 5 }
     }
   ];
-
   const mooBundles = [
     { amount: 50, cost: '0.25 $APE', image: 'https://admin.demwitches.xyz/images/MooBundle.png' },
     { amount: 100, cost: '0.5 $APE', image: 'https://admin.demwitches.xyz/images/MooBundle3.png' },
@@ -405,10 +407,29 @@ const handleBuyTower = async (towerType: number) => {
                   🔹 <strong>Range:</strong> {tower.stats.range} <br />
                   🔹 <strong>Damage:</strong> {tower.stats.damage}
                 </div>
-                <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#5CFFA3' }}>Cost: {tower.cost}</div>
-                <button className="glow-button green" onClick={() => handleBuyTower(i)}>
-  Buy / Mint
-</button>
+                {Number(mooBalance) < Number(tower.price) ? (
+  <>
+    <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#FF4D4F' }}>
+      Cost: {tower.cost}
+    </div>
+    <button
+      className="glow-button danger"
+      disabled
+      style={{ opacity: 0.6, cursor: 'not-allowed' }}
+    >
+      Not Enough $MOO
+    </button>
+  </>
+) : (
+  <>
+    <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#5CFFA3' }}>
+      Cost: {tower.cost}
+    </div>
+    <button className="glow-button green" onClick={() => handleBuyTower(i)}>
+      Buy / Mint
+    </button>
+  </>
+)}
               </div>
             ))}
           </div>
