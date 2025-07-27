@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useWalletClient, useAccount, useWriteContract } from 'wagmi';
-import { parseEther } from 'viem';
+import { parseEther, formatEther } from 'viem';
 import { buyMoo } from '../utils/buyMoo';
 import { useTowerContract } from '../utils/contracts';
 import { usePublicClient } from 'wagmi';
@@ -22,13 +22,14 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
   const publicClient = usePublicClient();
   const [mooBalance, setMooBalance] = useState(BigInt(0));
   const [loadingBalance, setLoadingBalance] = useState(true);
+  const [apeBalance, setApeBalance] = useState(BigInt(0));
   const [vineBalance, setVineBalance] = useState<number>(0); // ✅ if not already in scope
   const towerItems = [
     {
       type: 'Basic',
       image: 'https://admin.demwitches.xyz/images/tower/basic.png',
       cost: '50 $MOO',
-      description: 'Reliable and balanced starter tower.',
+      description: 'Reliable and balanced.',
       stats: { speed: 3, range: 4, damage: 3 }
     },
     {
@@ -100,11 +101,23 @@ const fetchMooBalance = async () => {
     setLoadingBalance(false);
   }
 };
+const fetchApeBalance = async () => {
+  if (!publicClient || !address) return;
+
+  try {
+    const balance = await publicClient.getBalance({ address });
+    setApeBalance(balance);
+  } catch (err) {
+    console.error('Failed to fetch $APE balance:', err);
+  }
+};
 
 // Fetch on mount
 useEffect(() => {
   fetchMooBalance();
+  fetchApeBalance(); // ✅ fetch APE too
 }, [publicClient, address]);
+
 
   
 const handleBuyTower = async (towerType: number) => {
@@ -305,19 +318,20 @@ const handleBuyTower = async (towerType: number) => {
     position: 'absolute',
     top: '16px',
     right: '16px',
-   
     padding: '4px 10px',
-    fontSize: 'clamp(0.75rem, 2.5vw, 1.05rem)', // 👈 Responsive font size
+    fontSize: 'clamp(0.75rem, 2.5vw, 1.05rem)',
     fontWeight: 600,
     color: '#5CFFA3',
-    maxWidth: '45%', // 👈 Prevent overflow on tiny screens
+    maxWidth: '45%',
     textAlign: 'right',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   }}
 >
-  Balance: {Number(mooBalance) / 1e18} $MOO
+  {activeTab === 'towers'
+    ? `Balance: ${Number(mooBalance) / 1e18} $MOO`
+    : `Balance: ${(Number(apeBalance) / 1e18).toFixed(1)} $APE`}
 </div>
 
 
@@ -385,7 +399,7 @@ const handleBuyTower = async (towerType: number) => {
 <h3 style={{ fontSize: '1.2rem', marginBottom: '6px', color: '#00B3FF' }}>
   {tower.type} Tower
 </h3>
-<p style={{ fontSize: '0.95rem', marginBottom: '8px' }}>{tower.description}</p>
+<p style={{ fontSize: '0.95rem', marginBottom: '8px',marginTop:'8px' }}>{tower.description}</p>
                 <div style={{ fontSize: '0.9rem', marginBottom: '10px' }}>
                   🔹 <strong>Speed:</strong> {tower.stats.speed} <br />
                   🔹 <strong>Range:</strong> {tower.stats.range} <br />
