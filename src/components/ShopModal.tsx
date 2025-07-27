@@ -218,7 +218,7 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
 
           <div className="button-row" style={{ marginTop: '20px' }}>
             <button className="glow-button danger" onClick={onClose}>
-              ❌ Close
+              ❌ No Thanks, Claim Later
             </button>
           </div>
         </div>
