@@ -49,9 +49,9 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
   ];
 
   const mooBundles = [
-    { amount: 50, cost: '0.25 $APE', image: 'https://admin.demwitches.xyz/images/VineBundle.png' },
-    { amount: 100, cost: '0.5 $APE', image: 'https://admin.demwitches.xyz/images/VineBundle.png' },
-    { amount: 200, cost: '1 $APE', image: 'https://admin.demwitches.xyz/images/VineBundle.png' }
+    { amount: 50, cost: '0.25 $APE', image: 'https://admin.demwitches.xyz/images/MooBundle.png' },
+    { amount: 100, cost: '0.5 $APE', image: 'https://admin.demwitches.xyz/images/MooBundle3.png' },
+    { amount: 200, cost: '1 $APE', image: 'https://admin.demwitches.xyz/images/MooBundle5.png' }
   ];
   const { data: walletClient } = useWalletClient();
   const towerContract = useTowerContract(); // ✅ SAFE hook call
