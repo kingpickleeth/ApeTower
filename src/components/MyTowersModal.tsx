@@ -76,7 +76,7 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
   id="profile-card"
   style={{
     width: '90%',
-    maxWidth: towers.length === 0 ? '500px' : '50vw',
+    maxWidth: towers.length === 0 ? '500px' : '60vw',
     padding: '20px',
     background: '#0D1117',
     borderRadius: '16px',
