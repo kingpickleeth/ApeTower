@@ -4,6 +4,10 @@ import DENG_TOWER_ABI from '../abis/Tower.json';
 import { useWriteContract, useAccount } from 'wagmi';
 import { parseEther } from 'viem'; // or parseUnits if using bigint
 import { useUpgradeTower } from '../utils/upgradeTower'; // ✅ Confirm path
+import ERC20_ABI from '../abis/ERC20.json';
+import { usePublicClient, useWriteContract as useWrite } from 'wagmi';
+const MOO_ADDRESS = '0x932b8eF025c6bA2D44ABDc1a4b7CBAEdb5DE1582';
+const MAX_UINT = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
 
 
 const TOWER_CONTRACT = '0xeDed3FA692Bf921B9857F86CC5BB21419F5f77ec';
@@ -24,10 +28,29 @@ interface Tower {
 export default function MyTowersModal({ walletAddress, onClose }: Props) {
   const [towers, setTowers] = useState<Tower[]>([]);
   const [expandedSet, setExpandedSet] = useState<Set<number>>(new Set());
+  const [upgradeCosts, setUpgradeCosts] = useState<Record<number, bigint>>({});
   const { upgradeTower } = useUpgradeTower();
   const { writeContractAsync } = useWriteContract();
+  const [mooBalance, setMooBalance] = useState<bigint | null>(null);
+  const publicClient = usePublicClient();
   const { address } = useAccount();
   const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchMooBalance = async () => {
+      try {
+        const provider = new JsonRpcProvider(RPC);
+        if (address) {
+          const erc20 = new Contract(MOO_ADDRESS, ERC20_ABI, provider);
+          const balance = await erc20.balanceOf(address);
+          setMooBalance(balance);
+        }
+      } catch (err) {
+        console.error('❌ Failed to fetch $MOO balance:', err);
+      }
+    };
+  
+    fetchMooBalance();
+  }, [address]);  
   useEffect(() => {
     const fetchTowers = async () => {
       try {
@@ -60,6 +83,19 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
           })
         );
         setTowers(towersWithMetadata);
+        const costs: Record<number, bigint> = {};
+for (const tower of towersWithMetadata) {
+  const nextLevel = Number(tower.level) + 1;
+  try {
+    const provider = new JsonRpcProvider(RPC);
+    const contract = new Contract(TOWER_CONTRACT, DENG_TOWER_ABI.abi, provider);
+    const cost = await contract.upgradePrices(nextLevel);
+    costs[tower.id] = cost;
+  } catch (err) {
+    console.warn(`⚠️ Failed to get upgrade cost for tower ${tower.id}`, err);
+  }
+}
+setUpgradeCosts(costs);
       } catch (err) {
         console.error('❌ Failed to fetch towers:', err);
       } finally {
@@ -163,6 +199,21 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
 >
   My Towers
 </h2>
+{address && (
+  <div
+    style={{
+      position: 'absolute',
+      top: '10px',
+      right: '20px',
+      color: '#5CFFA3',
+      fontSize: '0.95rem',
+      fontWeight: 600
+    }}
+  >
+    Balance: {mooBalance ? (Number(mooBalance) / 1e18) : '...'} $MOO
+  </div>
+)}
+
         {loading ? (
           <p style={{ color: '#fff' }}>Loading towers...</p>
         ) : towers.length === 0 ? (
@@ -262,6 +313,7 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
   </div>
 
   {/* Bottom-Right Toggle Button */}
+  
   <button
   onClick={(e) => {
     e.stopPropagation(); // ⛔ Prevents bubble up to the card's onClick
@@ -324,28 +376,52 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
     const tokenId = tower.id;
 
     try {
-      // 🛠️ Call on-chain upgradeTower function
+      const provider = new JsonRpcProvider(RPC);
+      const towerContract = new Contract(TOWER_CONTRACT, DENG_TOWER_ABI.abi, provider);
+      const currentLevel = await towerContract.getTowerLevel(tokenId);
+      const nextLevel = Number(currentLevel) + 1;
+      const upgradeCost = await towerContract.upgradePrices(nextLevel);
+
+      // 🧮 Check if user has enough $MOO
+      if (!mooBalance || mooBalance < upgradeCost) {
+        throw new Error("Not enough $MOO to upgrade.");
+      }
+
+      // 🛑 Check $MOO allowance
+      if (!publicClient) throw new Error("publicClient is not available");
+
+      const allowance = await publicClient.readContract({
+        address: MOO_ADDRESS,
+        abi: ERC20_ABI,
+        functionName: 'allowance',
+        args: [address, TOWER_CONTRACT]
+      });
+
+      if ((allowance as bigint) < upgradeCost) {
+        const approveTx = await writeContractAsync({
+          address: MOO_ADDRESS,
+          abi: ERC20_ABI,
+          functionName: 'approve',
+          args: [TOWER_CONTRACT, MAX_UINT],
+        });
+
+        alert('🧾 Approval submitted...');
+        const approvalReceipt = await publicClient.waitForTransactionReceipt({ hash: approveTx });
+        if (approvalReceipt.status !== 'success') throw new Error('Approval failed');
+      }
+
       const txHash = await upgradeTower(tokenId);
       console.log("✅ upgradeTower() tx:", txHash);
 
-      // ⏳ Give the chain a few seconds
       await new Promise((r) => setTimeout(r, 3000));
 
-      // 🔁 Read new level
-      const provider = new JsonRpcProvider(RPC);
-      const contract = new Contract(TOWER_CONTRACT, DENG_TOWER_ABI.abi, provider);
-      const levelBigInt = await contract.getTowerLevel(tokenId);
-      const level = Number(levelBigInt);      
+      const levelBigInt = await towerContract.getTowerLevel(tokenId);
+      const level = Number(levelBigInt);
       const type = tower.type;
 
-      console.log(`🔍 Tower #${tokenId} is now level ${level}`);
-
-      // 🧠 Send to metadata generator
       const numericType = type === "Basic" ? 0 : type === "Cannon" ? 1 : type === "Rapid" ? 2 : -1;
-      if (numericType === -1) {
-        throw new Error(`❌ Invalid tower type for token #${tokenId}`);
-      }
-      
+      if (numericType === -1) throw new Error(`❌ Invalid tower type for token #${tokenId}`);
+
       const res = await fetch(`https://metadata-server-production.up.railway.app/generate-metadata/${tokenId}`, {
         method: 'POST',
         headers: {
@@ -354,7 +430,7 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
         },
         body: JSON.stringify({ type: numericType, level })
       });
-      
+
       if (!res.ok) {
         const text = await res.text();
         throw new Error(`Metadata server error: ${text}`);
@@ -362,7 +438,6 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
 
       console.log(`📁 Metadata updated for #${tokenId}`);
 
-      // 🎉 Show success modal
       window.dispatchEvent(
         new CustomEvent("show-success-modal", {
           detail: {
@@ -371,9 +446,7 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
         })
       );
 
-      // 🔄 Optional: refresh UI
       setTimeout(() => window.location.reload(), 1500);
-
     } catch (err: any) {
       console.error("❌ Upgrade failed:", err);
       window.dispatchEvent(
@@ -383,10 +456,24 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
       );
     }
   }}
-  className="glow-button green"
+  disabled={
+    mooBalance !== null &&
+    upgradeCosts[tower.id] !== undefined &&
+    mooBalance < upgradeCosts[tower.id]!
+  }
+    className={
+    !mooBalance || (upgradeCosts[tower.id] && mooBalance < upgradeCosts[tower.id])
+      ? 'glow-button danger'
+      : 'glow-button green'
+  }
 >
-  🛠️ Upgrade to Lv {tower.level + 1}
+  {
+    !mooBalance || (upgradeCosts[tower.id] && mooBalance < upgradeCosts[tower.id])
+      ? '❌ Not Enough $MOO'
+      : `🛠️ Upgrade to Lv ${tower.level + 1}`
+  }
 </button>
+
   </div>
 )}
                 </div>
