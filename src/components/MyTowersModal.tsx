@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 import { JsonRpcProvider, Contract } from 'ethers';
 import DENG_TOWER_ABI from '../abis/Tower.json';
+import { useWriteContract, useAccount } from 'wagmi';
+import { parseEther } from 'viem'; // or parseUnits if using bigint
+import { useUpgradeTower } from '../utils/upgradeTower'; // ✅ Confirm path
+
+
 const TOWER_CONTRACT = '0xeDed3FA692Bf921B9857F86CC5BB21419F5f77ec';
 const RPC = 'https://rpc.apechain.com';
 interface Props {
@@ -19,6 +24,9 @@ interface Tower {
 export default function MyTowersModal({ walletAddress, onClose }: Props) {
   const [towers, setTowers] = useState<Tower[]>([]);
   const [expandedSet, setExpandedSet] = useState<Set<number>>(new Set());
+  const { upgradeTower } = useUpgradeTower();
+  const { writeContractAsync } = useWriteContract();
+  const { address } = useAccount();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchTowers = async () => {
@@ -69,6 +77,63 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
     }
     setExpandedSet(newSet);
   };
+  useEffect(() => {
+    const handler = async (e: any) => {
+      const tokenId = e.detail.tokenId;
+  
+      try {
+        const txHash = await upgradeTower(tokenId);
+        console.log('✅ Upgrade TX confirmed:', txHash);
+  
+        // Wait a few seconds to be safe
+        await new Promise((r) => setTimeout(r, 3000));
+  
+        // 🔄 Read new level from contract
+        const provider = new JsonRpcProvider('https://rpc.apechain.com');
+        const towerContract = new Contract('0xeDed3FA692Bf921B9857F86CC5BB21419F5f77ec', DENG_TOWER_ABI.abi, provider);
+        const level = await towerContract.getTowerLevel(tokenId);
+  
+        console.log(`🎯 Token #${tokenId} upgraded to level ${level}`);
+
+        // 🧠 Send to metadata server
+const towerType = towers.find(t => t.id === tokenId)?.type || 'Unknown';
+const res = await fetch(`https://metadata-server-production.up.railway.app/generate-metadata/${tokenId}`, {
+  method: 'POST',
+  headers: {
+    'x-metadata-secret': import.meta.env.VITE_METADATA_SECRET!,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ type: towerType, level })
+});
+
+  
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Server returned ${res.status}: ${text}`);
+        }
+  
+        console.log(`📁 Metadata regenerated for tower #${tokenId} → Lv${level}`);
+  
+        window.dispatchEvent(
+          new CustomEvent("show-success-modal", {
+            detail: {
+              message: `🎉 Tower #${tokenId} upgraded to Level ${level}!<br /><a href="https://apescan.io/tx/${txHash}" target="_blank">View on ApeScan</a>`
+            }
+          })
+        );
+      } catch (err: any) {
+        console.error('❌ Upgrade process failed:', err);
+        window.dispatchEvent(
+          new CustomEvent("show-error-modal", {
+            detail: { message: err.message || 'Upgrade failed.' }
+          })
+        );
+      }
+    };
+  
+    window.addEventListener("trigger-upgrade", handler);
+    return () => window.removeEventListener("trigger-upgrade", handler);
+  }, []);
   return (
     <div id="profile-modal" style={{ fontFamily: "'Outfit', sans-serif" }}>
       <div id="profile-overlay" onClick={onClose} />
@@ -246,25 +311,82 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
       🔹 <strong>Damage:</strong> {tower.damage}
     </div>
     <button
-      disabled
-      style={{
-        width: '100%',
-        padding: '10px 0',
-        borderRadius: '8px',
-        border: '1px solid #3a3a3a',
-        background: 'linear-gradient(145deg, #1F242F, #181C26)',
-        color: '#777',
-        fontWeight: 600,
-        fontSize: '13px',
-        cursor: 'not-allowed',
-        opacity: 0.8,
-        letterSpacing: '0.4px',
-        boxShadow:
-          'inset 0 1px 1px rgba(255,255,255,0.04), inset 0 -1px 2px rgba(0,0,0,0.3)'
-      }}
-    >
-      🛠️ Upgrade (Coming Soon)
-    </button>
+  onClick={async () => {
+    if (!address) {
+      window.dispatchEvent(
+        new CustomEvent("show-error-modal", {
+          detail: { message: `❌ No connected wallet.` }
+        })
+      );
+      return;
+    }
+
+    const tokenId = tower.id;
+
+    try {
+      // 🛠️ Call on-chain upgradeTower function
+      const txHash = await upgradeTower(tokenId);
+      console.log("✅ upgradeTower() tx:", txHash);
+
+      // ⏳ Give the chain a few seconds
+      await new Promise((r) => setTimeout(r, 3000));
+
+      // 🔁 Read new level
+      const provider = new JsonRpcProvider(RPC);
+      const contract = new Contract(TOWER_CONTRACT, DENG_TOWER_ABI.abi, provider);
+      const levelBigInt = await contract.getTowerLevel(tokenId);
+      const level = Number(levelBigInt);      
+      const type = tower.type;
+
+      console.log(`🔍 Tower #${tokenId} is now level ${level}`);
+
+      // 🧠 Send to metadata generator
+      const numericType = type === "Basic" ? 0 : type === "Cannon" ? 1 : type === "Rapid" ? 2 : -1;
+      if (numericType === -1) {
+        throw new Error(`❌ Invalid tower type for token #${tokenId}`);
+      }
+      
+      const res = await fetch(`https://metadata-server-production.up.railway.app/generate-metadata/${tokenId}`, {
+        method: 'POST',
+        headers: {
+          'x-metadata-secret': import.meta.env.VITE_METADATA_SECRET!,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ type: numericType, level })
+      });
+      
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Metadata server error: ${text}`);
+      }
+
+      console.log(`📁 Metadata updated for #${tokenId}`);
+
+      // 🎉 Show success modal
+      window.dispatchEvent(
+        new CustomEvent("show-success-modal", {
+          detail: {
+            message: `🎉 Tower #${tokenId} upgraded to Level ${level}!<br /><a href="https://apescan.io/tx/${txHash}" target="_blank">View on ApeScan</a>`
+          }
+        })
+      );
+
+      // 🔄 Optional: refresh UI
+      setTimeout(() => window.location.reload(), 1500);
+
+    } catch (err: any) {
+      console.error("❌ Upgrade failed:", err);
+      window.dispatchEvent(
+        new CustomEvent("show-error-modal", {
+          detail: { message: err.message || 'Upgrade failed.' }
+        })
+      );
+    }
+  }}
+  className="glow-button green"
+>
+  🛠️ Upgrade to Lv {tower.level + 1}
+</button>
   </div>
 )}
                 </div>

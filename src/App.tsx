@@ -226,6 +226,40 @@ for (let i = 0; i < tokenIds.length; i++) {
     });
   }, [address]);
   
+  useEffect(() => {
+    const handleUpgradeMetadata = async (e: any) => {
+      const { tokenId, type, level } = e.detail;
+      if (!tokenId || type === undefined || !level) {
+        console.warn('❌ Missing metadata upgrade fields');
+        return;
+      }
+  
+      try {
+        console.log("📡 Sending metadata request...");
+        const res = await fetch(`https://metadata-server-production.up.railway.app/generate-metadata/${tokenId}`, {
+          method: 'POST',
+          headers: {
+            'x-metadata-secret': import.meta.env.VITE_METADATA_SECRET!,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ type, level })
+        });
+        console.log("✅ Got response:", res.status);
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Server responded ${res.status}: ${text}`);
+        }
+  
+        console.log(`✅ Metadata updated for tower #${tokenId} (Lv ${level})`);
+      } catch (err) {
+        console.error(`❌ Metadata upgrade failed for tower #${tokenId}:`, err);
+      }
+    };
+  
+    window.addEventListener("upgrade-tower-metadata", handleUpgradeMetadata);
+    return () => window.removeEventListener("upgrade-tower-metadata", handleUpgradeMetadata);
+  }, []);
   
   return (
     <div id="app-container">
