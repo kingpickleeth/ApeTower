@@ -82,27 +82,30 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
   };  
   const { address } = useAccount();
   const { writeContractAsync: write } = useWriteContract();
-  useEffect(() => {
-    if (!publicClient || !address) return;
-  
-    const fetchMooBalance = async () => {
-      try {
-        const balance = await publicClient.readContract({
-          address: MOO_ADDRESS,
-          abi: ERC20_ABI,
-          functionName: 'balanceOf',
-          args: [address],
-        });
-        setMooBalance(balance as bigint);
-      } catch (err) {
-        console.error('Failed to fetch $MOO balance:', err);
-      } finally {
-        setLoadingBalance(false);
-      }
-    };
-  
-    fetchMooBalance();
-  }, [publicClient, address]);
+// 👇 Add this above your component body (inside the component but outside useEffect)
+const fetchMooBalance = async () => {
+  if (!publicClient || !address) return;
+
+  try {
+    const balance = await publicClient.readContract({
+      address: MOO_ADDRESS,
+      abi: ERC20_ABI,
+      functionName: 'balanceOf',
+      args: [address],
+    });
+    setMooBalance(balance as bigint);
+  } catch (err) {
+    console.error('Failed to fetch $MOO balance:', err);
+  } finally {
+    setLoadingBalance(false);
+  }
+};
+
+// Fetch on mount
+useEffect(() => {
+  fetchMooBalance();
+}, [publicClient, address]);
+
   
   const handleBuyTower = async (towerType: number) => {
     if (!walletClient || !towerContract || !address || !publicClient) {
@@ -175,6 +178,7 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
         console.error("❌ Supabase reset failed:", supabaseResult.error);
       } else {
         setVineBalance(0);
+        await fetchMooBalance(); // ✅ update real balance after claiming
         setMooBalance(0n); // Hide blocker after claim
       }
   
