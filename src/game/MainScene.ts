@@ -8,6 +8,7 @@ type TowerNFT = {
   speed: number;
   imageUrl: string;
   used?: boolean;
+  fireRate?:number;
 };
 const towerTypes = ['basic', 'rapid', 'cannon'] as const;
 type TowerType = typeof towerTypes[number];

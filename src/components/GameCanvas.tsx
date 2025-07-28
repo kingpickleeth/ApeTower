@@ -12,9 +12,10 @@ interface TowerNFT {
   level: number;
   damage: number;
   range: number;
-  fireRate: number;
+  speed: number;
   imageUrl: string;
   used?: boolean;
+  fireRate?:number;
 }
 
 const GameCanvas = ({

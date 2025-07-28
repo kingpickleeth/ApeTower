@@ -23,6 +23,7 @@ type TowerNFT = {
   speed: number;
   imageUrl: string;
   used?: boolean;
+  fireRate?:number;
 };
 
 
