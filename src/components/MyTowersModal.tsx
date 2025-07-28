@@ -54,9 +54,16 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
   useEffect(() => {
     const fetchTowers = async () => {
       try {
+        setLoading(true); // optional, ensures UI stays responsive
+    
+        // ✅ Initialize once
         const provider = new JsonRpcProvider(RPC);
         const contract = new Contract(TOWER_CONTRACT, DENG_TOWER_ABI.abi, provider);
+    
+        // ✅ Get list of token IDs owned
         const ids: number[] = await contract.getOwnedTowers(walletAddress);
+    
+        // ✅ Fetch metadata for each tower in parallel
         const towersWithMetadata: Tower[] = await Promise.all(
           ids.map(async (id) => {
             const metaUrl = `https://metadata-server-production.up.railway.app/api/tower/${id}.json`;
@@ -82,26 +89,25 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
             }
           })
         );
+    
         setTowers(towersWithMetadata);
-        const costs: Record<number, bigint> = {};
-for (const tower of towersWithMetadata) {
-  const nextLevel = Number(tower.level) + 1;
-  try {
-    const provider = new JsonRpcProvider(RPC);
-    const contract = new Contract(TOWER_CONTRACT, DENG_TOWER_ABI.abi, provider);
-    const cost = await contract.upgradePrices(nextLevel);
-    costs[tower.id] = cost;
-  } catch (err) {
-    console.warn(`⚠️ Failed to get upgrade cost for tower ${tower.id}`, err);
-  }
-}
-setUpgradeCosts(costs);
+    
+        // ✅ Fetch upgrade prices in parallel
+        const upgradeCostPromises = towersWithMetadata.map(async (tower) => {
+          const nextLevel = Number(tower.level) + 1;
+          const cost = await contract.upgradePrices(nextLevel);
+          return [tower.id, cost] as [number, bigint];
+        });
+    
+        const costEntries = await Promise.all(upgradeCostPromises);
+        setUpgradeCosts(Object.fromEntries(costEntries));
+    
       } catch (err) {
         console.error('❌ Failed to fetch towers:', err);
       } finally {
         setLoading(false);
       }
-    };
+    };    
     fetchTowers();
   }, [walletAddress]);
   const toggleExpand = (id: number) => {
@@ -177,7 +183,7 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
   id="profile-card"
   style={{
     width: '90%',
-    maxWidth: towers.length === 0 ? '500px' : '60vw',
+    maxWidth: towers.length === 0 ? '500px' : '65vw',
     padding: '20px',
     background: '#0D1117',
     borderRadius: '16px',
