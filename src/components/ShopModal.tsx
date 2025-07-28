@@ -250,7 +250,6 @@ const handleBuyTower = async (towerType: number) => {
       } else {
         setVineBalance(0);
         await fetchMooBalance(); // ✅ update real balance after claiming
-        setMooBalance(0n); // Hide blocker after claim
       }
   
     } catch (err) {
