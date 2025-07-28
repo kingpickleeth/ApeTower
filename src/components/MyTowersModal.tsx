@@ -456,8 +456,21 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
           }
         })
       );
+// Update this specific tower in-place
+setTowers((prevTowers) =>
+  prevTowers.map((t) =>
+    t.id === tokenId
+      ? {
+          ...t,
+          level,
+          speed: tower.speed, // Optional: if you want to scale these per level, calculate them
+          range: tower.range,
+          damage: tower.damage
+        }
+      : t
+  )
+);
 
-      setTimeout(() => window.location.reload(), 1500);
     } catch (err: any) {
       console.error("❌ Upgrade failed:", err);
       window.dispatchEvent(
