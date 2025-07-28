@@ -64,43 +64,48 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
         const ids: number[] = await contract.getOwnedTowers(walletAddress);
     
         // ✅ Fetch metadata for each tower in parallel
-        const towersWithMetadata: Tower[] = await Promise.all(
-          ids.map(async (id) => {
-            const metaUrl = `https://metadata-server-production.up.railway.app/api/tower/${id}.json`;
-            try {
-              const res = await fetch(metaUrl);
-              if (!res.ok) throw new Error('Failed to fetch metadata');
-              const data = await res.json();
-              const type = data.attributes?.find((a: any) => a.trait_type === 'Type')?.value || 'Unknown';
-              const level = data.attributes?.find((a: any) => a.trait_type === 'Level')?.value || 1;
-              const speed = data.attributes?.find((a: any) => a.trait_type === 'Speed')?.value;
-              const range = data.attributes?.find((a: any) => a.trait_type === 'Range')?.value;
-              const damage = data.attributes?.find((a: any) => a.trait_type === 'Damage')?.value;
-              const image = `https://admin.demwitches.xyz/images/tower/${type.toLowerCase()}.png`;
-              return { id, image, type, level, speed, range, damage };
-            } catch (err) {
-              console.warn(`⚠️ Failed to load metadata for Tower #${id}`, err);
-              return {
-                id,
-                image: 'https://admin.demwitches.xyz/images/tower/unknown.png',
-                type: 'Unknown',
-                level: 1
-              };
-            }
-          })
-        );
-    
-        setTowers(towersWithMetadata);
-    
-        // ✅ Fetch upgrade prices in parallel
-        const upgradeCostPromises = towersWithMetadata.map(async (tower) => {
-          const nextLevel = Number(tower.level) + 1;
-          const cost = await contract.upgradePrices(nextLevel);
-          return [tower.id, cost] as [number, bigint];
+        const towerDataPromises = ids.map(async (id) => {
+          const metaUrl = `https://metadata-server-production.up.railway.app/api/tower/${id}.json`;
+          let type = 'Unknown', level = 1, speed, range, damage;
+        
+          try {
+            const res = await fetch(metaUrl);
+            const data = await res.json();
+            type = data.attributes?.find((a: any) => a.trait_type === 'Type')?.value || type;
+            level = data.attributes?.find((a: any) => a.trait_type === 'Level')?.value || level;
+            speed = data.attributes?.find((a: any) => a.trait_type === 'Speed')?.value;
+            range = data.attributes?.find((a: any) => a.trait_type === 'Range')?.value;
+            damage = data.attributes?.find((a: any) => a.trait_type === 'Damage')?.value;
+          } catch (err) {
+            console.warn(`⚠️ Failed to load metadata for Tower #${id}`, err);
+          }
+        
+          const nextLevel = Number(level) + 1;
+          let cost = BigInt(0);
+          try {
+            cost = await contract.upgradePrices(nextLevel);
+          } catch (err) {
+            console.warn(`⚠️ Failed to get upgrade cost for Tower #${id}`, err);
+          }
+        
+          return {
+            tower: {
+              id,
+              image: `https://admin.demwitches.xyz/images/tower/${type.toLowerCase()}.png`,
+              type,
+              level,
+              speed,
+              range,
+              damage,
+            },
+            costEntry: [id, cost] as [number, bigint],
+          };
         });
-    
-        const costEntries = await Promise.all(upgradeCostPromises);
-        setUpgradeCosts(Object.fromEntries(costEntries));
+        
+        const allResults = await Promise.all(towerDataPromises);
+        setTowers(allResults.map((r) => r.tower));
+        setUpgradeCosts(Object.fromEntries(allResults.map((r) => r.costEntry)));
+        
     
       } catch (err) {
         console.error('❌ Failed to fetch towers:', err);
