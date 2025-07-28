@@ -188,7 +188,7 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
   id="profile-card"
   style={{
     width: '90%',
-    maxWidth: towers.length === 0 ? '500px' : '65vw',
+    maxWidth: towers.length === 0 ? '500px' : '900px',
     padding: '20px',
     background: '#0D1117',
     borderRadius: '16px',
