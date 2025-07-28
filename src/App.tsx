@@ -9,10 +9,21 @@ import { getProfile } from './utils/profile';
 import GameModal from './components/GameModal';
 import { updateVineBalance, upgradeCampaignLevel } from './utils/profile'; // ✅ Make sure this is at the top
 import DENG_TOWER_ABI from './abis/Tower.json'; // You can paste ABI inline if needed
-import React from 'react';
+import { getOwnedTowersWithMetadata } from './utils/getTowerData';
 import MyTowersModal from './components/MyTowersModal';
 import ShopModal from './components/ShopModal';
 import InteractiveParticles from './components/InteractiveParticles';
+
+type TowerNFT = {
+  id: number;
+  type: 'basic' | 'rapid' | 'cannon';
+  level: number;
+  damage: number;
+  range: number;
+  fireRate: number;
+  imageUrl: string;
+  used?: boolean;
+};
 
 
 const VINE_TOKEN = "0xe6027e786e2ef799316afabae84e072ca73aa97f";
@@ -24,6 +35,8 @@ const ERC20_ABI = [
 function App() {
   const { isConnected, address } = useAccount();
   const { disconnect } = useDisconnect();
+  const [towerNFTs, setTowerNFTs] = useState([]);
+  const [ownedTowerNFTs, setOwnedTowerNFTs] = useState<TowerNFT[]>([]);
   const [showShop, setShowShop] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showTowers, setShowTowers] = useState(false);
@@ -260,6 +273,17 @@ for (let i = 0; i < tokenIds.length; i++) {
     window.addEventListener("upgrade-tower-metadata", handleUpgradeMetadata);
     return () => window.removeEventListener("upgrade-tower-metadata", handleUpgradeMetadata);
   }, []);
+  useEffect(() => {
+    const fetchTowers = async () => {
+      if (!address) return;
+      const { getOwnedTowersWithMetadata } = await import('./utils/getTowerData'); // 🔁 helper you can create
+      const towers = await getOwnedTowersWithMetadata(address);
+      setOwnedTowerNFTs(towers);
+      console.log('🧠 Loaded towers:', towers);
+    };
+  
+    fetchTowers();
+  }, [address]);
   
   return (
     <div id="app-container">
@@ -380,11 +404,19 @@ for (let i = 0; i < tokenIds.length; i++) {
           </div>
 
           <div id="game-wrapper">
-            <div id="game-content">
-            <div id="game-scaler">
-            <div id="game-frame">{(isConnected || bypassWallet) && <GameCanvas walletAddress={address ?? ''} />
-          }</div>
-            </div></div>
+          <div id="game-content">
+  <div id="game-scaler">
+    <div id="game-frame">
+      {(isConnected || bypassWallet) && ownedTowerNFTs.length > 0 && (
+        <>
+          {console.log('🎯 Injecting towers into GameCanvas:', ownedTowerNFTs)}
+          <GameCanvas walletAddress={address ?? ''} towerNFTs={ownedTowerNFTs} />
+        </>
+      )}
+    </div>
+  </div>
+</div>
+
           </div>
           {showProfile && (
             <div id="profile-modal">

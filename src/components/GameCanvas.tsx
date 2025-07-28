@@ -3,10 +3,28 @@ import Phaser from 'phaser';
 import GameConfig from '../game/GameConfig';
 import WebFont from 'webfontloader';
 import React from 'react';
+import { getOwnedTowersWithMetadata } from '../utils/getTowerData';
 
 let game: Phaser.Game | null = null;
+interface TowerNFT {
+  id: number;
+  type: 'basic' | 'rapid' | 'cannon';
+  level: number;
+  damage: number;
+  range: number;
+  fireRate: number;
+  imageUrl: string;
+  used?: boolean;
+}
 
-const GameCanvas = ({ walletAddress }: { walletAddress: string }) => {
+const GameCanvas = ({
+  walletAddress,
+  towerNFTs,
+}: {
+  walletAddress: string;
+  towerNFTs: TowerNFT[];
+}) => {
+  console.log(`🧩 GameCanvas mounted with ${towerNFTs.length} towers`, towerNFTs);
   useEffect(() => {
     const startGame = () => {
       console.log('🚀 Initializing Phaser...');
@@ -16,13 +34,16 @@ const GameCanvas = ({ walletAddress }: { walletAddress: string }) => {
       setTimeout(() => {
         const scenes = game?.scene?.keys;
 if (scenes) {
+  console.log('🔍 Scene keys:', Object.keys(scenes));
   Object.entries(scenes).forEach(([key, scene]: [string, any]) => {
     if (scene) {
       scene.walletAddress = walletAddress;
+      scene.towerNFTs = towerNFTs;
+      scene.ownedTowers = towerNFTs || [];
       console.log(`🧠 ${key} attached with wallet: ${walletAddress}`);
+      console.log(`🧠 Injected ${towerNFTs.length} towers into ${key}`);
     }
-  });
-
+  });  
   (window as any).mainScene = scenes['MainScene'];
 }
  else {

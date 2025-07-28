@@ -1,27 +1,12 @@
 import Phaser from 'phaser';
-type TowerNFT = {
-  id: number;
-  type: 'basic' | 'rapid' | 'cannon';
-  level: number;
-  damage: number;
-  range: number;
-  speed: number;
-  imageUrl: string;
-  used?: boolean;
-};
-const towerTypes = ['basic', 'rapid', 'cannon'] as const;
-type TowerType = typeof towerTypes[number];
 export default class MainScene extends Phaser.Scene {
 // ---------------------------------------------------------------------------
 // 📦 Core Game Objects
 // ---------------------------------------------------------------------------
 assetsLoaded: boolean = false;
-selectedTileHighlight?: Phaser.GameObjects.Rectangle;
 bgMusic!: Phaser.Sound.BaseSound;
 bulletGroup!: Phaser.GameObjects.Group;
 enemyGroup!: Phaser.GameObjects.Group;
-grid!: { hasTower: boolean }[][];
-
 hudBar!: Phaser.GameObjects.Rectangle;
 isMusicMuted: boolean = false;
 isSfxMuted: boolean = false;
@@ -34,17 +19,6 @@ towerSelectHighlight?: Phaser.GameObjects.Rectangle;
 towerSelectPanel?: Phaser.GameObjects.Container;
 towers: (Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform)[] = [];
 walletAddress: string = '';
-ownedTowers: TowerNFT[] = [];
-towerNFTs: {
-  id: number;
-  type: 'basic' | 'rapid' | 'cannon';
-  level: number;
-  damage: number;
-  range: number;
-  speed: number;
-  imageUrl: string;
-  used?: boolean;
-}[] = [];
 // ---------------------------------------------------------------------------
 // 💰 Currency, Lives & Game State
 // ---------------------------------------------------------------------------
@@ -113,10 +87,6 @@ preload() {
   this.load.image('enemyNormal', 'https://admin.demwitches.xyz/assets/normalenemy.png');
   this.load.image('enemyFast', 'https://admin.demwitches.xyz/assets/fastenemy.png');
   this.load.image('enemyTank', 'https://admin.demwitches.xyz/assets/tankenemy.png');
-  this.load.image('basicTower', 'assets/towers/basic.png');
-  this.load.image('rapidTower', 'assets/towers/rapid.png');
-  this.load.image('cannonTower', 'assets/towers/cannon.png');
-
   // Callback once all assets are loaded
   this.load.once('complete', () => {
     console.log('✅ All assets loaded.');
@@ -126,91 +96,6 @@ preload() {
 // ---------------------------------------------------------------------------
 // showRewardText(): Displays a floating reward text at a given position
 // ---------------------------------------------------------------------------
-getNextAvailableTower(type: 'basic' | 'rapid' | 'cannon') {
-  return this.ownedTowers.find((tower) => tower.type === type && !tower.used);
-}
-
-showToast(message: string) {
-  const toast = this.add.text(this.scale.width / 2, 40, message, {
-    fontSize: '18px',
-    fontFamily: 'Outfit',
-    color: '#FF4F66',
-    backgroundColor: '#1A1F2B',
-    padding: { x: 12, y: 6 },
-  })
-    .setOrigin(0.5)
-    .setDepth(2000)
-    .setAlpha(0);
-
-  this.tweens.add({
-    targets: toast,
-    alpha: 1,
-    duration: 200,
-    ease: 'Power1',
-    yoyo: true,
-    hold: 1500,
-    onComplete: () => toast.destroy(),
-  });
-}
-markTowerAsUsed(towerId: number) {
-  const tower = this.ownedTowers.find(t => t.id === towerId);
-  if (tower) {
-    tower.used = true;
-    console.log(`🛠️ Marked tower ${towerId} as used`);
-  }
-}
-
-placeTowerFromNFT(col: number, row: number, towerNFT: any) {
-  // 🧠 Safety: Ensure the grid is defined and tile is valid
-  if (!this.grid || !this.grid[col] || this.grid[col][row] === undefined) {
-    console.warn(`❌ Invalid tile coords: col=${col}, row=${row}`);
-    return;
-  }
-
-  const x = this.mapOffsetX + col * this.tileSize + this.tileSize / 2;
-  const y = this.mapOffsetY + row * this.tileSize + this.tileSize / 2;
-
-  // 🖼️ Choose image based on type + right-facing
-  const imageKey = `${towerNFT.type.toLowerCase()}TowerRight`;
-  if (!this.textures.exists(imageKey)) {
-    console.warn(`⚠️ Missing tower texture: ${imageKey}`);
-    return;
-  }
-
-  const speed = towerNFT.speed ?? 1000; // default to 1000ms if missing
-  const tower = this.add.image(x, y, imageKey)
-    .setScale(0.069)
-    .setDepth(1)
-    .setData('towerId', towerNFT.id)
-    .setData('type', towerNFT.type)
-    .setData('level', towerNFT.level)
-    .setData('damage', towerNFT.damage)
-    .setData('range', towerNFT.range)
-    .setData('speed', speed)
-    .setData('lastFired', 0);
-
-
-  this.towers.push(tower);
-  this.grid[col][row].hasTower = true;
-
-  // ✅ Mark as used so it can't be reused
-  this.markTowerAsUsed(towerNFT.id);
-}
-resetUsedTowers() {
-  this.ownedTowers.forEach(tower => {
-    tower.used = false;
-  });
-}
-getTowerAtTile(col: number, row: number): Phaser.GameObjects.Image | undefined {
-  const tileX = this.mapOffsetX + col * this.tileSize + this.tileSize / 2;
-  const tileY = this.mapOffsetY + row * this.tileSize + this.tileSize / 2;
-
-  return this.towers.find((tower) =>
-    Math.abs(tower.x - tileX) < 1 &&
-    Math.abs(tower.y - tileY) < 1
-  ) as Phaser.GameObjects.Image | undefined;
-}
-
 showRewardText(x: number, y: number, amount: number) {
   const rewardText = this.add.text(x, y - 12, `+${amount} $MOO`, {
     fontSize: '18px',
@@ -256,7 +141,6 @@ cleanupGameObjects(fullReset = false) {
   this.time.removeAllEvents();
   this.sound.stopAll();
   this.hasSavedVine = false;
-  this.resetUsedTowers();    // 👈 reset tower usage here
   this.enemyGroup.getChildren().forEach((enemyObj) => {
     const hpBar = enemyObj.getData?.('hpBar');
     const hpBarBg = enemyObj.getData?.('hpBarBg');
@@ -292,7 +176,6 @@ cleanupGameObjects(fullReset = false) {
     });
   });
   if (fullReset) {
-    this.resetUsedTowers();    // 👈 reset tower usage here
     this.vineBalance = 40;
     this.lives = 10;
     this.waveNumber = 0;
@@ -324,7 +207,6 @@ cleanupGameObjects(fullReset = false) {
 // ---------------------------------------------------------------------------
 create() {
   console.log('✅ MainScene created');
-  console.log('🧠 NFT Towers Loaded:', this.towerNFTs);
   this.hasSavedVine = false;
   // Screen and Map Dimensions
   const screenWidth = Number(this.game.config.width);
@@ -333,10 +215,6 @@ create() {
   const mapHeight = this.mapRows * this.tileSize;
   this.mapOffsetX = (screenWidth - mapWidth) / 2;
   this.mapOffsetY = (screenHeight - mapHeight) / 2;
-  this.grid = Array.from({ length: this.mapCols }, () =>
-    Array.from({ length: this.mapRows }, () => ({ hasTower: false }))
-  );
-  
   // Load Background Music
 // Destroy any existing bgMusic reference
 const existing = this.sound.get('bgMusic');
@@ -486,18 +364,12 @@ if (!this.cache.audio.has('bgMusic')) {
   .setAlpha(0.2);
   this.tileSprites[row][col] = tile;
   if (type === 1) {
-    tile.on('pointerdown', () => {
-      if (this.canSelectTile && !this.towerSelectPanel) {
-        this.canSelectTile = false;
-        
-        const tower = this.getTowerAtTile(col, row);
-        if (tower) {
-          this.showUpgradePanel(tower);
-        } else {
-          this.showTowerSelectPanel(col, row);
-        }
-      }
-    });    
+  tile.on('pointerdown', () => {
+    if (this.canSelectTile && !this.towerSelectPanel) {
+      this.canSelectTile = false;
+      this.showTowerSelectPanel(col, row);
+    }
+  });
   }}
   }
   // Enemy and Bullet Groups + Collision Handling
@@ -899,86 +771,42 @@ showTowerSelectPanel(col: number, row: number) {
   const container = this.add.container(adjustedX, adjustedY);
   
   container.setDepth(1000);
-  const availableTowers = this.ownedTowers.filter(t => !t.used);
-  const buttonWidth = 100;
-  const buttonHeight = 36;
-  const buttonSpacing = 10;
-  
-  const backgroundWidth = 140;
-  const backgroundHeight = availableTowers.length * buttonHeight + (availableTowers.length - 1) * buttonSpacing + 40;
-  
-  const background = this.add.rectangle(0, 0, backgroundWidth, backgroundHeight, 0x1A1F2B, 1)
+  const background = this.add.rectangle(0, 0, 120, 140, 0x1A1F2B, 1)
     .setStrokeStyle(2, 0x00B3FF)
     .setOrigin(0.5);
   container.add(background);
 
-  if (availableTowers.length === 0) {
-    const warningWidth = 220;
-    const warningHeight = 100;
-  
-    const background = this.add.rectangle(0, 0, warningWidth, warningHeight, 0x1A1F2B, 1)
-      .setStrokeStyle(2, 0xFF4F66)
-      .setOrigin(0.5);
-  
-    const warningText = this.add.text(0, 0, '❌ No towers left to place!', {
-      fontSize: '16px',
-      fontFamily: 'Outfit',
-      color: '#FF4F66',
-      align: 'center',
-      wordWrap: { width: warningWidth - 20 }
-    }).setOrigin(0.5);
-  
-    container.add([background, warningText]);
-  
-    this.towerSelectPanel = container;
-  
-    const blocker = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0)
-      .setOrigin(0)
-      .setDepth(999)
-      .setInteractive();
-  
-    const cleanup = () => {
-      container.destroy();
-      blocker.destroy();
-      this.towerSelectPanel = undefined;
-      this.towerSelectHighlight?.destroy();
-      this.towerSelectHighlight = undefined;
-      this.isPaused = false;
-      this.physics.resume();
-      this.enemySpawnEvent.paused = false;
-      this.canSelectTile = true;
-    };
-  
-    blocker.on('pointerdown', cleanup);
-  
-    // ⏳ Auto close after 3 seconds
-    this.time.delayedCall(3000, cleanup);
-  
-    return;
-  }  
-  const totalHeight = availableTowers.length * buttonHeight + (availableTowers.length - 1) * buttonSpacing;
+  const towerTypes = ['basic', 'rapid', 'cannon'];
+  const buttonWidth = 100;
+  const buttonHeight = 36;
+  const buttonSpacing = 10;
+  const totalHeight = towerTypes.length * buttonHeight + (towerTypes.length - 1) * buttonSpacing;
   const startY = -totalHeight / 2 + buttonHeight / 2;
 
 
-  availableTowers.forEach((towerNFT, index) => {
+  towerTypes.forEach((type, index) => {
     const bg = this.add.rectangle(0, 0, buttonWidth, buttonHeight, 0x1A1F2B)
       .setStrokeStyle(0)
       .setOrigin(0.5);
-  
-    const labelName = this.add.text(0, -8, towerNFT.type.toUpperCase(), {
+
+    const cost = towerCosts[type];
+    const canAfford = this.vineBalance >= cost;
+    const costColor = canAfford ? '#00FFE7' : '#FF4F66';
+
+    const labelName = this.add.text(0, -8, type.toUpperCase(), {
       fontSize: '14px',
       fontFamily: 'Outfit',
       color: '#DFFBFF',
       align: 'center',
     }).setOrigin(0.5);
-  
-    const labelCost = this.add.text(0, 10, `LVL ${towerNFT.level}`, {
+
+    const labelCost = this.add.text(0, 10, `${cost} $MOO`, {
       fontSize: '16px',
       fontFamily: 'Outfit',
-      color: '#00FFE7',
+      color: costColor,
       align: 'center',
     }).setOrigin(0.5);
-  
+
     const buttonContainer = this.add.container(0, 0, [bg, labelName, labelCost]);
     buttonContainer.setPosition(0, startY + index * (buttonHeight + buttonSpacing));
     buttonContainer.setSize(buttonWidth, buttonHeight);
@@ -986,14 +814,12 @@ showTowerSelectPanel(col: number, row: number) {
       new Phaser.Geom.Rectangle(0, 0, buttonWidth, buttonHeight),
       Phaser.Geom.Rectangle.Contains
     );
+
     buttonContainer.on('pointerdown', () => {
-      if (!this.selectedTile) {
-        this.showToast?.('No tile selected!');
-        return;
-      }
-    
-      this.placeTowerFromNFT(this.selectedTile.col, this.selectedTile.row, towerNFT); // ✅ Safe call
-    
+      console.log('[🔴 Upgrade clicked]');
+      if (this.vineBalance < cost) return;
+      this.currentTowerType = type;
+      this.placeTowerAt(col, row);
       this.towerSelectPanel?.destroy();
       this.towerSelectPanel = undefined;
       this.towerSelectHighlight?.destroy();
@@ -1002,12 +828,11 @@ showTowerSelectPanel(col: number, row: number) {
       this.isPaused = false;
       this.physics.resume();
       this.enemySpawnEvent.paused = false;
-      this.canSelectTile = true;
+      this.canSelectTile = true; // ✅ fix: allow immediate next tile selection
     });
-    
-  
+
     container.add(buttonContainer);
-  });  
+  });
 
   this.towerSelectPanel = container;
 
@@ -1089,17 +914,11 @@ createEnemyGraphic(type: string, x: number, y: number): Phaser.GameObjects.Image
 // 🎯 shootFromTower(): Fires bullet at closest enemy in range
 // ---------------------------------------------------------------------------
 shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform) {
-  const enemies = this.enemyGroup.getChildren() as Phaser.GameObjects.Image[];
+  const enemies = this.enemyGroup.getChildren() as Phaser.GameObjects.Arc[];
   if (!enemies.length) return;
-
   const range = tower.getData('range') ?? 200;
-  const damage = tower.getData('damage') ?? 1;
-  const towerType = tower.getData('type') ?? 'basic';
-  const baseScale = tower.getData('baseScale') ?? 0.075;
-
-  let closestEnemy: Phaser.GameObjects.Image | null = null;
+  let closestEnemy: Phaser.GameObjects.Arc | null = null;
   let minDist = range;
-
   for (const enemy of enemies) {
     const dist = Phaser.Math.Distance.Between(tower.x, tower.y, enemy.x, enemy.y);
     if (dist < minDist) {
@@ -1108,26 +927,34 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
     }
   }
   if (!closestEnemy) return;
-
-  // 🧭 Face Left or Right only
+  // 🔄 Update tower facing direction
   if (tower instanceof Phaser.GameObjects.Image) {
     const textureKey = tower.texture.key;
-    const enemyX = closestEnemy.x;
     const towerX = tower.x;
-
-    const shouldFaceLeft = enemyX < towerX;
-    const shouldFaceRight = enemyX > towerX;
-
-    if (shouldFaceLeft && !textureKey.endsWith('Left')) {
+    const enemyX = closestEnemy.x;
+  
+    if (enemyX < towerX && !textureKey.endsWith('Left')) {
       tower.setTexture(textureKey.replace('Right', 'Left'));
-    } else if (shouldFaceRight && !textureKey.endsWith('Right')) {
+      console.log('🟢 Switched to LEFT');
+    } else if (enemyX > towerX && !textureKey.endsWith('Right')) {
       tower.setTexture(textureKey.replace('Left', 'Right'));
+      console.log('🟢 Switched to RIGHT');
+    } else if (enemyX === towerX) {
+      // Decide which way to face when perfectly aligned
+      if (!textureKey.endsWith('Right')) {
+        tower.setTexture(textureKey.replace('Left', 'Right'));
+        console.log('🟢 Defaulting to RIGHT');
+      }
     }
   }
-  console.log(`🔫 Firing from ${towerType} → DMG: ${damage}, RANGE: ${range}`);
-
-  // 🌀 Visual fire animation
-  if (tower instanceof Phaser.GameObjects.Image) {
+  
+  // 🌀 Flash or bounce effect
+  if (tower instanceof Phaser.GameObjects.Arc) {
+    const originalColor = tower.fillColor;
+    tower.setFillStyle(0x00FFE7); // Flash white
+    this.time.delayedCall(80, () => tower.setFillStyle(originalColor));
+  } else if (tower instanceof Phaser.GameObjects.Image) {
+    const baseScale = tower.getData('baseScale') ?? 0.075;
     this.tweens.add({
       targets: tower,
       scale: baseScale * 1.15,
@@ -1135,32 +962,14 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
       duration: 80,
       ease: 'Sine.easeInOut',
     });
-  } else if (tower instanceof Phaser.GameObjects.Arc) {
-    const originalColor = tower.fillColor;
-    tower.setFillStyle(0xffffff); // flash white
-    this.time.delayedCall(80, () => tower.setFillStyle(originalColor));
   }
-
   // 🎯 Create bullet
-  let bulletColor = 0xffffff;
-  let bulletScale = 1;
-
-  const bullet = this.add.circle(tower.x, tower.y, 4, bulletColor)
-    .setScale(bulletScale)
-    .setDepth(5);
-  
+  const towerType = tower.getData('type');
+  const bullet = this.add.circle(tower.x, tower.y, 4, 0x00FFE7);
   bullet.setData('target', closestEnemy);
-  bullet.setData('damage', damage);
+  bullet.setData('damage', tower.getData('damage'));
   bullet.setData('towerType', towerType);
-
-  this.physics.add.existing(bullet);
-  const angle = Phaser.Math.Angle.Between(tower.x, tower.y, closestEnemy.x, closestEnemy.y);
-  const velocity = this.physics.velocityFromRotation(angle, 500);
-  (bullet.body as Phaser.Physics.Arcade.Body).setVelocity(velocity.x, velocity.y);
-  this.bulletGroup.add(bullet);
-  this.playPewSound();
-  console.log(`🎯 Tower type: ${towerType}`);
-
+  // 💠 Style by tower type
   switch (towerType) {
     case 'basic':
       bullet.setFillStyle(0xffff00); // Yellow
@@ -1171,24 +980,137 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
       bullet.setScale(0.75);
       break;
     case 'cannon':
-      bullet.setFillStyle(0xff3300); // Orange-red
-      bullet.setScale(1.4);
-      break;
-    default:
-      bullet.setFillStyle(0xffffff);
-      bullet.setScale(1);
+        bullet.setFillStyle(0xff3300); // Orange-red
+        bullet.setScale(1.4);
+        break;
   }
-  
-  // 💨 Bullet expires
-  const bulletTimer = this.time.delayedCall(1500, () => bullet.destroy(), [], this);
-  bullet.setData('despawnTimer', bulletTimer);
- 
-}
+  this.physics.add.existing(bullet);
+  const velocity = this.physics.velocityFromRotation(
+    Phaser.Math.Angle.Between(tower.x, tower.y, closestEnemy.x, closestEnemy.y),
+    500
+  );
+  (bullet.body as Phaser.Physics.Arcade.Body).setVelocity(velocity.x, velocity.y);
+  this.bulletGroup.add(bullet);
+  this.playPewSound();
 
+  // 💨 Auto-destroy after timeout
+  const bulletTimer = this.time.delayedCall(1500, () => bullet.destroy(), [], this);
+bullet.setData('despawnTimer', bulletTimer);
+}
   // ---------------------------------------------------------------------------
   // 🧱 placeTowerAt(): Places a tower on a buildable tile
   // ---------------------------------------------------------------------------
+  placeTowerAt(col: number, row: number) {
+    if (!this.assetsLoaded) {
+      console.warn('⏳ Assets not fully loaded yet. Skipping tower placement.');
+      console.log('🔍 assetsLoaded:', this.assetsLoaded); // 👈 Add this
+      return;
+    }
+    if (this.upgradePanelOpen) return;
+    if (this.tileMap[row][col] !== 1) return;
+  // 💰 Set tower cost based on type
+  let cost = 20;
+  if (this.currentTowerType === 'rapid') cost = 15;
+  if (this.currentTowerType === 'cannon') cost = 35;
+  if (this.vineBalance < cost) {
+    const warning = this.add.text(Number(this.game.config.width) / 2, 40, '❌ Not enough $MOO', {
+      fontSize: '16px',
+      color: '#FF4F66',
+      fontStyle: 'bold',
+    }).setOrigin(0.5);
+    this.time.delayedCall(1200, () => warning.destroy());
+    return;
+  }
+  this.vineBalance -= cost;
+  this.vineText.setText(`$MOO: ${this.vineBalance}`);
+  const x = this.mapOffsetX + col * this.tileSize + this.tileSize / 2;
+  const y = this.mapOffsetY + row * this.tileSize + this.tileSize / 2;
+  let tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform;
+  let fireRate: number, range: number, damage: number;
+let imageKey: string | null = null;
 
+if (this.currentTowerType === 'basic') {
+  imageKey = 'basicTowerRight';
+  fireRate = 700;
+  range = 200;
+  damage = 1;
+} else if 
+
+(this.currentTowerType === 'cannon') {
+  imageKey = 'cannonTowerRight';
+  fireRate = 1200;
+  range = 250;
+  damage = 2;
+} else if (this.currentTowerType === 'rapid') {
+  imageKey = 'rapidTowerRight';
+  fireRate = 400;
+  range = 150;
+  damage = 0.5;
+} else {
+  // 🛡️ Safety fallback (shouldn't happen)
+  imageKey = 'basicTowerRight';
+  fireRate = 700;
+  range = 200;
+  damage = 1;
+}
+
+if (imageKey !== null) {
+  tower = this.add.image(x, y, imageKey)
+    .setScale(0.075)
+    .setInteractive({ useHandCursor: true });
+  tower.setData('baseScale', 0.075);
+} else {
+  // fallback for unknown types
+  
+  tower = this.add.circle(x, y, 15, 0x00FFE7);
+  this.physics.add.existing(tower);
+}
+  tower.setDataEnabled();
+  tower.setData('range', range);
+  tower.setData('level', 1);
+  tower.setData('damage', damage);
+  tower.setData('type', this.currentTowerType);
+  tower.setData('tileX', col);
+  tower.setData('tileY', row);
+
+  const levelText = this.add.text(x - 2, y + 12, '1', {
+    fontSize: '14px',
+    color: '#DFFBFF',
+    fontStyle: 'bold'
+  }).setOrigin(0.5);
+  tower.setData('levelText', levelText);
+  // 🧠 Show upgrade on click
+  tower.on('pointerdown', () => {
+    this.activeTower = tower;
+    
+      this.showUpgradePanel(tower);
+      
+    
+  });
+  // 🌀 Hover scale effect
+  const baseScale = tower.scale;
+  tower.on('pointerover', () => {
+    this.tweens.add({ targets: tower, scale: baseScale * 1.15, duration: 100 });
+  });
+  tower.on('pointerout', () => {
+    this.tweens.add({ targets: tower, scale: baseScale, duration: 100 });
+  });
+  // 🧱 Update tilemap + tile color
+  this.tileMap[row][col] = 2;
+  this.tileSprites[row][col].setFillStyle(0x00FFE7);
+  // 🔁 Fire bullets at interval
+  const shootTimer = this.time.addEvent({
+    delay: fireRate,
+    callback: () => {
+      if (!this.isPaused) this.shootFromTower(tower);
+    },
+    loop: true
+    
+  });
+  tower.setData('shootTimer', shootTimer);
+  // 🧠 Track this tower so we can clean it up later
+this.towers.push(tower);
+}
 playPewSound() {
   if (this.isSfxMuted) return;
 
@@ -1412,78 +1334,6 @@ const mainMenuBtn = this.createStyledButton(
       console.warn('🛠 Auto-reenabling input');
       this.input.enabled = true;
     }
-    for (const tower of this.towers) {
-      const range = tower.getData('range') ?? 100;
-      const damage = tower.getData('damage') ?? 1;
-      const towerType = (tower.getData('type') ?? 'basic').toLowerCase();
-      const speed = tower.getData('speed') ?? 1000;
-      const lastFired = tower.getData('lastFired') ?? 0;
-      const now = this.time.now;
-    
-      if (now - lastFired < speed) continue;
-    
-      let nearestEnemy: Phaser.GameObjects.Image | null = null;
-      let minDist = Infinity;
-    
-      for (const enemyObj of this.enemyGroup.getChildren()) {
-        const enemy = enemyObj as Phaser.GameObjects.Image;
-        const dist = Phaser.Math.Distance.Between(tower.x, tower.y, enemy.x, enemy.y);
-        if (dist <= range && dist < minDist) {
-          nearestEnemy = enemy;
-          minDist = dist;
-        }
-      }
-    
-      if (nearestEnemy) {
-        // 🧠 Debug logs
-        console.log(`🚀 Tower firing | Type: ${towerType} | Rate: ${speed}/s | Damage: ${damage}`);
-    
-        // 🎯 Create bullet
-        const bullet = this.add.circle(tower.x, tower.y, 4, 0xffffff)
-          .setDepth(2)
-          .setData('target', nearestEnemy)
-          .setData('damage', damage)
-          .setData('towerType', towerType);
-    
-        // 🧪 Bullet styling by tower type
-        switch (towerType) {
-          case 'basic':
-            bullet.setFillStyle(0xffff00); // Yellow
-            bullet.setScale(1);
-            break;
-          case 'rapid':
-            bullet.setFillStyle(0x00ffff); // Cyan
-            bullet.setScale(0.75);
-            break;
-          case 'cannon':
-            bullet.setFillStyle(0xff3300); // Orange-red
-            bullet.setScale(1.4);
-            break;
-          default:
-            bullet.setFillStyle(0xffffff); // Fallback white
-            bullet.setScale(1);
-        }
-    
-        this.physics.add.existing(bullet);
-        this.bulletGroup.add(bullet);
-    
-        tower.setData('lastFired', now);
-    
-        // 🔄 Flip tower image based on enemy position
-        if (tower instanceof Phaser.GameObjects.Image) {
-          const isEnemyLeft = nearestEnemy.x < tower.x;
-          const textureKey = tower.texture.key;
-    
-          if (isEnemyLeft && textureKey.endsWith('Right')) {
-            tower.setTexture(textureKey.replace('Right', 'Left'));
-          } else if (!isEnemyLeft && textureKey.endsWith('Left')) {
-            tower.setTexture(textureKey.replace('Left', 'Right'));
-          }
-        }
-    
-        // 🔊 Optional: add muzzle flash or bounce animation here
-      }
-    }
     
     // 💾 Save progress
     enemy.setData('t', t);
@@ -1661,8 +1511,8 @@ showUpgradePanel(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compo
   const y = tower.y;
   const panel = this.add.container(x, y).setName('upgradePanel').setDepth(1000);
   // 🧱 Panel background
-  const bg = this.add.rectangle(0, 0, panelWidth, 130, 0x1A1F2B)
-  .setOrigin(0.5)
+  const bg = this.add.rectangle(0, 0, panelWidth, 110, 0x1A1F2B)
+    .setOrigin(0.5)
     .setStrokeStyle(2, 0x00FFE7);
   // 🔢 Stats & upgrade logic
   const dmg = tower.getData('damage');
@@ -1679,21 +1529,50 @@ showUpgradePanel(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compo
   this.nextRangeCircle = this.add.circle(tower.x, tower.y, nextRng, 0x00B3FF, 0.15)
     .setStrokeStyle(1, 0x00B3FF)
     .setDepth(-1);
-    const spd = tower.getData('speed');
-    const shotsPerSecond = (1000 / spd).toFixed(2);
-    const statsText = this.add.text(0, 0,
-      `LEVEL: ${level}\nDAMAGE: ${dmg}\nRANGE: ${rng}\nSPEED: ${shotsPerSecond}F/s`,
-      {
-        fontSize: '16px',
-        fontFamily: 'Outfit',
-        color: '#DFFBFF',
-        align: 'center',
-        lineSpacing: 10,
-      }
-    ).setOrigin(0.5);
-    
+  const statsText = this.add.text(-panelWidth / 2 + 10, -40,
+    `Damage: ${dmg} ➡️ ${nextDmg}\nRange: ${rng}  ➡️ ${nextRng}`,
+    {
+      fontSize: '16px',
+      fontFamily: 'Outfit',
+      color: '#DFFBFF',
+      align: 'left',
+      lineSpacing: 6,
+    }
+  );
   // 🔼 Upgrade button
-  panel.add([bg, statsText]);
+  const hasEnough = this.vineBalance >= upgradeCost;
+  const upgradeBtn = this.add.text(0, 30, `Upgrade 🔼 (${upgradeCost})`, {
+    fontSize: '16px',
+    fontFamily: 'Outfit',
+    backgroundColor: hasEnough ? '#555555' : '#552222',
+    padding: { x: 10, y: 6 },
+    color: hasEnough ? '#00FFE7' : '#FF4F66',
+  })
+    .setOrigin(0.5)
+    .setInteractive()
+    .on('pointerdown', () => {
+      if (this.vineBalance >= upgradeCost) {
+        this.vineBalance -= upgradeCost;
+        this.vineText.setText(`$MOO: ${this.vineBalance}`);
+        tower.setData('level', level + 1);
+        tower.setData('damage', nextDmg);
+        tower.setData('range', nextRng);
+        const levelText = tower.getData('levelText') as Phaser.GameObjects.Text;
+        levelText?.setText(String(level + 1));
+        // ♻️ Clean and refresh panel
+        this.rangeCircle?.destroy();
+        this.nextRangeCircle?.destroy();
+        this.rangeCircle = undefined;
+        this.nextRangeCircle = undefined;
+        this.showUpgradePanel(tower);
+      } else {
+        upgradeBtn.setText('❌ Not enough $MOO');
+      }
+    });
+  this.activeUpgradeButton = upgradeBtn;
+  this.activeUpgradeCost = upgradeCost;
+  this.activeTower = tower;
+  panel.add([bg, statsText, upgradeBtn]);
   // ❌ Dismiss on outside click
   this.time.delayedCall(100, () => {
     this.input.once('pointerdown', () => {
