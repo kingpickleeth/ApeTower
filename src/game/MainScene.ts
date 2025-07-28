@@ -1682,7 +1682,7 @@ showUpgradePanel(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compo
     const spd = tower.getData('speed');
     const shotsPerSecond = (1000 / spd).toFixed(2);
     const statsText = this.add.text(0, 0,
-      `LEVEL: ${level}\nDAMAGE: ${dmg}\nRANGE: ${rng}\nSPEED: ${shotsPerSecond}F/s`,
+      `LEVEL: ${level}\nDAMAGE: ${dmg}\nRANGE: ${rng}\nSPEED: ${shotsPerSecond} F/s`,
       {
         fontSize: '16px',
         fontFamily: 'Outfit',

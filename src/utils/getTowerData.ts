@@ -3,11 +3,19 @@ import { formatEther } from 'viem';
 import { createPublicClient, http } from 'viem';
 import { apeChain } from 'wagmi/chains';
 import towerJson from '../abis/Tower.json';
-import { TowerNFT } from '../types/TowerNFT'; // or adjust path as needed
-
 const DENG_TOWER_ABI = towerJson.abi;
 
 const TOWER_CONTRACT = '0xeDed3FA692Bf921B9857F86CC5BB21419F5f77ec';
+
+type TowerNFT = {
+  id: number;
+  type: 'basic' | 'rapid' | 'cannon';
+  level: number;
+  damage: number;
+  range: number;
+  speed: number;
+  imageUrl: string;
+};
 
 export async function getOwnedTowersWithMetadata(address: string): Promise<TowerNFT[]> {
   const client = createPublicClient({
