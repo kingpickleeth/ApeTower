@@ -7,5 +7,4 @@ export type TowerNFT = {
   speed: number;
   imageUrl: string;
   used?: boolean;
-  fireRate?: number; // optional to avoid breakage
 };
