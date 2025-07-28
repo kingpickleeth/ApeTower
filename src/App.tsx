@@ -13,18 +13,7 @@ import { getOwnedTowersWithMetadata } from './utils/getTowerData';
 import MyTowersModal from './components/MyTowersModal';
 import ShopModal from './components/ShopModal';
 import InteractiveParticles from './components/InteractiveParticles';
-
-type TowerNFT = {
-  id: number;
-  type: 'basic' | 'rapid' | 'cannon';
-  level: number;
-  damage: number;
-  range: number;
-  fireRate: number;
-  imageUrl: string;
-  used?: boolean;
-};
-
+import { TowerNFT } from './types/TowerNFT'; // ✅ adjust path if needed
 
 const VINE_TOKEN = "0xe6027e786e2ef799316afabae84e072ca73aa97f";
 const APECHAIN_RPC = "https://apechain.calderachain.xyz/http";
