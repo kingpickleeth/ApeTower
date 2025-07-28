@@ -27,14 +27,16 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
   const towerItems = [
     {
       type: 'Basic',
+      typeId: 0,
       image: 'https://admin.demwitches.xyz/images/tower/basic.png',
       cost: '50 $MOO',
-      price: 50n * 10n ** 18n, // Add this line
+      price: 50n * 10n ** 18n,
       description: 'Reliable and balanced.',
       stats: { speed: 3, range: 4, damage: 3 }
     },
     {
       type: 'Rapid',
+      typeId: 2, // ✅ Correct ID for Rapid
       image: 'https://admin.demwitches.xyz/images/tower/rapid.png',
       cost: '100 $MOO',
       price: 100n * 10n ** 18n,
@@ -43,6 +45,7 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
     },
     {
       type: 'Cannon',
+      typeId: 1, // ✅ Correct ID for Cannon
       image: 'https://admin.demwitches.xyz/images/tower/cannon.png',
       cost: '200 $MOO',
       price: 200n * 10n ** 18n,
@@ -50,6 +53,7 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
       stats: { speed: 1, range: 4, damage: 5 }
     }
   ];
+  
   const mooBundles = [
     {
       amount: 50,
@@ -440,9 +444,10 @@ const handleBuyTower = async (towerType: number) => {
     <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#5CFFA3' }}>
       Cost: {tower.cost}
     </div>
-    <button className="glow-button green" onClick={() => handleBuyTower(i)}>
-      Buy / Mint
-    </button>
+    <button className="glow-button green" onClick={() => handleBuyTower(tower.typeId)}>
+  Buy / Mint
+</button>
+
   </>
 )}
               </div>
