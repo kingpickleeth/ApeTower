@@ -150,7 +150,7 @@ useEffect(() => {
     
       try {
         console.log(`💾 Triggered vine save: ${amount} for ${address}`);
-        const result = await fetch('https://<your-railway-app>.up.railway.app/api/update-moo', {
+        const result = await fetch('https://metadata-server-production.up.railway.app/api/update-moo', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
