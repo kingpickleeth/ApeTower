@@ -146,7 +146,18 @@ window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
     
       try {
         console.log(`💾 Triggered vine save: ${amount} for ${address}`);
-        const result = await updateVineBalance(address, amount);
+        const result = await fetch('https://<your-railway-app>.up.railway.app/api/update-moo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            wallet: address,
+            amount // ⚠️ this is already coming from the event
+          })
+        }).then(res => res.json());
+        
+        if (!result.success) {
+          console.error('❌ Failed to update vine balance:', result.error);
+        }        
         if (result?.error) {
           console.error('❌ Failed to update vine balance:', result.error);
         }

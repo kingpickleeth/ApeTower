@@ -121,18 +121,21 @@ export async function checkTowerBalance(walletAddress: string): Promise<number> 
   const balance = await contract.balanceOf(walletAddress);
   return Number(balance);
 }
-  export async function getProfileByUsername(username: string) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .ilike('username', username)
-      .single();
-  
-    if (error) {
-      console.error("🔍 Error checking username:", error);
-      return null;
-    }
-    return data;
+export const getProfileByUsername = async (username: string) => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('username, wallet_address')
+    .eq('username', username)
+    .single(); // or remove `.single()` if it causes issues
+
+  if (error) {
+    console.error('❌ getProfileByUsername error:', error);
+    return null;
   }
+
+  console.log("👤 getProfileByUsername result:", data);
+  return data;
+};
+
   
   

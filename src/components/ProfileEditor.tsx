@@ -122,6 +122,7 @@ useEffect(() => {
     const otherProfile = await getProfileByUsername(username);
 
     if (otherProfile) {
+      console.log("🔍 Checking if username is taken:", username);
       if (otherProfile.wallet_address !== walletAddress) {
         setUsernameTaken(true);
       } else {
@@ -202,7 +203,10 @@ useEffect(() => {
   };
 
   const saveProfile = async () => {
-    
+    if (usernameTaken) {
+      setShowErrorModal("That username is already taken. Please choose another.");
+      return;
+    }    
     if (!username.trim()) {
       setShowErrorModal("Username is required!");
       return;
