@@ -505,9 +505,23 @@ setTowers((prevTowers) =>
             })}
           </div>
         )}
-        <div className="button-row" style={{ marginTop: '20px' }}>
-          <button className="glow-button danger" onClick={onClose}>❌ Close</button>
-        </div>
+    <div className="button-row" style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '12px' }}>
+  <button className="glow-button danger" onClick={onClose}>❌ Close</button>
+  {towers.length === 0 && (
+    <button
+      className="glow-button"
+      onClick={() => {
+        if (!walletAddress) return;
+        window.dispatchEvent(new CustomEvent("mint-starter-towers", {
+          detail: { wallet: walletAddress }
+        }));
+      }}
+    >
+      Mint Free Towers
+    </button>
+  )}
+</div>
+
       </div>
     </div>
   );
