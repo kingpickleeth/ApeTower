@@ -47,6 +47,7 @@ function App() {
   const [bypassWallet, setBypassWallet] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
   const [mustCompleteProfile, setMustCompleteProfile] = useState(false);
+  const [towersLoaded, setTowersLoaded] = useState(false);
 
   useEffect(() => {
     const secretCode = [
@@ -277,9 +278,9 @@ for (let i = 0; i < tokenIds.length; i++) {
   useEffect(() => {
     const fetchTowers = async () => {
       if (!address) return;
-      const { getOwnedTowersWithMetadata } = await import('./utils/getTowerData'); // 🔁 helper you can create
       const towers = await getOwnedTowersWithMetadata(address);
       setOwnedTowerNFTs(towers);
+      setTowersLoaded(true); // ✅ signal that we’re done loading
       console.log('🧠 Loaded towers:', towers);
     };
   
@@ -408,7 +409,7 @@ for (let i = 0; i < tokenIds.length; i++) {
           <div id="game-content">
   <div id="game-scaler">
     <div id="game-frame">
-    {(isConnected || bypassWallet) && (
+    {(isConnected || bypassWallet) && towersLoaded && (
   <GameCanvas walletAddress={address ?? ''} towerNFTs={ownedTowerNFTs} />
 )}
     </div>

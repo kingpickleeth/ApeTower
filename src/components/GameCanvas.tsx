@@ -27,52 +27,50 @@ const GameCanvas = ({
 }) => {
   console.log(`🧩 GameCanvas mounted with ${towerNFTs.length} towers`, towerNFTs);
   useEffect(() => {
+    if (!Array.isArray(towerNFTs)) return;
+    if (game) return;
+  
     const startGame = () => {
       console.log('🚀 Initializing Phaser...');
       game = new Phaser.Game(GameConfig);
-    
-      // Wait for scene manager to register scenes
+  
       setTimeout(() => {
         const scenes = game?.scene?.keys;
-if (scenes) {
-  console.log('🔍 Scene keys:', Object.keys(scenes));
-  Object.entries(scenes).forEach(([key, scene]: [string, any]) => {
-    if (scene) {
-      scene.walletAddress = walletAddress;
-      scene.towerNFTs = towerNFTs;
-      scene.ownedTowers = towerNFTs || [];
-      console.log(`🧠 ${key} attached with wallet: ${walletAddress}`);
-      console.log(`🧠 Injected ${towerNFTs.length} towers into ${key}`);
-    }
-  });  
-  (window as any).mainScene = scenes['MainScene'];
-}
- else {
+        if (scenes) {
+          console.log('🔍 Scene keys:', Object.keys(scenes));
+          Object.entries(scenes).forEach(([key, scene]: [string, any]) => {
+            if (scene) {
+              scene.walletAddress = walletAddress;
+              scene.towerNFTs = towerNFTs;
+              scene.ownedTowers = towerNFTs || [];
+              console.log(`🧠 ${key} attached with wallet: ${walletAddress}`);
+              console.log(`🧠 Injected ${towerNFTs.length} towers into ${key}`);
+            }
+          });
+          (window as any).mainScene = scenes['MainScene'];
+        } else {
           console.warn('⚠️ mainScene not found!');
         }
       }, 500);
     };
-    
-    if (!game) {
-      console.log('🔤 Loading Orbitron font...');
-      WebFont.load({
-        google: { families: ['Orbitron'] },
-        active: () => {
-          console.log('✅ Font loaded');
-          startGame();
-        },
-        inactive: () => {
-          console.warn('⚠️ Failed to load font, starting anyway...');
-          startGame();
-        }
-      });
-    }
-
+  
+    WebFont.load({
+      google: { families: ['Orbitron'] },
+      active: () => {
+        console.log('✅ Font loaded');
+        startGame();
+      },
+      inactive: () => {
+        console.warn('⚠️ Failed to load font, starting anyway...');
+        startGame();
+      },
+    });
+  
     return () => {
       game?.destroy(true);
       game = null;
     };
-  }, []);
+  }, [towerNFTs]); // ✅ 🔁 react to loaded towers  
 
   useEffect(() => {
     const checkOrientation = () => {
