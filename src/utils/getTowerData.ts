@@ -45,13 +45,13 @@ export async function getOwnedTowersWithMetadata(address: string): Promise<Tower
       const metadata = await res.json();
       return {
         id: Number(id),
-        type: metadata.attributes.find((a: any) => a.trait_type === 'Type')?.value || 'basic',
+        type: (metadata.attributes.find((a: any) => a.trait_type === 'Type')?.value || 'basic').toLowerCase(),
         level: parseInt(metadata.attributes.find((a: any) => a.trait_type === 'Level')?.value || '1'),
-        damage: parseInt(metadata.attributes.find((a: any) => a.trait_type === 'Damage')?.value || '1'),
-        range: parseInt(metadata.attributes.find((a: any) => a.trait_type === 'Range')?.value || '1'),
-        speed: parseInt(metadata.attributes.find((a: any) => a.trait_type === 'Speed')?.value || '1000'),
+        damage: parseFloat(metadata.attributes.find((a: any) => a.trait_type === 'Damage')?.value || '1'),
+        range: parseFloat(metadata.attributes.find((a: any) => a.trait_type === 'Range')?.value || '150'),
+        speed: parseFloat(metadata.attributes.find((a: any) => a.trait_type === 'Speed')?.value || '1000'),
         imageUrl: metadata.image,
-      };      
+      };       
       
     })
   );

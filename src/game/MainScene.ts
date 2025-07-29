@@ -1666,7 +1666,8 @@ showUpgradePanel(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compo
   .setOrigin(0.5)
     .setStrokeStyle(2, 0x00FFE7);
   // 🔢 Stats & upgrade logic
-  const dmg = tower.getData('damage');
+  const dmgRaw = tower.getData('damage');
+  const dmg = dmgRaw % 1 !== 0 ? dmgRaw.toFixed(1) : dmgRaw;
   const rng = tower.getData('range');
   const level = tower.getData('level') ?? 1;
   const baseCost = 25;

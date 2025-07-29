@@ -35,20 +35,19 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
   const publicClient = usePublicClient();
   const { address } = useAccount();
   const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    const fetchMooBalance = async () => {
-      try {
-        const provider = new JsonRpcProvider(RPC);
-        if (address) {
-          const erc20 = new Contract(MOO_ADDRESS, ERC20_ABI, provider);
-          const balance = await erc20.balanceOf(address);
-          setMooBalance(balance);
-        }
-      } catch (err) {
-        console.error('❌ Failed to fetch $MOO balance:', err);
+  const fetchMooBalance = async () => {
+    try {
+      const provider = new JsonRpcProvider(RPC);
+      if (address) {
+        const erc20 = new Contract(MOO_ADDRESS, ERC20_ABI, provider);
+        const balance = await erc20.balanceOf(address);
+        setMooBalance(balance);
       }
-    };
-  
+    } catch (err) {
+      console.error('❌ Failed to fetch $MOO balance:', err);
+    }
+  };
+  useEffect(() => {
     fetchMooBalance();
   }, [address]);  
   useEffect(() => {
@@ -160,7 +159,7 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
         }
   
         console.log(`📁 Metadata regenerated for tower #${tokenId} → Lv${level}`);
-  
+        await fetchMooBalance(); // ✅ Refresh $MOO balance
         window.dispatchEvent(
           new CustomEvent("show-success-modal", {
             detail: {
@@ -470,7 +469,7 @@ setTowers((prevTowers) =>
       : t
   )
 );
-
+await fetchMooBalance(); // ✅ Refresh $MOO balance
     } catch (err: any) {
       console.error("❌ Upgrade failed:", err);
       window.dispatchEvent(
