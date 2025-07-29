@@ -168,21 +168,21 @@ const handleBuyTower = async (towerType: number) => {
         address: MOO_ADDRESS,
         abi: ERC20_ABI,
         functionName: 'approve',
-        args: [TOWER_CONTRACT, MAX_UINT],
+        args: [TOWER_CONTRACT, cost],
       });
 
       alert('Approval submitted...');
       const approvalReceipt = await publicClient.waitForTransactionReceipt({ hash: approveTx });
       if (approvalReceipt.status !== 'success') throw new Error('Approval failed');
     }
-
-    // ✅ 2. Mint tower
     const txHash = await towerContract.write.buyTower([towerType]);
     alert('Tower purchase submitted!');
-
-    // ✅ 3. Wait briefly (especially for mobile Metamask return)
-    await new Promise((r) => setTimeout(r, 3000));
-
+    
+    // 💤 Wait for Metamask to return and browser to stabilize
+    await new Promise((r) => setTimeout(r, 2500));
+    
+    // 🧠 Optional: poll tower contract for owned towers
+    
     // ✅ 4. Fetch owned towers
     const ethersProvider = new JsonRpcProvider(RPC);
     const ethersContract = new Contract(TOWER_CONTRACT, DENG_TOWER_ABI.abi, ethersProvider);
