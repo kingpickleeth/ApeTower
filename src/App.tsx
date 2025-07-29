@@ -408,12 +408,9 @@ for (let i = 0; i < tokenIds.length; i++) {
           <div id="game-content">
   <div id="game-scaler">
     <div id="game-frame">
-      {(isConnected || bypassWallet) && ownedTowerNFTs.length > 0 && (
-        <>
-          {console.log('🎯 Injecting towers into GameCanvas:', ownedTowerNFTs)}
-          <GameCanvas walletAddress={address ?? ''} towerNFTs={ownedTowerNFTs} />
-        </>
-      )}
+    {(isConnected || bypassWallet) && (
+  <GameCanvas walletAddress={address ?? ''} towerNFTs={ownedTowerNFTs} />
+)}
     </div>
   </div>
 </div>
