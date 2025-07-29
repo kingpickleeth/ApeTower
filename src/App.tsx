@@ -140,47 +140,50 @@ useEffect(() => {
   return () => window.removeEventListener("show-success-modal", handler);
 }, []);
 
-  useEffect(() => {
-    const handleSaveVine = async (e: any) => {
-      const amount = e.detail.amount;
-      if (!address) {
-        console.warn('⚠️ Cannot save vine — no connected wallet');
-        return;
+useEffect(() => {
+  const handleSaveVine = async (e: any) => {
+    const amount = e.detail.amount;
+    if (!address) {
+      console.warn('⚠️ Cannot save vine — no connected wallet');
+      return;
+    }
+
+    try {
+      console.log(`💾 Triggered vine save: ${amount} for ${address}`);
+
+      // Get the session start timestamp from global if available
+      const sessionStart = (window as any).__GAME_SESSION_START__ || Date.now() - 100000;
+
+      const result = await fetch('https://metadata-server-production.up.railway.app/api/mushroom-harvest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-wallet-address': address, // 👈 move wallet to header
+        },
+        body: JSON.stringify({
+          amount,
+          sessionStart,
+        })
+      }).then(res => res.json());
+
+      if (!result.success || result?.error) {
+        console.error('❌ Failed to update vine balance:', result.error || 'Unknown error');
       }
-    
-      try {
-        console.log(`💾 Triggered vine save: ${amount} for ${address}`);
-        const result = await fetch('https://metadata-server-production.up.railway.app/api/update-moo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            wallet: address,
-            amount // ⚠️ this is already coming from the event
-          })
-        }).then(res => res.json());
-        
-        if (!result.success) {
-          console.error('❌ Failed to update vine balance:', result.error);
-        }        
-        if (result?.error) {
-          console.error('❌ Failed to update vine balance:', result.error);
-        }
-    
-        // 🎯 Upgrade campaign level to 2 if needed
-        const levelResult = await upgradeCampaignLevel(address, 2);
-        if (levelResult?.error) {
-          console.error('❌ Failed to update campaign level:', levelResult.error);
-        }
-      } catch (err) {
-        console.error('🔥 Error in save-vine handler:', err);
+
+      // 🎯 Upgrade campaign level to 2 if needed
+      const levelResult = await upgradeCampaignLevel(address, 2);
+      if (levelResult?.error) {
+        console.error('❌ Failed to update campaign level:', levelResult.error);
       }
-    };
-    
-  
-    window.addEventListener('save-vine', handleSaveVine);
-    return () => window.removeEventListener('save-vine', handleSaveVine);
-  }, [address]);
-  
+    } catch (err) {
+      console.error('🔥 Error in save-vine handler:', err);
+    }
+  };
+
+  window.addEventListener('save-vine', handleSaveVine);
+  return () => window.removeEventListener('save-vine', handleSaveVine);
+}, [address]);
+
   useEffect(() => {
     const handler = async (e: any) => {
       const walletAddress = e.detail.wallet;
