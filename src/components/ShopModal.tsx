@@ -7,6 +7,8 @@ import { usePublicClient } from 'wagmi';
 import ERC20_ABI from '../abis/ERC20.json';
 import { useEffect } from 'react';
 import { updateVineBalance, getProfile } from '../utils/profile'; // ✅ If not already present
+import { JsonRpcProvider, Contract } from 'ethers';
+import DENG_TOWER_ABI from '../abis/Tower.json'; // ✅ Update path if needed
 
 const MOO_ADDRESS = '0x932b8eF025c6bA2D44ABDc1a4b7CBAEdb5DE1582';
 const TOWER_CONTRACT = '0xeDed3FA692Bf921B9857F86CC5BB21419F5f77ec';
@@ -142,6 +144,8 @@ useEffect(() => {
 
 
   
+const RPC = 'https://rpc.apechain.com'; // ✅ Confirm this is your current RPC
+
 const handleBuyTower = async (towerType: number) => {
   if (!walletClient || !towerContract || !address || !publicClient) {
     return alert('Wallet or contract not ready');
@@ -151,7 +155,7 @@ const handleBuyTower = async (towerType: number) => {
   const cost = parseEther(mooCosts[towerType]);
 
   try {
-    // 1. Check $MOO allowance
+    // ✅ 1. Check allowance
     const allowance = await publicClient.readContract({
       address: MOO_ADDRESS,
       abi: ERC20_ABI,
@@ -172,55 +176,46 @@ const handleBuyTower = async (towerType: number) => {
       if (approvalReceipt.status !== 'success') throw new Error('Approval failed');
     }
 
-    // 2. Buy tower
+    // ✅ 2. Mint tower
     const txHash = await towerContract.write.buyTower([towerType]);
     alert('Tower purchase submitted!');
-    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
 
-    // 3. Extract tokenId from Transfer logs
-    const tokenIds: number[] = [];
-    for (const log of receipt.logs) {
-      if (
-        log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' &&
-        log.address.toLowerCase() === TOWER_CONTRACT.toLowerCase()
-      ) {
-        const tokenIdHex = log.topics[3];
-        const tokenId = parseInt(tokenIdHex!, 16);
-        tokenIds.push(tokenId);
-      }
+    // ✅ 3. Wait briefly (especially for mobile Metamask return)
+    await new Promise((r) => setTimeout(r, 3000));
+
+    // ✅ 4. Fetch owned towers
+    const ethersProvider = new JsonRpcProvider(RPC);
+    const ethersContract = new Contract(TOWER_CONTRACT, DENG_TOWER_ABI.abi, ethersProvider);
+    const ownedIds: bigint[] = await ethersContract.getOwnedTowers(address);
+
+    const newestId = Math.max(...ownedIds.map(id => Number(id)));
+    console.log(`🆕 Newest tower ID: ${newestId}`);
+
+    // ✅ 5. Trigger metadata generation
+    const res = await fetch(`https://metadata-server-production.up.railway.app/generate-metadata/${newestId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-metadata-secret': import.meta.env.VITE_METADATA_SECRET!,
+      },
+      body: JSON.stringify({ type: towerType }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Metadata failed: ${res.status} - ${text}`);
     }
 
-    // 4. Call metadata generation for each new token
-    for (const id of tokenIds) {
-      try {
-        const res = await fetch(`https://metadata-server-production.up.railway.app/generate-metadata/${id}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-metadata-secret': import.meta.env.VITE_METADATA_SECRET!
-          },
-          body: JSON.stringify({ type: towerType })
-        });
+    console.log(`📁 Metadata generated for tower #${newestId}`);
 
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`Server returned ${res.status}: ${text}`);
-        }
-
-        console.log(`📁 Metadata generated for tower #${id}`);
-      } catch (err) {
-        console.error(`❌ Metadata generation failed for ID ${id}:`, err);
-      }
-    }
-
-    // ✅ Optionally refresh $MOO balance
+    // ✅ 6. Refresh balance
     await fetchMooBalance();
-
   } catch (err) {
     console.error(err);
     alert('Transaction failed');
   }
 };
+
 
   const handleClaim = async () => {
     if (vineBalance <= 0 || !walletAddress || !walletClient || !towerContract) return;
