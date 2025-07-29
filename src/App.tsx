@@ -48,7 +48,21 @@ function App() {
   const [profileSaved, setProfileSaved] = useState(false);
   const [mustCompleteProfile, setMustCompleteProfile] = useState(false);
   const [towersLoaded, setTowersLoaded] = useState(false);
-
+  const [gameKey, setGameKey] = useState(0);
+  useEffect(() => {
+    const handler = async () => {
+      console.log('🎯 request-refresh-towers handler triggered in App.tsx');
+      if (!address) return;
+      console.log('🔁 Refreshing tower metadata from MainMenu...');
+      const updated = await getOwnedTowersWithMetadata(address);
+      setOwnedTowerNFTs(updated);
+      setGameKey((k) => k + 1); // 🧹 Force GameCanvas remount
+    };
+  
+    window.addEventListener('request-refresh-towers', handler);
+    return () => window.removeEventListener('request-refresh-towers', handler);
+  }, [address]);
+  
   useEffect(() => {
     const secretCode = [
       'ArrowUp','ArrowUp','ArrowDown','ArrowDown',
@@ -410,7 +424,11 @@ for (let i = 0; i < tokenIds.length; i++) {
   <div id="game-scaler">
     <div id="game-frame">
     {(isConnected || bypassWallet) && towersLoaded && (
-  <GameCanvas walletAddress={address ?? ''} towerNFTs={ownedTowerNFTs} />
+  <GameCanvas
+  key={gameKey}
+  walletAddress={address ?? ''}
+  towerNFTs={ownedTowerNFTs}
+/>
 )}
     </div>
   </div>

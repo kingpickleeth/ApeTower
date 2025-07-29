@@ -678,6 +678,8 @@ menuButtonBg.on('pointerdown', () => {
     onComplete: () => {
       // Reset
       this.cleanupGameObjects(true);
+      console.log('📣 Dispatching request-refresh-towers...');
+      window.dispatchEvent(new Event('request-refresh-towers'));
       // 🚪 Transition to menu scene
       this.scene.start('MainMenuScene');
     }
