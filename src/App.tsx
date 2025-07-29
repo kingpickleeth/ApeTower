@@ -128,14 +128,18 @@ window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
     window.addEventListener("claim-vine", handler);
     return () => window.removeEventListener("claim-vine", handler);
   }, [address]);
-  useEffect(() => {
-    const handler = (e: any) => {
-      setModalMessage(e.detail.message);
-      setModalType('success');
-    };
-    window.addEventListener("show-success-modal", handler);
-    return () => window.removeEventListener("show-success-modal", handler);
-  }, []);
+useEffect(() => {
+  const handler = (e: any) => {
+    const message = e?.detail?.message || 'Your free towers have been minted!';
+    setModalMessage(message);
+    setModalType('success');
+    window.dispatchEvent(new Event("refresh-towers-after-modal"));
+  };
+
+  window.addEventListener("show-success-modal", handler);
+  return () => window.removeEventListener("show-success-modal", handler);
+}, []);
+
   useEffect(() => {
     const handleSaveVine = async (e: any) => {
       const amount = e.detail.amount;

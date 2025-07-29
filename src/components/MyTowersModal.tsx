@@ -6,6 +6,8 @@ import { parseEther } from 'viem'; // or parseUnits if using bigint
 import { useUpgradeTower } from '../utils/upgradeTower'; // ✅ Confirm path
 import ERC20_ABI from '../abis/ERC20.json';
 import { usePublicClient, useWriteContract as useWrite } from 'wagmi';
+import GameModal from './GameModal';
+import { useCallback } from 'react';
 const MOO_ADDRESS = '0x932b8eF025c6bA2D44ABDc1a4b7CBAEdb5DE1582';
 const MAX_UINT = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
 
@@ -35,6 +37,7 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
   const publicClient = usePublicClient();
   const { address } = useAccount();
   const [loading, setLoading] = useState(true);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const fetchMooBalance = async () => {
     try {
       const provider = new JsonRpcProvider(RPC);
@@ -50,79 +53,73 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
   useEffect(() => {
     fetchMooBalance();
   }, [address]);  
-  useEffect(() => {
-    const fetchTowers = async () => {
+  
+  // ♻️ 1. Make fetchTowers reusable
+const fetchTowers = useCallback(async () => {
+  try {
+    setLoading(true);
+    const provider = new JsonRpcProvider(RPC);
+    const contract = new Contract(TOWER_CONTRACT, DENG_TOWER_ABI.abi, provider);
+    const ids: number[] = await contract.getOwnedTowers(walletAddress);
+
+    const towerDataPromises = ids.map(async (id) => {
+      const metaUrl = `https://metadata-server-production.up.railway.app/api/tower/${id}.json`;
+      let type = 'Unknown', level = 1, speed, range, damage;
       try {
-        setLoading(true); // optional, ensures UI stays responsive
-    
-        // ✅ Initialize once
-        const provider = new JsonRpcProvider(RPC);
-        const contract = new Contract(TOWER_CONTRACT, DENG_TOWER_ABI.abi, provider);
-    
-        // ✅ Get list of token IDs owned
-        const ids: number[] = await contract.getOwnedTowers(walletAddress);
-    
-        // ✅ Fetch metadata for each tower in parallel
-        const towerDataPromises = ids.map(async (id) => {
-          const metaUrl = `https://metadata-server-production.up.railway.app/api/tower/${id}.json`;
-          let type = 'Unknown', level = 1, speed, range, damage;
-        
-          try {
-            const res = await fetch(metaUrl);
-            const data = await res.json();
-            type = data.attributes?.find((a: any) => a.trait_type === 'Type')?.value || type;
-            level = data.attributes?.find((a: any) => a.trait_type === 'Level')?.value || level;
-            speed = data.attributes?.find((a: any) => a.trait_type === 'Speed')?.value;
-            range = data.attributes?.find((a: any) => a.trait_type === 'Range')?.value;
-            damage = data.attributes?.find((a: any) => a.trait_type === 'Damage')?.value;
-          } catch (err) {
-            console.warn(`⚠️ Failed to load metadata for Tower #${id}`, err);
-          }
-        
-          const nextLevel = Number(level) + 1;
-          let cost = BigInt(0);
-          try {
-            cost = await contract.upgradePrices(nextLevel);
-          } catch (err) {
-            console.warn(`⚠️ Failed to get upgrade cost for Tower #${id}`, err);
-          }
-        
-          return {
-            tower: {
-              id,
-              image: `https://admin.demwitches.xyz/images/tower/${type.toLowerCase()}.png`,
-              type,
-              level,
-              speed,
-              range,
-              damage,
-            },
-            costEntry: [id, cost] as [number, bigint],
-          };
-        });
-        
-        const allResults = await Promise.all(towerDataPromises);
-        setTowers(allResults.map((r) => r.tower));
-        setUpgradeCosts(Object.fromEntries(allResults.map((r) => r.costEntry)));
-        
-    
+        const res = await fetch(metaUrl);
+        const data = await res.json();
+        type = data.attributes?.find((a: any) => a.trait_type === 'Type')?.value || type;
+        level = data.attributes?.find((a: any) => a.trait_type === 'Level')?.value || level;
+        speed = data.attributes?.find((a: any) => a.trait_type === 'Speed')?.value;
+        range = data.attributes?.find((a: any) => a.trait_type === 'Range')?.value;
+        damage = data.attributes?.find((a: any) => a.trait_type === 'Damage')?.value;
       } catch (err) {
-        console.error('❌ Failed to fetch towers:', err);
-      } finally {
-        setLoading(false);
+        console.warn(`⚠️ Failed to load metadata for Tower #${id}`, err);
       }
-    };    
+
+      const nextLevel = Number(level) + 1;
+      let cost = BigInt(0);
+      try {
+        cost = await contract.upgradePrices(nextLevel);
+      } catch (err) {
+        console.warn(`⚠️ Failed to get upgrade cost for Tower #${id}`, err);
+      }
+
+      return {
+        tower: {
+          id,
+          image: `https://admin.demwitches.xyz/images/tower/${type.toLowerCase()}.png`,
+          type,
+          level,
+          speed,
+          range,
+          damage,
+        },
+        costEntry: [id, cost] as [number, bigint],
+      };
+    });
+
+    const allResults = await Promise.all(towerDataPromises);
+    setTowers(allResults.map((r) => r.tower));
+    setUpgradeCosts(Object.fromEntries(allResults.map((r) => r.costEntry)));
+  } catch (err) {
+    console.error('❌ Failed to fetch towers:', err);
+  } finally {
+    setLoading(false);
+  }
+}, [walletAddress]);
+useEffect(() => {
+  fetchTowers(); // still runs on mount
+}, [fetchTowers]);
+useEffect(() => {
+  const handler = () => {
+    console.log("🔁 Refreshing towers after modal...");
     fetchTowers();
-  }, [walletAddress]);
-  const toggleExpand = (id: number) => {
-    const newSet = new Set(expandedSet);
-    if (newSet.has(id)) {
-      newSet.delete(id);
-    } else {
-      newSet.add(id);
-    }
-    setExpandedSet(newSet);
   };
+  window.addEventListener("refresh-towers-after-modal", handler);
+  return () => window.removeEventListener("refresh-towers-after-modal", handler);
+}, [fetchTowers]);
+
   useEffect(() => {
     const handler = async (e: any) => {
       const tokenId = e.detail.tokenId;
@@ -245,6 +242,16 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
             }}
           >
             {towers.map((tower) => {
+              const toggleExpand = (id: number) => {
+                const newSet = new Set(expandedSet);
+                if (newSet.has(id)) {
+                  newSet.delete(id);
+                } else {
+                  newSet.add(id);
+                }
+                setExpandedSet(newSet);
+              };
+              
               const isExpanded = expandedSet.has(tower.id);
               return (
                 <div
@@ -505,20 +512,34 @@ await fetchMooBalance(); // ✅ Refresh $MOO balance
           </div>
         )}
     <div className="button-row" style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '12px' }}>
-  <button className="glow-button danger" onClick={onClose}>❌ Close</button>
-  {towers.length === 0 && (
-    <button
-      className="glow-button"
-      onClick={() => {
-        if (!walletAddress) return;
-        window.dispatchEvent(new CustomEvent("mint-starter-towers", {
-          detail: { wallet: walletAddress }
-        }));
-      }}
-    >
-      Mint Free Towers
-    </button>
-  )}
+    <button className="glow-button danger" onClick={onClose}>❌ Close</button>
+
+{towers.length === 0 && (
+  <button
+    className="glow-button"
+    onClick={() => {
+      if (!walletAddress) return;
+
+      // 🧠 Trigger tower mint event
+      window.dispatchEvent(new CustomEvent("mint-starter-towers", {
+        detail: { wallet: walletAddress }
+      }));
+
+      // ✅ Step 3: Show success modal just like ProfileEditor
+      window.dispatchEvent(new CustomEvent("show-success-modal", {
+        detail: { message: "Starter towers minted successfully!" }
+      }));
+
+      // ✅ Step 4: Set up a short delay to allow modal to finish before refreshing
+      setTimeout(() => {
+        window.dispatchEvent(new Event("refresh-towers-after-modal"));
+      }, 1500); // adjust delay if needed
+    }}
+  >
+    Mint Free Towers
+  </button>
+)}
+
 </div>
 
       </div>
