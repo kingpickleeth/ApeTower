@@ -13,7 +13,7 @@ import MyTowersModal from './components/MyTowersModal';
 import ShopModal from './components/ShopModal';
 import InteractiveParticles from './components/InteractiveParticles';
 import MusicWidget from './components/MusicWidget';
-
+import { updateVineBalance, upgradeCampaignLevel } from './utils/profile'; //
 type TowerNFT = {
   id: number;
   type: 'basic' | 'rapid' | 'cannon';

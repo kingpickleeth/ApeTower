@@ -274,7 +274,7 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
         })
       });      
   
-      const { signature, error } = await response.json();
+      const { signature, nonce, error } = await response.json();
       if (!signature || error) {
         console.error("❌ Signature fetch failed:", error);
         return;

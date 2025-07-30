@@ -38,6 +38,7 @@ export default function MyTowersModal({ walletAddress, onClose }: Props) {
   const { address } = useAccount();
   const [loading, setLoading] = useState(true);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [upgradingTowerId, setUpgradingTowerId] = useState<number | null>(null);
   const fetchMooBalance = async () => {
     try {
       const provider = new JsonRpcProvider(RPC);
@@ -380,13 +381,18 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
       🔹 <strong>Damage:</strong> {tower.damage}
     </div>
     <button
-  onClick={async () => {
+  onClick={async (e) => {
+    e.stopPropagation(); // Prevent the parent card toggle from firing
+
+    setUpgradingTowerId(tower.id); // Start upgrading state
+
     if (!address) {
       window.dispatchEvent(
         new CustomEvent("show-error-modal", {
           detail: { message: `❌ No connected wallet.` }
         })
       );
+      setUpgradingTowerId(null);
       return;
     }
 
@@ -399,12 +405,11 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
       const nextLevel = Number(currentLevel) + 1;
       const upgradeCost = await towerContract.upgradePrices(nextLevel);
 
-      // 🧮 Check if user has enough $MOO
+      // Check if user has enough $MOO
       if (!mooBalance || mooBalance < upgradeCost) {
         throw new Error("Not enough $MOO to upgrade.");
       }
 
-      // 🛑 Check $MOO allowance
       if (!publicClient) throw new Error("publicClient is not available");
 
       const allowance = await publicClient.readContract({
@@ -462,21 +467,23 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
           }
         })
       );
-// Update this specific tower in-place
-setTowers((prevTowers) =>
-  prevTowers.map((t) =>
-    t.id === tokenId
-      ? {
-          ...t,
-          level,
-          speed: tower.speed, // Optional: if you want to scale these per level, calculate them
-          range: tower.range,
-          damage: tower.damage
-        }
-      : t
-  )
-);
-await fetchMooBalance(); // ✅ Refresh $MOO balance
+
+      // Update this specific tower's level in state
+      setTowers((prevTowers) =>
+        prevTowers.map((t) =>
+          t.id === tokenId
+            ? {
+                ...t,
+                level,
+                speed: tower.speed, // optional: update stats if needed
+                range: tower.range,
+                damage: tower.damage
+              }
+            : t
+        )
+      );
+
+      await fetchMooBalance(); // Refresh $MOO balance
     } catch (err: any) {
       console.error("❌ Upgrade failed:", err);
       window.dispatchEvent(
@@ -484,26 +491,28 @@ await fetchMooBalance(); // ✅ Refresh $MOO balance
           detail: { message: err.message || 'Upgrade failed.' }
         })
       );
+    } finally {
+      setUpgradingTowerId(null); // Clear upgrading state when done/fail
     }
   }}
   disabled={
-    mooBalance !== null &&
-    upgradeCosts[tower.id] !== undefined &&
-    mooBalance < upgradeCosts[tower.id]!
+    upgradingTowerId === tower.id || // disable if this tower is upgrading
+    (mooBalance !== null && upgradeCosts[tower.id] !== undefined && mooBalance < upgradeCosts[tower.id])
   }
-    className={
+  className={
     !mooBalance || (upgradeCosts[tower.id] && mooBalance < upgradeCosts[tower.id])
       ? 'glow-button danger'
       : 'glow-button green'
   }
 >
   {
-    !mooBalance || (upgradeCosts[tower.id] && mooBalance < upgradeCosts[tower.id])
-      ? '❌ Not Enough $MOO'
-      : `🛠️ Upgrade to Lv ${tower.level + 1}`
+    upgradingTowerId === tower.id
+      ? '⏳ Upgrading...'
+      : !mooBalance || (upgradeCosts[tower.id] && mooBalance < upgradeCosts[tower.id])
+        ? '❌ Not Enough $MOO'
+        : `🛠️ Upgrade to Lv ${tower.level + 1}`
   }
 </button>
-
   </div>
 )}
                 </div>
