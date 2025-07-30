@@ -1659,6 +1659,21 @@ showUpgradePanel(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compo
 // 🏆 TRIGGER VICTORY 🏆 //
 ///////////////////////////
 async triggerVictory() {
+    // 📡 Publish results now
+    if (this.walletAddress && this.sessionToken && this.gameId) {
+      const eventDetail = {
+        wallet: this.walletAddress,
+        gameId: this.gameId,
+        sessionToken: this.sessionToken,
+        mooEarned: this.vineBalance,
+        levelBeat: this.currentLevel,
+        wavesSurvived: this.waveCount,
+        enemiesKilled: this.totalEnemiesKilled,
+        livesRemaining: this.lives,
+      };
+    
+      window.dispatchEvent(new CustomEvent('request-publish-game-results', { detail: eventDetail }));
+    }
   // Victory RESET Game
   this.cleanupGameObjects(true); // not full reset
   const cx = Number(this.game.config.width) / 2;
