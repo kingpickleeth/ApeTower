@@ -1160,16 +1160,7 @@ console.log(`🚫 Non-HP enemy destroy #${this.totalEnemiesDestroyed}`);
 if (this.lives <= 0 && !this.gameOver) {
   // FULL GAME RESET
 this.cleanupGameObjects(); // fullReset = false
-   // 💾 Save MOO to Supabase
- this.time.delayedCall(100, () => {
-  if (!this.hasSavedVine && this.walletAddress && this.vineBalance > 0) {
-    this.hasSavedVine = true;
-    window.dispatchEvent(new CustomEvent('save-vine', {
-      detail: { amount: this.vineBalance }
-    }));
-  }
-});
-  // 🖼️ Display Game Over popup
+
 // 🖼️ Game Over Popup
 const centerX = Number(this.game.config.width) / 2;
 const centerY = Number(this.game.config.height) / 2;
@@ -1643,15 +1634,6 @@ showUpgradePanel(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compo
 // 🏆 TRIGGER VICTORY 🏆 //
 ///////////////////////////
 triggerVictory() {
-  // 💾 Save vine to Supabase
-  if (!this.hasSavedVine && this.walletAddress) {
-    this.hasSavedVine = true;
-    const totalVine = this.vineBalance + 1000;
-    window.dispatchEvent(new CustomEvent('save-vine', {
-      detail: { amount: totalVine }
-    }));
-    console.log('✅ save-vine dispatched from victory:', totalVine);
-  }
   // Victory RESET Game
   this.cleanupGameObjects(true); // not full reset
   const cx = Number(this.game.config.width) / 2;

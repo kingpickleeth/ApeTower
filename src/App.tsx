@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react';
 import { JsonRpcProvider, Wallet, Contract, parseUnits, getAddress } from 'ethers';
 import { getProfile } from './utils/profile';
 import GameModal from './components/GameModal';
-import { updateVineBalance, upgradeCampaignLevel } from './utils/profile'; // ✅ Make sure this is at the top
 import DENG_TOWER_ABI from './abis/Tower.json'; // You can paste ABI inline if needed
 import { getOwnedTowersWithMetadata } from './utils/getTowerData';
 import MyTowersModal from './components/MyTowersModal';
@@ -140,51 +139,6 @@ useEffect(() => {
   window.addEventListener("show-success-modal", handler);
   return () => window.removeEventListener("show-success-modal", handler);
 }, []);
-
-useEffect(() => {
-  const handleSaveVine = async (e: any) => {
-    const amount = e.detail.amount;
-    if (!address) {
-      console.warn('⚠️ Cannot save vine — no connected wallet');
-      return;
-    }
-
-    try {
-      console.log(`💾 Triggered vine save: ${amount} for ${address}`);
-
-      // Get the session start timestamp from global if available
-      const sessionStart = (window as any).__GAME_SESSION_START__ || Date.now() - 100000;
-
-      const result = await fetch('https://metadata-server-production.up.railway.app/api/mushroom-harvest', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-wallet-address': address, // 👈 move wallet to header
-        },
-        body: JSON.stringify({
-          amount,
-          sessionStart,
-        })
-      }).then(res => res.json());
-
-      if (!result.success || result?.error) {
-        console.error('❌ Failed to update vine balance:', result.error || 'Unknown error');
-      }
-
-      // 🎯 Upgrade campaign level to 2 if needed
-      const levelResult = await upgradeCampaignLevel(address, 2);
-      if (levelResult?.error) {
-        console.error('❌ Failed to update campaign level:', levelResult.error);
-      }
-    } catch (err) {
-      console.error('🔥 Error in save-vine handler:', err);
-    }
-  };
-
-  window.addEventListener('save-vine', handleSaveVine);
-  return () => window.removeEventListener('save-vine', handleSaveVine);
-}, [address]);
-
   useEffect(() => {
     const handler = async (e: any) => {
       const walletAddress = e.detail.wallet;
