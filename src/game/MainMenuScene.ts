@@ -48,7 +48,7 @@ export default class MainMenuScene extends Phaser.Scene {
           left: 20,
           right: 20
         }
-      })
+      }).setResolution(2)
         .setOrigin(0.5)
         .setShadow(0, 0, '#00B3FF', 18, true, true) // 🔥 neon glow
         .setAlpha(0)
@@ -72,7 +72,7 @@ const campaignButtonText = this.add.text(centerX, centerY + 20, 'Campaign', {
 fontFamily: 'Outfit',
 fontSize: '28px',
 color: '#1A1F2B'
-}).setOrigin(0.5).setAlpha(0);
+}).setOrigin(0.5).setAlpha(0).setResolution(2);
 
 // Fade in
 this.tweens.add({
@@ -140,7 +140,7 @@ const rulesButtonText = this.add.text(centerX, centerY + 100, 'The Rules', {
   fontSize: '28px',
   color: '#1A1F2B',
   resolution: 2
-}).setOrigin(0.5).setAlpha(0);
+}).setOrigin(0.5).setAlpha(0).setResolution(2);
 
 // Fade in
 this.tweens.add({
@@ -175,10 +175,10 @@ rulesButtonBg.on('pointerout', () => {
 rulesButtonBg.on('pointerdown', () => {
   modalBlocker.setVisible(true);
   modalBg.setVisible(true);
-  rulesText.setVisible(true);
-  rulesTitle.setVisible(true);
+  rulesText.setVisible(true).setResolution(2);
+  rulesTitle.setVisible(true).setResolution(2);
   closeButtonBg.setVisible(true);
-  closeButtonText.setVisible(true);
+  closeButtonText.setVisible(true).setResolution(2);
 });
 
 // 🔒 Interaction-blocking overlay (initially hidden)
@@ -202,7 +202,7 @@ const modalBlocker = this.add.rectangle(0, 0, this.scale.width, this.scale.heigh
       })
       .setOrigin(0.5)
       .setDepth(1001)
-      .setVisible(false);
+      .setVisible(false).setResolution(2)
       
       const rulesText = this.add.text(centerX, centerY, 
         `1. Defend The Motherland!\nThe Smoove Brains are trying to sneak by you and destory DengLand. Your mission is to stop them before they reach the end!\n\n` +
@@ -218,7 +218,7 @@ const modalBlocker = this.add.rectangle(0, 0, this.scale.width, this.scale.heigh
           align: 'left',
           wordWrap: { width: 460 }
         }
-      )
+      ).setResolution(2)
       .setOrigin(0.5)
       .setDepth(1001)
       .setVisible(false);
@@ -237,7 +237,7 @@ const closeButtonText = this.add.text(centerX, centerY + 260, '🆇 Close', {
 fontFamily: 'Outfit',
 fontSize: '20px',
 color: '#ffffff'
-}).setOrigin(0.5).setDepth(1002).setVisible(false);
+}).setOrigin(0.5).setDepth(1002).setVisible(false).setResolution(2);
 
 
 const supportModal = this.add.rectangle(centerX, centerY, 520, 360, 0x1A1F2B, 0.96)
@@ -252,7 +252,7 @@ const supportText = this.add.text(centerX, centerY - 145,
     color: '#DFFBFF',
     align: 'center',
     wordWrap: { width: 480 }
-  }).setOrigin(0.5).setDepth(1101).setVisible(false);
+  }).setOrigin(0.5).setDepth(1101).setVisible(false).setResolution(2);
 
 // 🌐 Magic Eden Button
 const magicButton = this.add.rectangle(centerX, centerY - 90, 200, 44, 0x00B3FF, 1)
@@ -262,7 +262,7 @@ const magicButtonText = this.add.text(centerX, centerY - 90, '🛒 Buy a Deng', 
   fontFamily: 'Outfit',
   fontSize: '18px',
   color: '#1A1F2B'
-}).setOrigin(0.5).setDepth(1101).setVisible(false);
+}).setOrigin(0.5).setDepth(1101).setVisible(false).setResolution(2);
 
 magicButton.on('pointerdown', () => {
   window.open('https://magiceden.us/collections/apechain/0x2cf92fe634909a9cf5e41291f54e5784d234cf8d', '_blank');
@@ -293,7 +293,7 @@ const orText = this.add.text(centerX, centerY - 40,
       color: '#DFFBFF',
       align: 'center',
       wordWrap: { width: 480 }
-    }).setOrigin(0.5).setDepth(1101).setVisible(false);
+    }).setOrigin(0.5).setDepth(1101).setVisible(false).setResolution(2);
 
 // 💸 Tip Buttons
 // 💸 Tip Buttons (1, 5, 20 APE)
@@ -323,7 +323,7 @@ tipOptions.forEach((amount, index) => {
     fontFamily: 'Outfit',
     fontSize: '16px',
     color: '#DFFBFF'
-  }).setOrigin(0.5).setDepth(1101).setVisible(false);
+  }).setOrigin(0.5).setDepth(1101).setVisible(false).setResolution(2);
 
   btn.on('pointerdown', () => {
     selectedTipAmount = amount;
@@ -355,7 +355,7 @@ const tipButtonText = this.add.text(tipButtonX +35, centerY + 10, 'Tip 💰', {
   fontFamily: 'Outfit',
   fontSize: '16px',
   color: '#1A1F2B'
-}).setOrigin(0.5).setDepth(1101).setVisible(false);
+}).setOrigin(0.5).setDepth(1101).setVisible(false).setResolution(2);
 
 this.tweens.add({
     targets: tipButton,
@@ -395,7 +395,7 @@ const or2Text = this.add.text(centerX, centerY + 60,
       color: '#DFFBFF',
       align: 'center',
       wordWrap: { width: 480 }
-    }).setOrigin(0.5).setDepth(1101).setVisible(false);
+    }).setOrigin(0.5).setDepth(1101).setVisible(false).setResolution(2);
 // 🤪 Funny Close Button
 const noThanksButton = this.add.rectangle(centerX, centerY + 120, 200, 44, 0xB30000, 1)
   .setOrigin(0.5).setStrokeStyle(2, 0xffffff)
@@ -404,7 +404,7 @@ const noThanksText = this.add.text(centerX, centerY + 120, "Nah, I wanna play no
   fontFamily: 'Outfit',
   fontSize: '18px',
   color: '#ffffff'
-}).setOrigin(0.5).setDepth(1101).setVisible(false);
+}).setOrigin(0.5).setDepth(1101).setVisible(false).setResolution(2);
 noThanksButton.on('pointerdown', () => {
     hideSupportPopup();
     const wallet = (window as any).connectedWalletAddress;
@@ -460,32 +460,32 @@ closeButtonBg.on('pointerout', () => {
     rulesButtonBg.on('pointerdown', () => {
         modalBlocker.setVisible(true);
         modalBg.setVisible(true);
-        rulesText.setVisible(true);
-        rulesTitle.setVisible(true);
+        rulesText.setVisible(true).setResolution(2);
+        rulesTitle.setVisible(true).setResolution(2);
         closeButtonBg.setVisible(true);
-        closeButtonText.setVisible(true);
+        closeButtonText.setVisible(true).setResolution(2);
       });
       closeButtonBg.on('pointerdown', () => {
         modalBlocker.setVisible(false);
         modalBg.setVisible(false);
-        rulesText.setVisible(false);
-        rulesTitle.setVisible(false);
+        rulesText.setVisible(false).setResolution(2);
+        rulesTitle.setVisible(false).setResolution(2);
         closeButtonBg.setVisible(false);
-        closeButtonText.setVisible(false);
+        closeButtonText.setVisible(false).setResolution(2);
       });
         const showSupportPopup = (campaign = false) => {
         redirectToCampaign = campaign; // ✅ this line resolves the warning
         modalBlocker.setVisible(true);
         supportModal.setVisible(true);
-        supportText.setVisible(true);
-        orText.setVisible(true);
-        or2Text.setVisible(true);
+        supportText.setVisible(true).setResolution(2);
+        orText.setVisible(true).setResolution(2);
+        or2Text.setVisible(true).setResolution(2);
         magicButton.setVisible(true);
-        magicButtonText.setVisible(true);
+        magicButtonText.setVisible(true).setResolution(2);
         tipButton.setVisible(true);
-        tipButtonText.setVisible(true);
+        tipButtonText.setVisible(true).setResolution(2);
         noThanksButton.setVisible(true);
-        noThanksText.setVisible(true);
+        noThanksText.setVisible(true).setResolution(2);
         tipButtons.forEach((b, i) => {
           b.setVisible(true);
           b.setStrokeStyle(2, tipOptions[i] === selectedTipAmount ? 0x00B3FF : 0x333333);
@@ -496,15 +496,15 @@ closeButtonBg.on('pointerout', () => {
       const hideSupportPopup = () => {
         modalBlocker.setVisible(false);
         supportModal.setVisible(false);
-        supportText.setVisible(false);
-        orText.setVisible(false);
-        or2Text.setVisible(false);
+        supportText.setVisible(false).setResolution(2);
+        orText.setVisible(false).setResolution(2);
+        or2Text.setVisible(false).setResolution(2);
         magicButton.setVisible(false);
-        magicButtonText.setVisible(false);
+        magicButtonText.setVisible(false).setResolution(2);
         tipButton.setVisible(false);
-        tipButtonText.setVisible(false);
+        tipButtonText.setVisible(false).setResolution(2);
         noThanksButton.setVisible(false);
-        noThanksText.setVisible(false);
+        noThanksText.setVisible(false).setResolution(2);
         tipButtons.forEach(b => b.setVisible(false));
         tipTexts.forEach(t => t.setVisible(false));
       };
