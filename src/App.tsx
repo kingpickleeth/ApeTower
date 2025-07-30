@@ -13,7 +13,9 @@ import MyTowersModal from './components/MyTowersModal';
 import ShopModal from './components/ShopModal';
 import InteractiveParticles from './components/InteractiveParticles';
 import MusicWidget from './components/MusicWidget';
-import { updateVineBalance, upgradeCampaignLevel } from './utils/profile'; //
+import DengPopup from './components/DengPopup';
+const DENG_CONTRACT = '0x2cf92fe634909a9cf5e41291f54e5784d234cf8d';
+const DENG_ABI = ['function balanceOf(address) view returns (uint256)'];
 
 type TowerNFT = {
   id: number;
@@ -50,6 +52,26 @@ function App() {
   const [mustCompleteProfile, setMustCompleteProfile] = useState(false);
   const [towersLoaded, setTowersLoaded] = useState(false);
   const [gameKey, setGameKey] = useState(0);
+  const [hasDeng, setHasDeng] = useState(false);
+
+useEffect(() => {
+  const checkDengOwnership = async () => {
+    if (!address) return setHasDeng(false);
+
+    try {
+      const provider = new JsonRpcProvider(APECHAIN_RPC);
+      const dengContract = new Contract(DENG_CONTRACT, DENG_ABI, provider);
+      const balance = await dengContract.balanceOf(address);
+      setHasDeng(Number(balance) > 0);
+    } catch (err) {
+      console.error("❌ Error checking Deng ownership:", err);
+      setHasDeng(false);
+    }
+  };
+
+  checkDengOwnership();
+}, [address]);
+
   useEffect(() => {
     const handler = async () => {
       console.log('🎯 request-refresh-towers handler triggered in App.tsx');
@@ -132,49 +154,6 @@ window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
     return () => window.removeEventListener("claim-vine", handler);
   }, [address]);
 
-  useEffect(() => {
-    const handleSaveVine = async (e: any) => {
-      const amount = e.detail.amount;
-      if (!address) {
-        console.warn('⚠️ Cannot save vine — no connected wallet');
-        return;
-      }
-  
-      try {
-        console.log(`💾 Triggered vine save: ${amount} for ${address}`);
-  
-        // Get the session start timestamp from global if available
-        const sessionStart = (window as any).__GAME_SESSION_START__ || Date.now() - 100000;
-  
-        const result = await fetch('https://metadata-server-production.up.railway.app/api/mushroom-harvest', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-wallet-address': address, // 👈 move wallet to header
-          },
-          body: JSON.stringify({
-            amount,
-            sessionStart,
-          })
-        }).then(res => res.json());
-  
-        if (!result.success || result?.error) {
-          console.error('❌ Failed to update vine balance:', result.error || 'Unknown error');
-        }
-  
-        // 🎯 Upgrade campaign level to 2 if needed
-        const levelResult = await upgradeCampaignLevel(address, 2);
-        if (levelResult?.error) {
-          console.error('❌ Failed to update campaign level:', levelResult.error);
-        }
-      } catch (err) {
-        console.error('🔥 Error in save-vine handler:', err);
-      }
-    };
-  
-    window.addEventListener('save-vine', handleSaveVine);
-    return () => window.removeEventListener('save-vine', handleSaveVine);
-  }, [address]);
 
 useEffect(() => {
   const handler = (e: any) => {
@@ -572,6 +551,7 @@ for (let i = 0; i < tokenIds.length; i++) {
     }}    
   />
 )}
+<DengPopup walletHasDeng={hasDeng} />
 <MusicWidget />
     </div>
   );

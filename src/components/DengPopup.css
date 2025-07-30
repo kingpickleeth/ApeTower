@@ -1,0 +1,113 @@
+.deng-popup {
+  position: absolute;
+  z-index: 9999;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 240px;
+  text-align: center;
+  animation: popIn 0.4s ease, fadeOut 1s ease 28s;
+  pointer-events: none; /* optional: makes popup non-blocking */
+}
+
+.deng-img-big {
+  width: 160px;
+  margin-bottom: -10px; /* 👈 moves image down to peek behind message */
+  animation: wiggle 1.4s infinite ease-in-out;
+  transform-origin: center;
+  z-index: 1;
+}
+
+.deng-message {
+  position: relative;
+  font-family: 'Outfit', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px; /* 👈 add spacing between text and button */
+  font-size: 1rem;
+  font-weight: 600;
+  text-shadow: 0 0 2px #000, 0 0 4px #000;
+  padding: 14px 16px;
+  background: linear-gradient(
+    135deg,
+    #0d1b2a,
+    #14293c,
+    #0090cc,
+    #14293c,
+    #0d1b2a
+  );
+  background-size: 600% 600%;
+  animation: backgroundShift 13s ease-in-out infinite;
+  border: 2px solid #00B3FF;
+  outline: 1px solid #00B3FF;
+  outline-offset: -1px;
+  color: #00B3FF;
+  border-radius: 14px;
+  box-shadow: 0 0 8px rgba(0, 179, 255, 0.5);
+  z-index: 2;
+  pointer-events: auto; /* allow button clicking */
+}
+
+.deng-message button {
+  font-family: 'Outfit', sans-serif;
+  margin-top: 8px;
+  padding: 6px 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 2px solid #00B3FF;
+  outline: 1px solid #00B3FF;
+  outline-offset: -1px;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    #0d1b2a,
+    #14293c,
+    #0090cc,
+    #14293c,
+    #0d1b2a
+  );
+  background-size: 600% 600%;
+  animation: backgroundShift 13s ease-in-out infinite;
+  color: #00B3FF;
+  box-shadow: 0 0 8px rgba(0, 179, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.25s ease-in-out;
+}
+
+.deng-message button:hover {
+  background: #00B3FF;
+  color: #0d1b2a;
+  box-shadow: 0 0 12px #00B3FF, 0 0 24px #00B3FF;
+  transform: scale(1.05);
+  text-shadow: none;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(3deg); }
+  70% { transform: rotate(-3deg); }
+}
+
+@keyframes backgroundShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.deng-text {
+  font-size: 1rem;
+  color: #00B3FF;
+  text-shadow: 0 0 2px #000, 0 0 4px #000;
+}
