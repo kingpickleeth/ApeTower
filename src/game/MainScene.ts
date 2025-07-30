@@ -1,4 +1,7 @@
 import Phaser from 'phaser';
+import { getWalletClient } from '@wagmi/core';
+import { recoverMessageAddress } from 'viem';
+
 type TowerNFT = {
   id: number;
   type: 'basic' | 'rapid' | 'cannon';
@@ -21,7 +24,11 @@ selectedTileHighlight?: Phaser.GameObjects.Rectangle;
 bulletGroup!: Phaser.GameObjects.Group;
 enemyGroup!: Phaser.GameObjects.Group;
 grid!: { hasTower: boolean }[][];
-
+sessionToken?: string;
+gameId?: string;
+currentLevel: number = 1; // You can later update this if you support multi-level
+waveCount: number = 0;
+totalEnemiesKilled: number = 0;
 hudBar!: Phaser.GameObjects.Rectangle;
 MAX_WAVE: number = 10;
 path!: Phaser.Curves.Path;
@@ -319,10 +326,24 @@ cleanupGameObjects(fullReset = false) {
 // ---------------------------------------------------------------------------
 // create(): Sets up the game scene — map, HUD, path, selectors, towers, UI
 // ---------------------------------------------------------------------------
-create() {
+async create() {
   console.log('✅ MainScene created');
   console.log('🧠 NFT Towers Loaded:', this.towerNFTs);
   this.hasSavedVine = false;
+  // 🔐 Fetch sessionToken and gameId
+try {
+  const res = await fetch('https://metadata-server-production.up.railway.app/api/start-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ wallet: this.walletAddress })
+  });
+  const { sessionToken, gameId } = await res.json();
+  this.sessionToken = sessionToken;
+  this.gameId = gameId;
+  console.log('🎟️ Game session started:', this.gameId);
+} catch (err) {
+  console.error('❌ Failed to start game session', err);
+}
   // Screen and Map Dimensions
   const screenWidth = Number(this.game.config.width);
   const screenHeight = Number(this.game.config.height);
@@ -506,6 +527,7 @@ create() {
     console.log(`🎯 Bullet hit: enemy HP before = ${hp + damage}, damage = ${damage}`);
     if (hp <= 0) {
       console.log(`✅ Entered kill block at (${enemy.x}, ${enemy.y})`);
+      this.totalEnemiesKilled++;
       const reward = enemy.getData('reward') || 0;
       this.vineBalance += reward;
       const { x, y } = enemy.getCenter();
@@ -1132,6 +1154,7 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
 update(_: number, delta: number) {
   const baseSpeed = 1 / 8000;
   if (this.isPaused) return;
+  if (!this.enemyGroup) return;
 
   for (const enemyObj of this.enemyGroup.getChildren()) {
     const enemy = enemyObj as Phaser.GameObjects.Image;
@@ -1157,91 +1180,92 @@ console.log(`🚫 Non-HP enemy destroy #${this.totalEnemiesDestroyed}`);
         this.time.delayedCall(1000, () => this.startNextWave());
       }
       // 💀 Game Over condition
-if (this.lives <= 0 && !this.gameOver) {
-  // FULL GAME RESET
-this.cleanupGameObjects(); // fullReset = false
-
-// 🖼️ Game Over Popup
-const centerX = Number(this.game.config.width) / 2;
-const centerY = Number(this.game.config.height) / 2;
-
-const overlay = this.add.rectangle(centerX, centerY, this.game.config.width as number, this.game.config.height as number, 0x1A1F2B, 0.4)
-  .setOrigin(0.5)
-  .setDepth(1005);
-
-// 🟥 Popup Background
-const popupBg = this.add.rectangle(centerX, centerY, 340, 230, 0x1A1F2B, 0.8)
-  .setOrigin(0.5)
-  .setStrokeStyle(2, 0xFF4F66)
-  .setDepth(1006);
-
-// 💀 Title
-const gameOverText = this.add.text(centerX, centerY - 60, '💀 Game Over 💀', {
-  fontSize: '36px',
-  fontFamily: 'Outfit',
-  fontStyle: 'bold',
-  color: '#FF4F66'
-}).setOrigin(0.5).setDepth(1006);
-
-// 🌿 Vine Earned
-const vineText = this.add.text(centerX, centerY - 20, `You still earned ${this.vineBalance} $MOO`, {
-  fontSize: '20px',
-  fontFamily: 'Outfit',
-  color: '#5CFFA3'
-}).setOrigin(0.5).setDepth(1006);
-
-// 🔁 Play Again Button (styled)
-const restartBtn = this.createStyledButton(
-  centerX,
-  centerY + 25,
-  '🔁 Play Again',
-  0x00B3FF,
-  () => {
-    popupBg.destroy();
-    gameOverText.destroy();
-    vineText.destroy();
-    restartBtn.destroy();
-    mainMenuBtn.destroy();
-    overlay.destroy();
-    this.restartGame();
-  },
-  0x3CDFFF
-);
-
-// 🏠 Main Menu Button (styled)
-const mainMenuBtn = this.createStyledButton(
-  centerX,
-  centerY + 75,
-  '🏠 Main Menu',
-  0x00B3FF,
-  () => {
-  
-
-    // 🛑 Stop enemy spawn loop
-    if (this.enemySpawnEvent) {
-      this.enemySpawnEvent.remove(false);
-    }
-
-    // 🧹 Clear all pending and active timers/events
-    this.time.clearPendingEvents();
-    this.time.removeAllEvents();
-
-    // 🔁 Reset core game values
-    this.waveNumber = 0;
-    this.lives = 10;
-    this.vineBalance = 40;
-    this.gameOver = false;
-    this.isPaused = false;
-
-    // 🚪 Go back to the Main Menu
-    this.scene.start('MainMenuScene');
-  },
-  0x3CDFFF
-);
-
-  return;
-}
-
+      if (this.lives <= 0 && !this.gameOver) {
+        (async () => {
+          this.cleanupGameObjects();
+      
+          const centerX = Number(this.game.config.width) / 2;
+          const centerY = Number(this.game.config.height) / 2;
+      
+          const overlay = this.add.rectangle(centerX, centerY, this.game.config.width as number, this.game.config.height as number, 0x1A1F2B, 0.4)
+            .setOrigin(0.5)
+            .setDepth(1005);
+      
+          const popupBg = this.add.rectangle(centerX, centerY, 340, 230, 0x1A1F2B, 0.8)
+            .setOrigin(0.5)
+            .setStrokeStyle(2, 0xFF4F66)
+            .setDepth(1006);
+      
+          const gameOverText = this.add.text(centerX, centerY - 60, '💀 Game Over 💀', {
+            fontSize: '36px',
+            fontFamily: 'Outfit',
+            fontStyle: 'bold',
+            color: '#FF4F66'
+          }).setOrigin(0.5).setDepth(1006);
+      
+          const vineText = this.add.text(centerX, centerY - 20, `You still earned ${this.vineBalance} $MOO`, {
+            fontSize: '20px',
+            fontFamily: 'Outfit',
+            color: '#5CFFA3'
+          }).setOrigin(0.5).setDepth(1006);
+      
+          // 📡 Publish results now
+          if (this.walletAddress && this.sessionToken && this.gameId) {
+            const eventDetail = {
+              wallet: this.walletAddress,
+              gameId: this.gameId,
+              sessionToken: this.sessionToken,
+              mooEarned: this.vineBalance,
+              levelBeat: this.currentLevel,
+              wavesSurvived: this.waveCount,
+              enemiesKilled: this.totalEnemiesKilled,
+              livesRemaining: this.lives,
+            };
+          
+            window.dispatchEvent(new CustomEvent('request-publish-game-results', { detail: eventDetail }));
+          }
+          
+      
+          const restartBtn = this.createStyledButton(
+            centerX,
+            centerY + 25,
+            '🔁 Play Again',
+            0x00B3FF,
+            () => {
+              popupBg.destroy();
+              gameOverText.destroy();
+              vineText.destroy();
+              restartBtn.destroy();
+              mainMenuBtn.destroy();
+              overlay.destroy();
+              this.restartGame();
+            },
+            0x3CDFFF
+          );
+      
+          const mainMenuBtn = this.createStyledButton(
+            centerX,
+            centerY + 75,
+            '🏠 Main Menu',
+            0x00B3FF,
+            () => {
+              if (this.enemySpawnEvent) {
+                this.enemySpawnEvent.remove(false);
+              }
+              this.time.clearPendingEvents();
+              this.time.removeAllEvents();
+              this.waveNumber = 0;
+              this.lives = 10;
+              this.vineBalance = 40;
+              this.gameOver = false;
+              this.isPaused = false;
+              this.scene.start('MainMenuScene');
+            },
+            0x3CDFFF
+          );
+        })();
+      }
+      
       // ✅ Important: Skip remaining logic for this enemy
       continue;
     }
@@ -1424,6 +1448,7 @@ const mainMenuBtn = this.createStyledButton(
   startNextWave() {
     this.enemiesEscaped = 0;
     this.waveNumber++;
+    this.waveCount++;
     if (this.waveNumber > this.MAX_WAVE) {
     this.triggerVictory();
     return;
@@ -1633,7 +1658,7 @@ showUpgradePanel(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compo
 ///////////////////////////
 // 🏆 TRIGGER VICTORY 🏆 //
 ///////////////////////////
-triggerVictory() {
+async triggerVictory() {
   // Victory RESET Game
   this.cleanupGameObjects(true); // not full reset
   const cx = Number(this.game.config.width) / 2;
@@ -1685,6 +1710,7 @@ triggerVictory() {
       [victoryOverlay, victoryPopupBg, victoryText, vineAmount, vineMessage, campaignBtn, mainMenuBtn].forEach(e => e.destroy());
       this.cleanupGameObjects(true);
       this.scene.stop();
+      
       this.scene.start('CampaignMapScene');
     },
     0x3CDFFF
@@ -1732,5 +1758,21 @@ triggerVictory() {
     (window as any).enableMainSceneInput = () => {
       this.input.enabled = true;
     };
+    // 📡 Immediately publish game results on victory
+    if (this.walletAddress && this.sessionToken && this.gameId) {
+      const eventDetail = {
+        wallet: this.walletAddress,
+        gameId: this.gameId,
+        sessionToken: this.sessionToken,
+        mooEarned: this.vineBalance,
+        levelBeat: this.currentLevel,
+        wavesSurvived: this.waveCount,
+        enemiesKilled: this.totalEnemiesKilled,
+        livesRemaining: this.lives,
+      };
+    
+      window.dispatchEvent(new CustomEvent('request-publish-game-results', { detail: eventDetail }));
+    }
+    
 }
 }

@@ -2,7 +2,7 @@ import './index.css';
 import GameCanvas from './components/GameCanvas';
 import ProfileEditor from './components/ProfileEditor';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useDisconnect } from 'wagmi';
+import { useAccount, useDisconnect,useSignMessage} from 'wagmi';
 import { useEffect, useState } from 'react';
 import { JsonRpcProvider, Wallet, Contract, parseUnits, getAddress } from 'ethers';
 import { getProfile } from './utils/profile';
@@ -273,6 +273,35 @@ for (let i = 0; i < tokenIds.length; i++) {
   
     fetchTowers();
   }, [address]);
+  const { signMessageAsync } = useSignMessage();
+  useEffect(() => {
+    const handlePublishRequest = async (e: any) => {
+      const data = e.detail;
+      try {
+        const message = `DENGDEFENSE_GAME_RESULT:${data.wallet}:${data.gameId}:${data.mooEarned}:${data.levelBeat}:${data.wavesSurvived}:${data.enemiesKilled}:${data.livesRemaining}:${data.sessionToken}`;
+  
+        // Request signature popup with wagmi hook
+        const signature = await signMessageAsync({ message });
+        console.log('Signature:', signature);
+          
+        // Send to backend
+        const res = await fetch('https://metadata-server-production.up.railway.app/api/publish-result', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...data, message, signature }),
+        });
+  
+        const result = await res.json();
+        console.log('📡 Game results published:', result);
+  
+      } catch (error) {
+        console.error('❌ Failed to publish game results', error);
+      }
+    };
+  
+    window.addEventListener('request-publish-game-results', handlePublishRequest);
+    return () => window.removeEventListener('request-publish-game-results', handlePublishRequest);
+  }, [signMessageAsync]);
   
   return (
     <div id="app-container">
