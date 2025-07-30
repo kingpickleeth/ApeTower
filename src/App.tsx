@@ -305,7 +305,7 @@ for (let i = 0; i < tokenIds.length; i++) {
     const handlePublishRequest = async (e: any) => {
       const data = e.detail;
       try {
-        const message = `DENGDEFENSE_GAME_RESULT:${data.wallet}:${data.gameId}:${data.mooEarned}:${data.levelBeat}:${data.wavesSurvived}:${data.enemiesKilled}:${data.livesRemaining}:${data.sessionToken}`;
+        const message = `DENG_DEFENSE_GAME_RESULTS:${data.wallet}:${data.gameId}:${data.mooEarned}:${data.levelBeat}:${data.wavesSurvived}:${data.enemiesKilled}:${data.livesRemaining}:${data.sessionToken}`;
   
         console.log('🖊️ Signing game result with:', message);
   

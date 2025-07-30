@@ -10,7 +10,7 @@ const PublishSignatureHandler = () => {
       const data = e.detail;
 
       try {
-        const message = `DENGDEFENSE_GAME_RESULT:${data.wallet}:${data.gameId}:${data.mooEarned}:${data.levelBeat}:${data.wavesSurvived}:${data.enemiesKilled}:${data.livesRemaining}:${data.sessionToken}`;
+        const message = `DENG_DEFENSE_GAME_RESULTS:${data.wallet}:${data.gameId}:${data.mooEarned}:${data.levelBeat}:${data.wavesSurvived}:${data.enemiesKilled}:${data.livesRemaining}:${data.sessionToken}`;
 
         const publishsignature = await signMessageAsync({ message });
         console.log('Signature:', publishsignature);
