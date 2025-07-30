@@ -22,7 +22,7 @@ const tracks = [
 export default function MusicWidget() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [showControls, setShowControls] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState(0);
+  const [currentTrack, setCurrentTrack] = useState(() => Math.floor(Math.random() * tracks.length));
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.5);
   const hasInteractedRef = useRef(false);
