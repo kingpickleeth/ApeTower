@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import { updateVineBalance, getProfile } from '../utils/profile'; // ✅ If not already present
 import { JsonRpcProvider, Contract } from 'ethers';
 import DENG_TOWER_ABI from '../abis/Tower.json'; // ✅ Update path if needed
+import { parseUnits } from 'viem'; // ✅ add this at the top if not already
 
 const MOO_ADDRESS = '0x932b8eF025c6bA2D44ABDc1a4b7CBAEdb5DE1582';
 const TOWER_CONTRACT = '0xeDed3FA692Bf921B9857F86CC5BB21419F5f77ec';
@@ -234,9 +235,10 @@ const handleBuyTower = async (towerType: number) => {
         console.error("❌ Signature fetch failed:", error);
         return;
       }
-  
+      const claimAmount = parseUnits(vineBalance.toString(), 18);
+
       const tx = await towerContract.write.claim([
-        BigInt(Math.floor(vineBalance * 1e18)),
+        claimAmount,
         BigInt(expiry),
         signature
       ]);

@@ -14,6 +14,7 @@ import ShopModal from './components/ShopModal';
 import InteractiveParticles from './components/InteractiveParticles';
 import MusicWidget from './components/MusicWidget';
 import { updateVineBalance, upgradeCampaignLevel } from './utils/profile'; //
+
 type TowerNFT = {
   id: number;
   type: 'basic' | 'rapid' | 'cannon';
@@ -94,6 +95,7 @@ function App() {
         setModalType('error');
         return;
       }      
+      
       try {
         const provider = new JsonRpcProvider(APECHAIN_RPC);
         const privateKey = import.meta.env.VITE_VINE_SENDER_KEY;
@@ -107,6 +109,7 @@ function App() {
         txRequest.maxFeePerGas = parseUnits("30", "gwei");
         const sentTx = await wallet.sendTransaction(txRequest);
 await sentTx.wait();
+
 setTimeout(() => {
   window.dispatchEvent(new Event("vine-wallet-balance-update"));
 }, 4000); // wait 3s after mining before querying balance
@@ -128,6 +131,51 @@ window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
     window.addEventListener("claim-vine", handler);
     return () => window.removeEventListener("claim-vine", handler);
   }, [address]);
+
+  useEffect(() => {
+    const handleSaveVine = async (e: any) => {
+      const amount = e.detail.amount;
+      if (!address) {
+        console.warn('⚠️ Cannot save vine — no connected wallet');
+        return;
+      }
+  
+      try {
+        console.log(`💾 Triggered vine save: ${amount} for ${address}`);
+  
+        // Get the session start timestamp from global if available
+        const sessionStart = (window as any).__GAME_SESSION_START__ || Date.now() - 100000;
+  
+        const result = await fetch('https://metadata-server-production.up.railway.app/api/mushroom-harvest', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-wallet-address': address, // 👈 move wallet to header
+          },
+          body: JSON.stringify({
+            amount,
+            sessionStart,
+          })
+        }).then(res => res.json());
+  
+        if (!result.success || result?.error) {
+          console.error('❌ Failed to update vine balance:', result.error || 'Unknown error');
+        }
+  
+        // 🎯 Upgrade campaign level to 2 if needed
+        const levelResult = await upgradeCampaignLevel(address, 2);
+        if (levelResult?.error) {
+          console.error('❌ Failed to update campaign level:', levelResult.error);
+        }
+      } catch (err) {
+        console.error('🔥 Error in save-vine handler:', err);
+      }
+    };
+  
+    window.addEventListener('save-vine', handleSaveVine);
+    return () => window.removeEventListener('save-vine', handleSaveVine);
+  }, [address]);
+
 useEffect(() => {
   const handler = (e: any) => {
     const message = e?.detail?.message || 'Your free towers have been minted!';
@@ -280,15 +328,18 @@ for (let i = 0; i < tokenIds.length; i++) {
       try {
         const message = `DENGDEFENSE_GAME_RESULT:${data.wallet}:${data.gameId}:${data.mooEarned}:${data.levelBeat}:${data.wavesSurvived}:${data.enemiesKilled}:${data.livesRemaining}:${data.sessionToken}`;
   
-        // Request signature popup with wagmi hook
-        const signature = await signMessageAsync({ message });
-        console.log('Signature:', signature);
-          
-        // Send to backend
+        console.log('🖊️ Signing game result with:', message);
+  
+        const publishsignature = await signMessageAsync({ message });
+  
+        if (!publishsignature || publishsignature.length !== 132 || !publishsignature.startsWith("0x")) {
+          throw new Error("Signature looks invalid or malformed");
+        }
+  
         const res = await fetch('https://metadata-server-production.up.railway.app/api/publish-result', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...data, message, signature }),
+          body: JSON.stringify({ ...data, message, publishsignature }),
         });
   
         const result = await res.json();
@@ -301,8 +352,7 @@ for (let i = 0; i < tokenIds.length; i++) {
   
     window.addEventListener('request-publish-game-results', handlePublishRequest);
     return () => window.removeEventListener('request-publish-game-results', handlePublishRequest);
-  }, [signMessageAsync]);
-  
+  }, [signMessageAsync]);  
   return (
     <div id="app-container">
       {!isConnected && !bypassWallet ? (

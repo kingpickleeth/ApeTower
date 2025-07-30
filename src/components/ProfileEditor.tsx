@@ -9,6 +9,7 @@ import MOO_ABI from '../abis/MooToken.json';
 import { checkTowerBalance } from '../utils/profile'; // adjust path if needed
 import { useWalletClient } from 'wagmi';
 import { useTowerContract } from '../utils/contracts'; // assuming you already have this
+import { parseUnits } from 'viem';
 
 const DEFAULT_PFP_URL = 'https://admin.demwitches.xyz/avatar.svg';
 const MOO_CONTRACT = '0x932b8eF025c6bA2D44ABDc1a4b7CBAEdb5DE1582';
@@ -261,7 +262,15 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
     const expiry = Math.floor(Date.now() / 1000) + 300; // 5 minutes
   
     try {
-      // 🔐 Request signature from your backend
+      // 🔐 Log claim inputs
+      console.log("📤 Claiming for wallet:", walletAddress);
+      console.log("📦 Claim inputs:", {
+        wallet: walletAddress,
+        amount: vineBalance,
+        expiry
+      });
+  
+      // 🔐 Request signature from backend
       const response = await fetch("https://metadata-server-production.up.railway.app/api/sign-claim", {
         method: "POST",
         headers: {
@@ -272,22 +281,44 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
           amount: vineBalance,
           expiry
         })
-      });      
+      });
   
-      const { signature, nonce, error } = await response.json();
+      const body = await response.text();
+      console.log("📩 Raw response body:", body);
+  
+      let parsed;
+      try {
+        parsed = JSON.parse(body);
+      } catch (e) {
+        console.error("❌ Failed to parse backend response:", e);
+        return;
+      }
+  
+      const { signature, nonce, error } = parsed;
+  
+      console.log("🔐 Signature response:", { signature, nonce, error });
+  
       if (!signature || error) {
         console.error("❌ Signature fetch failed:", error);
         return;
       }
   
-      // 🎯 Direct contract call using wagmi hook
+      // 🎯 Contract inputs
+      const claimAmount = parseUnits(vineBalance.toString(), 18);
+      const expiryBig = BigInt(expiry);
+      console.log("📨 Sending contract call:", {
+        claimAmount: claimAmount.toString(),
+        expiry: expiryBig.toString(),
+        signature
+      });
+  
       const tx = await towerContract.write.claim([
-        BigInt(Math.floor(vineBalance * 1e18)), // Always use Math.floor before BigInt
-        BigInt(expiry),
+        claimAmount,
+        expiryBig,
         signature
       ]);
-      
-      console.log("🎉 Claim TX:", tx);
+  
+      console.log("🎉 Claim TX sent:", tx);
   
       const supabaseResult = await updateVineBalance(walletAddress, -vineBalance);
       if (supabaseResult?.error) {
@@ -300,7 +331,8 @@ const { error } = await upsertProfile(walletAddress, username, finalPfp, bio);
     } catch (err) {
       console.error("❌ Claim failed:", err);
     }
-  };  
+  };
+  
   
   if (loading) return <p>Loading profile...</p>;
   return (
