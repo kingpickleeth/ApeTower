@@ -139,7 +139,7 @@ export default function MusicWidget() {
   {tracks[currentTrack].title}
 </a>
 <div className="progress-time-row">
-  <span>0:00</span>
+  <span>{formatTime(currentTime)}</span>
   <span>{formatTime(duration)}</span>
 </div>
 <div className="progress-row">
