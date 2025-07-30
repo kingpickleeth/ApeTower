@@ -18,14 +18,11 @@ export default class MainScene extends Phaser.Scene {
 // ---------------------------------------------------------------------------
 assetsLoaded: boolean = false;
 selectedTileHighlight?: Phaser.GameObjects.Rectangle;
-bgMusic!: Phaser.Sound.BaseSound;
 bulletGroup!: Phaser.GameObjects.Group;
 enemyGroup!: Phaser.GameObjects.Group;
 grid!: { hasTower: boolean }[][];
 
 hudBar!: Phaser.GameObjects.Rectangle;
-isMusicMuted: boolean = false;
-isSfxMuted: boolean = false;
 MAX_WAVE: number = 10;
 path!: Phaser.Curves.Path;
 selectedTile?: { col: number, row: number };
@@ -255,7 +252,6 @@ cleanupGameObjects(fullReset = false) {
   this.enemySpawnEvent?.remove(false);
   this.time.clearPendingEvents();
   this.time.removeAllEvents();
-  this.sound.stopAll();
   this.hasSavedVine = false;
   this.resetUsedTowers();    // 👈 reset tower usage here
   this.enemyGroup.getChildren().forEach((enemyObj) => {
@@ -338,25 +334,6 @@ create() {
     Array.from({ length: this.mapRows }, () => ({ hasTower: false }))
   );
   
-  // Load Background Music
-// Destroy any existing bgMusic reference
-const existing = this.sound.get('bgMusic');
-if (existing) {
-  existing.destroy();
-}
-
-// Load and play the music
-if (!this.cache.audio.has('bgMusic')) {
-  this.load.audio('bgMusic', ['https://admin.demwitches.xyz/assets/music.mp3']);
-  this.load.once('complete', () => {
-    this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 });
-    this.bgMusic.play(); // ✅ ALWAYS PLAY on scene entry
-  });
-  this.load.start();
-} else {
-  this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 });
-  this.bgMusic.play(); // ✅ ALWAYS PLAY on scene entry
-}
 
   // External Pause / Resume Game Functions
   (window as any).pauseGameFromUI = () => {
@@ -624,7 +601,7 @@ const buttonX = this.cameras.main.width - marginX;
 const menuButtonSize = 48;
 const menuButtonBg = this.add.rectangle(
   buttonX + 6,
-  marginY - 5 - spacingY * 3,
+  marginY - 5 - spacingY * 2,
   menuButtonSize,
   menuButtonSize,
   0x00B3FF // 🔵 Matching blue button color
@@ -637,7 +614,7 @@ const menuButtonBg = this.add.rectangle(
 // Add "Menu" label directly
 this.add.text(
   buttonX + 6,
-  marginY - 5 - spacingY * 3,
+  marginY - 5 - spacingY * 2,
   'Menu',
   {
     fontFamily: 'Outfit',
@@ -688,7 +665,7 @@ menuButtonBg.on('pointerdown', () => {
 
 // 🟢 Pause Button (Toggle)
 let isPaused = this.isPaused;
-const { icon: pauseIcon } = createCircleButton.call(this, buttonX + 6, marginY - 5 - spacingY * 2, '⏸', () => {
+const { icon: pauseIcon } = createCircleButton.call(this, buttonX + 6, marginY - 6, '⏸', () => {
   isPaused = !isPaused;
   this.isPaused = isPaused;
   pauseIcon.setText(isPaused ? '▶️' : '⏸');
@@ -717,33 +694,6 @@ const { icon: pauseIcon } = createCircleButton.call(this, buttonX + 6, marginY -
 // 🔁 Restart Button
 createCircleButton.call(this, buttonX + 6, marginY - 6 - spacingY, '⟳', () => {
   this.restartGame();
-});
-
-// 🎵 Music Toggle Button
-let isMusicMuted = this.isMusicMuted;
-const { icon: musicIcon } = createCircleButton.call(this, buttonX + 6, marginY - 6, '🔈', async () => {
-  isMusicMuted = !isMusicMuted;
-  this.isMusicMuted = isMusicMuted;
-  musicIcon.setText(isMusicMuted ? '🔇' : '🔈');
-
-  const existingMusic = this.sound.get('bgMusic');
-  if (isMusicMuted && existingMusic) {
-    existingMusic.pause();
-  } else if (!isMusicMuted && existingMusic) {
-    existingMusic.resume();
-  } else if (!existingMusic) {
-    await this.loadAudio('bgMusic', 'https://admin.demwitches.xyz/assets/music.mp3');
-    this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 });
-    if (!isMusicMuted) this.bgMusic.play();
-  }
-});
-
-// 🔊 SFX Toggle Button
-let isSfxMuted = this.isSfxMuted;
-const { icon: sfxIcon } = createCircleButton.call(this, buttonX + 6, marginY - 6 + spacingY, '🔔', () => {
-  isSfxMuted = !isSfxMuted;
-  this.isSfxMuted = isSfxMuted;
-  sfxIcon.setText(isSfxMuted ? '🔕' : '🔔');
 });
 
 }
@@ -826,17 +776,7 @@ createStyledButton(
 
   return button;
 }
-loadAudio(key: string, url: string): Promise<void> {
-  return new Promise((resolve) => {
-    if (this.sound.get(key)) {
-      resolve();
-      return;
-    }
-    this.load.audio(key, url);
-    this.load.once(Phaser.Loader.Events.COMPLETE, () => resolve());
-    this.load.start();
-  });
-}
+
 
 showTowerSelectPanel(col: number, row: number) {
   console.log('[🟢 showTowerSelectPanel]', {
@@ -1161,7 +1101,6 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
   const velocity = this.physics.velocityFromRotation(angle, 500);
   (bullet.body as Phaser.Physics.Arcade.Body).setVelocity(velocity.x, velocity.y);
   this.bulletGroup.add(bullet);
-  this.playPewSound();
   console.log(`🎯 Tower type: ${towerType}`);
 
   switch (towerType) {
@@ -1187,32 +1126,6 @@ shootFromTower(tower: Phaser.GameObjects.GameObject & Phaser.GameObjects.Compone
   bullet.setData('despawnTimer', bulletTimer);
  
 }
-
-  // ---------------------------------------------------------------------------
-  // 🧱 placeTowerAt(): Places a tower on a buildable tile
-  // ---------------------------------------------------------------------------
-
-playPewSound() {
-  if (this.isSfxMuted) return;
-
-  if (this.sound.get('pew')) {
-    this.sound.play('pew', {
-      volume: 0.5,
-      rate: Phaser.Math.FloatBetween(0.95, 1.05),
-    });
-  } else {
-    this.load.audio('pew', 'https://admin.demwitches.xyz/assets/pewpew.mp3');
-    this.load.once('complete', () => {
-      const pew = this.sound.add('pew');
-      pew.play({
-        volume: 0.5,
-        rate: Phaser.Math.FloatBetween(0.95, 1.05),
-      });
-    });
-    this.load.start();
-  }
-}
-
 // ---------------------------------------------------------------------------
 // 🔁 update(): Main game loop
 // ---------------------------------------------------------------------------
@@ -1311,8 +1224,7 @@ const mainMenuBtn = this.createStyledButton(
   '🏠 Main Menu',
   0x00B3FF,
   () => {
-    // 🛑 Stop all music and sound effects
-    this.sound.stopAll();
+  
 
     // 🛑 Stop enemy spawn loop
     if (this.enemySpawnEvent) {
@@ -1624,16 +1536,6 @@ this.currentEnemyReward = config.reward;
     this.cleanupGameObjects(true);
     this.startNextWave();
     this.physics.resume();
-    // 🔁 Always reload & play bgMusic (no mute state persists)
-    const existing = this.sound.get('bgMusic');
-    if (existing) {
-      existing.destroy(); // 💣 fully remove stale reference
-    }
-    this.load.audio('bgMusic', ['https://admin.demwitches.xyz/assets/music.mp3']);
-    this.load.once('complete', () => {
-      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 });
-      this.bgMusic.play();
-    });
     this.load.start();
   }
 // ---------------------------------------------------------------------------
@@ -1835,7 +1737,6 @@ triggerVictory() {
         }));
       }
       this.cleanupGameObjects(true);
-      this.sound.stopAll();
       window.location.reload();
     },
     0x3CDFFF
