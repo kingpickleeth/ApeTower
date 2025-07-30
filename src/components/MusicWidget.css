@@ -1,0 +1,220 @@
+.music-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  .music-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(
+      135deg,
+      #0d1b2a,
+      #14293c,
+      #0090cc,
+      #14293c,
+      #0d1b2a
+    );
+    background-size: 600% 600%;
+    color: #00B3FF;
+    background: #00B3FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 0 8px rgba(0, 179, 255, 0.5);
+    border: 2px solid #00B3FF;
+    outline: 1px solid #00B3FF;
+    outline-offset: -1px;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .music-icon:hover {
+    transform: scale(1.1) rotate(10deg);
+    box-shadow: 0 0 12px #00B3FF, 0 0 24px #00B3FF;
+  }
+  
+  .music-controls {
+    margin-top: 10px;
+    background: #0d1b2a;
+    border: 2px solid #00B3FF;
+    outline: 1px solid #00B3FF;
+    outline-offset: -1px;
+    color: #00B3FF;
+    border-radius: 12px;
+    box-shadow: 0 0 8px rgba(0, 179, 255, 0.5);
+    padding: 12px;
+    width: 180px;
+    animation: slideUp 0.3s ease-out;
+    font-family: 'Outfit', sans-serif;
+  }
+  .track-title {
+    font-size: 0.95rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 8px;
+    text-shadow: 0 0 2px #000;
+    color: #00B3FF;
+    display: block;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  
+  .track-title:hover {
+    color: #66d2ff;
+    text-decoration: underline;
+  }  
+  
+  .music-controls input[type="range"] {
+    width: 100%;
+    accent-color: #00B3FF;
+    max-height: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .button-row {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 8px;
+  }
+  
+  .button-row button {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    padding: 4px 10px;
+    background: linear-gradient(
+      135deg,
+      #0d1b2a,
+      #14293c,
+      #0090cc,
+      #14293c,
+      #0d1b2a
+    );
+    background-size: 600% 600%;
+    animation: backgroundShift 13s ease-in-out infinite;
+    color: #00B3FF;
+    border: 2px solid #00B3FF;
+    outline: 1px solid #00B3FF;
+    outline-offset: -1px;
+    border-radius: 10px;
+    box-shadow: 0 0 6px rgba(0, 179, 255, 0.4);
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.25s ease-in-out;
+  }
+  
+  .button-row button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 12px #00B3FF, 0 0 24px #00B3FF;
+  }
+  
+  .button-row button:active {
+    transform: scale(0.95);
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes backgroundShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  /* Add this new animation */
+  @keyframes pulseActive {
+    0% {
+      box-shadow:
+        0 0 12px rgba(0, 179, 255, 0.6),
+        0 0 24px rgba(0, 179, 255, 0.4),
+        0 0 36px rgba(0, 179, 255, 0.2);
+    }
+    50% {
+      box-shadow:
+        0 0 24px rgba(0, 179, 255, 1),
+        0 0 48px rgba(0, 179, 255, 0.8),
+        0 0 72px rgba(0, 179, 255, 0.6);
+    }
+    100% {
+      box-shadow:
+        0 0 12px rgba(0, 179, 255, 0.6),
+        0 0 24px rgba(0, 179, 255, 0.4),
+        0 0 36px rgba(0, 179, 255, 0.2);
+    }
+  }
+  
+  .music-icon.playing {
+    animation:
+      vinylSpin 4s linear infinite,
+      pulseActive 1.5s ease-in-out infinite,
+      backgroundShift 13s ease-in-out infinite;
+  }
+  
+  @keyframes vinylSpin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .music-icon.playing {
+    animation: vinylSpin 5s linear infinite, pulseActive 2s ease-in-out infinite, backgroundShift 13s ease-in-out infinite;
+  }  
+
+  .progress-time-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #00B3FF;
+    opacity: 0.8;
+  }
+  
+  .seek-tooltip {
+    position: fixed;
+    top: calc(87% - 100px); /* Adjust as needed */
+    transform: translateX(-49%);
+    background: #0d1b2a;
+    color: #00B3FF;
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #00B3FF;
+    pointer-events: none;
+    z-index: 10000;
+    white-space: nowrap;
+  }
+  
+  .progress-row input {
+    bottom: 0px !important;
+  }
+  .volume-label-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1rem; /* Same as progress-time-row */
+    padding: 0 4px;
+    color: #00B3FF;
+    opacity: 0.8;
+  }
+  

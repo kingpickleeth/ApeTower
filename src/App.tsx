@@ -13,6 +13,7 @@ import { getOwnedTowersWithMetadata } from './utils/getTowerData';
 import MyTowersModal from './components/MyTowersModal';
 import ShopModal from './components/ShopModal';
 import InteractiveParticles from './components/InteractiveParticles';
+import MusicWidget from './components/MusicWidget';
 
 type TowerNFT = {
   id: number;
@@ -538,7 +539,7 @@ for (let i = 0; i < tokenIds.length; i++) {
     }}    
   />
 )}
-
+<MusicWidget />
     </div>
   );
 }
