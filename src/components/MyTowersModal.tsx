@@ -218,7 +218,7 @@ const res = await fetch(`https://metadata-server-production.up.railway.app/gener
       fontWeight: 600
     }}
   >
-    Balance: {mooBalance ? (Number(mooBalance) / 1e18) : '...'} $MOO
+    Balance: {mooBalance ? (Number(mooBalance) / 1e18).toFixed(0) : '...'} $MOO
   </div>
 )}
 

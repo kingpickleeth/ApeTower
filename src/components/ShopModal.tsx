@@ -348,7 +348,7 @@ const handleBuyTower = async (towerType: number) => {
   }}
 >
   {activeTab === 'towers'
-    ? `Balance: ${Number(mooBalance) / 1e18} $MOO`
+    ? `Balance: ${(Number(mooBalance) / 1e18).toFixed(0)} $MOO`
     : `Balance: ${(Number(apeBalance) / 1e18).toFixed(1)} $APE`}
 </div>
 
