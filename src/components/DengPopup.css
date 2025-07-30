@@ -111,3 +111,30 @@
   color: #00B3FF;
   text-shadow: 0 0 2px #000, 0 0 4px #000;
 }
+@media (max-width: 740px) {
+  .deng-popup {
+    transform: scale(0.8);
+    transform-origin: bottom left;
+    left: 10px;
+    bottom: 10px;
+  }
+
+  .deng-img-big {
+    width: 130px;
+    margin-bottom: -8px;
+  }
+
+  .deng-message {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+
+  .deng-message button {
+    font-size: 0.85rem;
+    padding: 5px 10px;
+  }
+
+  .deng-text {
+    font-size: 0.9rem;
+  }
+}
