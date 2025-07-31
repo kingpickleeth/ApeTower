@@ -22,7 +22,7 @@ export default function LeaderboardModal({ onClose }: LeaderboardModalProps) {
           <div>#</div>
           <div>Player</div>
           <div>Level</div>
-          <div>Max Wave</div>
+          <div>Wave</div>
           <div>$MOO</div>
         </div>
 
