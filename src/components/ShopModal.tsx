@@ -27,6 +27,8 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
   const [loadingBalance, setLoadingBalance] = useState(true);
   const [apeBalance, setApeBalance] = useState(BigInt(0));
   const [vineBalance, setVineBalance] = useState<number>(0); // ✅ if not already in scope
+  const [buyingMooAmount, setBuyingMooAmount] = useState<number | null>(null);
+  const [buyingTowerId, setBuyingTowerId] = useState<number | null>(null);
   const towerItems = [
     {
       type: 'Basic',
@@ -93,19 +95,42 @@ export default function ShopModal({ walletAddress, onClose }: Props) {
     }
   }, [walletAddress]);
 
-  const handleBuyMoo = async (amountEth: string) => {
-    if (!walletClient) return alert('Connect your wallet');
+  const handleBuyMoo = async (amountEth: string, amountMoo: number) => {
+    if (!walletClient) {
+      window.dispatchEvent(new CustomEvent("show-error-modal", {
+        detail: { message: '❌ Please connect your wallet.' }
+      }));
+      return;
+    }
   
     const amountInWei = parseEther(amountEth);
+    setBuyingMooAmount(amountMoo); // 🔁 show loading
+  
     try {
       const tx = await buyMoo({ walletClient, amount: amountInWei });
       console.log('MOO purchase TX:', tx);
-      alert('Purchase submitted!');
+  
+      window.dispatchEvent(new CustomEvent("show-success-modal", {
+        detail: { message: `🎉 $MOO purchase submitted. Waiting for confirmation...` }
+      }));
+  
+      await publicClient?.waitForTransactionReceipt({ hash: tx });
+  
+      window.dispatchEvent(new CustomEvent("show-success-modal", {
+        detail: { message: `🦛 You successfully bought ${amountMoo} $MOO!` }
+      }));
+  
+      await fetchMooBalance(); // 🟢 refresh balance
     } catch (err) {
       console.error(err);
-      alert('Transaction failed');
+      window.dispatchEvent(new CustomEvent("show-error-modal", {
+        detail: { message: '❌ $MOO purchase failed. Please try again.' }
+      }));
+    } finally {
+      setBuyingMooAmount(null); // ✅ reset button
     }
-  };  
+  };
+  
   const { address } = useAccount();
   const { writeContractAsync: write } = useWriteContract();
 // 👇 Add this above your component body (inside the component but outside useEffect)
@@ -154,6 +179,7 @@ const handleBuyTower = async (towerType: number) => {
 
   const mooCosts = ['50', '100', '200'];
   const cost = parseEther(mooCosts[towerType]);
+  setBuyingTowerId(towerType);
 
   try {
     // ✅ 1. Check allowance
@@ -172,12 +198,16 @@ const handleBuyTower = async (towerType: number) => {
         args: [TOWER_CONTRACT, cost],
       });
 
-      alert('Approval submitted...');
+      window.dispatchEvent(new CustomEvent("show-success-modal", {
+        detail: { message: `🧾 Approval submitted. Waiting for confirmation...` }
+      }));      
       const approvalReceipt = await publicClient.waitForTransactionReceipt({ hash: approveTx });
       if (approvalReceipt.status !== 'success') throw new Error('Approval failed');
     }
     const txHash = await towerContract.write.buyTower([towerType]);
-    alert('Tower purchase submitted!');
+    window.dispatchEvent(new CustomEvent("show-success-modal", {
+      detail: { message: `🎉 Tower minted successfully!` }
+    }));    
     
     // 💤 Wait for Metamask to return and browser to stabilize
     await new Promise((r) => setTimeout(r, 2500));
@@ -211,9 +241,13 @@ const handleBuyTower = async (towerType: number) => {
 
     // ✅ 6. Refresh balance
     await fetchMooBalance();
+    setBuyingTowerId(null);
   } catch (err) {
     console.error(err);
-    alert('Transaction failed');
+    window.dispatchEvent(new CustomEvent("show-error-modal", {
+      detail: { message: `❌ Tower purchase failed. Please try again.` }
+    }));  setBuyingTowerId(null);
+  
   }
 };
 
@@ -441,9 +475,14 @@ const handleBuyTower = async (towerType: number) => {
     <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#5CFFA3' }}>
       Cost: {tower.cost}
     </div>
-    <button className="glow-button green" onClick={() => handleBuyTower(tower.typeId)}>
-  Buy / Mint
+    <button
+  className="glow-button green"
+  disabled={buyingTowerId === tower.typeId}
+  onClick={() => handleBuyTower(tower.typeId)}
+>
+  {buyingTowerId === tower.typeId ? '⏳ Buying...' : 'Buy / Mint'}
 </button>
+
 
   </>
 )}
@@ -514,11 +553,13 @@ const handleBuyTower = async (towerType: number) => {
       {bundle.cost}
     </div>
     <button
-      className="glow-button green"
-      onClick={() => handleBuyMoo(bundle.cost.split(' ')[0])}
-    >
-      Buy
-    </button>
+  className="glow-button green"
+  disabled={buyingMooAmount === bundle.amount}
+  onClick={() => handleBuyMoo(bundle.cost.split(' ')[0], bundle.amount)}
+>
+  {buyingMooAmount === bundle.amount ? '⏳ Buying...' : 'Buy'}
+</button>
+
   </>
 )}
               </div>
