@@ -26,7 +26,7 @@ enemyGroup!: Phaser.GameObjects.Group;
 grid!: { hasTower: boolean }[][];
 sessionToken?: string;
 gameId?: string;
-currentLevel: number = 1; // You can later update this if you support multi-level
+currentLevel: number = 0; // You can later update this if you support multi-level
 waveCount: number = 0;
 totalEnemiesKilled: number = 0;
 hudBar!: Phaser.GameObjects.Rectangle;
@@ -58,7 +58,7 @@ currentEnemyReward: Partial<Record<string, number>> = {};
 gameOver: boolean = false;
 hasSavedVine: boolean = false;
 isPaused: boolean = false;
-levelNumber: number = 1; // default, can be overridden
+levelNumber: number = 0; // default, can be overridden
 lives: number = 10;
 livesText!: Phaser.GameObjects.Text;
 totalEnemiesDestroyed = 0;
@@ -1249,6 +1249,9 @@ console.log(`🚫 Non-HP enemy destroy #${this.totalEnemiesDestroyed}`);
             '🏠 Main Menu',
             0x00B3FF,
             () => {
+              this.cleanupGameObjects(true);
+              console.log('📣 Dispatching request-refresh-towers...');
+              window.dispatchEvent(new Event('request-refresh-towers'));
               if (this.enemySpawnEvent) {
                 this.enemySpawnEvent.remove(false);
               }
@@ -1522,7 +1525,7 @@ this.currentEnemyReward = config.reward;
   this.canSpawnEnemies = false;
   const bannerText = this.add.text(
     bannerBg.x, bannerBg.y,
-   `Level ${this.levelNumber}\n\nWave ${this.waveNumber}`,
+   `Wave ${this.waveNumber}`,
     {
       fontSize: '28px',
       fontFamily: 'Outfit',
@@ -1762,10 +1765,12 @@ async triggerVictory() {
       console.log('📦 Saving MOO from victory (to campaign)...');
       if (this.walletAddress && this.vineBalance > 0) {
         window.dispatchEvent(new CustomEvent('upgrade-campaign', {
-          detail: { level: 2 }
+          detail: { level: 1 }
         }));
       }
       this.cleanupGameObjects(true);
+      console.log('📣 Dispatching request-refresh-towers...');
+      window.dispatchEvent(new Event('request-refresh-towers'));
       window.location.reload();
     },
     0x3CDFFF
