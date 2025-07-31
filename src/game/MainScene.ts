@@ -1249,6 +1249,10 @@ console.log(`🚫 Non-HP enemy destroy #${this.totalEnemiesDestroyed}`);
             '🏠 Main Menu',
             0x00B3FF,
             () => {
+              this.cleanupGameObjects(true);
+              console.log('📣 Dispatching request-refresh-towers...');
+               window.dispatchEvent(new Event('request-refresh-towers'));
+
               if (this.enemySpawnEvent) {
                 this.enemySpawnEvent.remove(false);
               }
