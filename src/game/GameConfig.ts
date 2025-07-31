@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import MainScene from './MainScene';
 import MainMenuScene from './MainMenuScene';
 import CampaignMapScene from './CampaignMapScene';
+import Survival from './Survival';
 import Level2 from './Level2';
 import Level3 from './Level3'
 import Level4 from './Level4'
@@ -29,7 +30,7 @@ const GameConfig: HighResGameConfig = {
     antialiasGL: true,
     roundPixels: false,
   },  
-  scene: [MainMenuScene, CampaignMapScene, MainScene, Level2, Level3, Level4, Level5, Level6, Level7],
+  scene: [MainMenuScene, CampaignMapScene, MainScene, Level2, Level3, Level4, Level5, Level6, Level7, Survival],
   physics: {
     default: 'arcade',
     arcade: {

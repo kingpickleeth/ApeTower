@@ -127,15 +127,81 @@ if (!ownsDeng) {
   console.log('🎯 Launching CampaignMapScene with wallet:', wallet);
   this.scene.start('CampaignMapScene', { wallet });
 }
-});// 📜 Rules Button (updated with smooth tween hover)
-const rulesButtonBg = this.add.rectangle(centerX, centerY + 100, 200, 60, 0x00B3FF, 1)
+});
+
+// 🌴 Survival Mode Button (styled like campaign)
+const survivalButtonBg = this.add.rectangle(centerX, centerY + 90, 200, 60, 0x00B3FF, 1)
   .setOrigin(0.5)
   .setStrokeStyle(2, 0x00B3FF)
   .setInteractive({ useHandCursor: true })
   .setAlpha(0)
   .setScale(1);
 
-const rulesButtonText = this.add.text(centerX, centerY + 100, 'The Rules', {
+const survivalButtonText = this.add.text(centerX, centerY + 90, 'Survival Mode', {
+  fontFamily: 'Outfit',
+  fontSize: '28px',
+  color: '#1A1F2B'
+}).setOrigin(0.5).setAlpha(0).setResolution(2);
+
+// 🎬 Fade in
+this.tweens.add({
+  targets: [survivalButtonBg, survivalButtonText],
+  alpha: 1,
+  duration: 500,
+  ease: 'Power2',
+  delay: 500
+});
+
+// 🌀 Hover effects
+survivalButtonBg.on('pointerover', () => {
+  survivalButtonBg.setFillStyle(0x3CDFFF);
+  this.tweens.add({
+    targets: survivalButtonBg,
+    scale: 1.05,
+    duration: 150,
+    ease: 'Power2'
+  });
+});
+survivalButtonBg.on('pointerout', () => {
+  survivalButtonBg.setFillStyle(0x007AC6);
+  this.tweens.add({
+    targets: survivalButtonBg,
+    scale: 1,
+    duration: 150,
+    ease: 'Power2'
+  });
+});
+
+// 🎮 On click → Start Survival Scene
+survivalButtonBg.on('pointerdown', async () => {
+  let wallet = (window as any).connectedWalletAddress;
+
+  if (!wallet && (window as any).ethereum) {
+    const provider = new BrowserProvider((window as any).ethereum);
+    const accounts = await provider.send('eth_requestAccounts', []);
+    wallet = accounts[0];
+    (window as any).connectedWalletAddress = accounts[0];
+  }
+
+  if (!wallet) {
+    console.warn('⚠️ No wallet found for survival mode');
+    return;
+  }
+
+  console.log('🌴 Launching Survival mode with wallet:', wallet);
+  this.scene.start('Survival', { wallet });
+});
+
+
+// 📜 Rules Button (updated with smooth tween hover)
+const rulesButtonBg = this.add.rectangle(centerX, centerY + 160, 200, 60, 0x00B3FF, 1)
+  .setOrigin(0.5)
+  .setStrokeStyle(2, 0x00B3FF)
+  .setInteractive({ useHandCursor: true })
+  .setAlpha(0)
+  .setScale(1);
+
+const rulesButtonText = this.add.text(centerX, centerY + 160, 'The Rules', {
   fontFamily: 'Outfit',
   fontSize: '28px',
   color: '#1A1F2B',
