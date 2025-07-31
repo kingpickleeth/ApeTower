@@ -1764,6 +1764,9 @@ async triggerVictory() {
         }));
       }
       this.cleanupGameObjects(true);
+      console.log('📣 Dispatching request-refresh-towers...');
+       window.dispatchEvent(new Event('request-refresh-towers'));
+
       window.location.reload();
     },
     0x3CDFFF
