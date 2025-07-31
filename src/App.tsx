@@ -14,6 +14,8 @@ import ShopModal from './components/ShopModal';
 import InteractiveParticles from './components/InteractiveParticles';
 import MusicWidget from './components/MusicWidget';
 import DengPopup from './components/DengPopup';
+import LeaderboardModal from './components/LeaderBoardModal'; // ✅ adjust path if needed
+
 const DENG_CONTRACT = '0x2cf92fe634909a9cf5e41291f54e5784d234cf8d';
 const DENG_ABI = ['function balanceOf(address) view returns (uint256)'];
 
@@ -53,6 +55,7 @@ function App() {
   const [towersLoaded, setTowersLoaded] = useState(false);
   const [gameKey, setGameKey] = useState(0);
   const [hasDeng, setHasDeng] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
 useEffect(() => {
   const checkDengOwnership = async () => {
@@ -346,16 +349,26 @@ for (let i = 0; i < tokenIds.length; i++) {
       ) : (
         <>
         <InteractiveParticles />
-          <div id="navbar">
-      
-<div id="navbar-title">Deng Defense</div>
-            <div id="spacer" />
+        <div id="navbar">
+ 
+ 
+    <div id="navbar-title">Deng Defense</div>
+  <div id="spacer" />
             <div id="wallet-button-container">
             {!isConnected && <ConnectButton showBalance={false} accountStatus="address" />}
 
               {isConnected && (
   profile?.pfp_url ? (
     <>
+       <button
+      className="my-towers-button leaderboard-button"
+      onClick={() => {
+        setShowLeaderboard(true);
+        if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
+      }}
+    >
+      🏆 Leaderboard
+    </button>
     <button
   className="my-towers-button"
   onClick={() => {
@@ -530,10 +543,19 @@ for (let i = 0; i < tokenIds.length; i++) {
     }}
   />
 )}
+{showLeaderboard && (
+  <LeaderboardModal
+    onClose={() => {
+      setShowLeaderboard(false);
+      if ((window as any).resumeGameFromUI) (window as any).resumeGameFromUI();
+    }}
+  />
+)}
 
 
         </>
       )}
+      
      {modalMessage && (
   <GameModal
     message={modalMessage}

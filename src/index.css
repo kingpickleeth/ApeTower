@@ -587,7 +587,7 @@ textarea {
   }
 }
 /* === Responsive Overrides === */
-@media (min-width: 1350px) {
+@media (min-width: 1650px) {
   .profile-btn-mobile,
   .profile-pfp-button-mobile,
   .profile-pfp-button-mobile img {
@@ -595,7 +595,7 @@ textarea {
   }
 
 }
-@media (min-width: 740px) and (max-width: 1349px) {
+@media (min-width: 740px) and (max-width: 1649px) {
   #navbar::before {
     display: none !important;
   }

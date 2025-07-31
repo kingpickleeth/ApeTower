@@ -1,0 +1,119 @@
+.leaderboard-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 10, 20, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  
+  .leaderboard-modal {
+    background: #0d1b2a;
+    border: 2px solid #00B3FF;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 0 16px rgba(0, 179, 255, 0.4);
+    font-family: 'Outfit', sans-serif;
+    color: #00B3FF;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .leaderboard-title {
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: bold;
+    margin-bottom: 16px;
+    text-shadow: 0 0 1px #00B3FF, 0 0 6px #00B3FF;
+  }
+  
+  /* Header and rows as responsive grid */
+  .leaderboard-table-header,
+  .leaderboard-row {
+    display: grid;
+    grid-template-columns: 40px 1fr minmax(50px, 80px) minmax(60px, 100px) minmax(60px, 100px);
+    gap: 12px;
+    padding: 6px 0;
+    align-items: center;
+    text-align: center;
+  }
+  
+  /* Text in each cell */
+  .leaderboard-table-header div,
+  .leaderboard-row div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* Align usernames left */
+  .leaderboard-table-header div:nth-child(2),
+  .leaderboard-row div:nth-child(2) {
+    justify-content: flex-start;
+    text-align: left;
+    padding-left: 4px;
+  }
+  
+  .leaderboard-table-header {
+    font-weight: bold;
+    border-bottom: 1px solid rgba(0, 179, 255, 0.2);
+    margin-bottom: 8px;
+    color: #00B3FF;
+  }
+  
+  .leaderboard-table-body {
+    max-height: 320px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  
+  .leaderboard-row:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+  
+  .leaderboard-close-btn {
+    margin-top: 20px;
+    align-self: center;
+    background: #d62828;
+    border: none;
+    color: white;
+    font-weight: bold;
+    padding: 10px 24px;
+    border-radius: 12px;
+    font-size: 1rem;
+    box-shadow: 0 0 8px rgba(255, 0, 0, 0.5);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .leaderboard-close-btn:hover {
+    background: #ff3c3c;
+    box-shadow: 0 0 12px rgba(255, 0, 0, 0.8);
+  }
+  
+  /* Mobile Responsiveness */
+  @media (max-width: 500px) {
+    .leaderboard-table-header,
+    .leaderboard-row {
+      grid-template-columns: 30px 1fr minmax(40px, 60px) minmax(40px, 60px) minmax(40px, 60px);
+      gap: 8px;
+    }
+  
+    .leaderboard-modal {
+      padding: 16px;
+    }
+  
+    .leaderboard-close-btn {
+      width: 100%;
+      max-width: 220px;
+    }
+  }
+  
