@@ -1551,13 +1551,29 @@ this.currentEnemyReward = config.reward;
   // ---------------------------------------------------------------------------
   // 🔁 restartGame(): Full reset of game state and visuals
   // ---------------------------------------------------------------------------
-  restartGame() {
+  async restartGame() {
     console.log('🔁 Restarting game...');
+  
+    try {
+      const res = await fetch('https://metadata-server-production.up.railway.app/api/start-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wallet: this.walletAddress })
+      });
+      const { sessionToken, gameId } = await res.json();
+      this.sessionToken = sessionToken;
+      this.gameId = gameId;
+      console.log('🎟️ New game session started (restart):', this.gameId);
+    } catch (err) {
+      console.error('❌ Failed to start new game session on restart', err);
+      return; // Don't continue if session failed
+    }
+  
     this.cleanupGameObjects(true);
     this.startNextWave();
     this.physics.resume();
     this.load.start();
-  }
+  }  
 // ---------------------------------------------------------------------------
 // 🔼 showUpgradePanel(): Displays tower upgrade UI
 // ---------------------------------------------------------------------------
