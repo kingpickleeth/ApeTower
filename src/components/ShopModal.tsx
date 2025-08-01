@@ -195,7 +195,7 @@ const handleBuyTower = async (towerType: number) => {
         address: MOO_ADDRESS,
         abi: ERC20_ABI,
         functionName: 'approve',
-        args: [TOWER_CONTRACT, cost],
+        args: [TOWER_CONTRACT, MAX_UINT],
       });
 
       window.dispatchEvent(new CustomEvent("show-success-modal", {
