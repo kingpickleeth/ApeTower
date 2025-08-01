@@ -256,6 +256,8 @@ killEnemy(enemy: Phaser.GameObjects.Arc) {
 // cleanupGameObjects(): Resets and clears all active game objects and state
 // ---------------------------------------------------------------------------
 cleanupGameObjects(fullReset = false) {
+  this.waveNumber = 0;
+  this.waveCount = 0;  // Add this line to reset wave count
   this.enemySpawnEvent?.remove(false);
   this.time.clearPendingEvents();
   this.time.removeAllEvents();
@@ -300,7 +302,7 @@ cleanupGameObjects(fullReset = false) {
     this.vineBalance = 40;
     this.lives = 10;
     this.waveNumber = 0;
-    this.gameOver = false;
+    this.waveCount = 0;  // Add this line to reset wave count    this.gameOver = false;
     this.isPaused = false;
     this.updateLivesDisplay(this.lives);
     this.vineText.setText(`$MOO: ${this.vineBalance}`);
