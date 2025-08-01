@@ -301,7 +301,6 @@ cleanupGameObjects(fullReset = false) {
     this.vineBalance = 40;
     this.lives = 10;
     this.waveNumber = 0;
-    this.waveCount = 0;  // Add this line to reset wave count    this.gameOver = false;
     this.isPaused = false;
     this.updateLivesDisplay(this.lives);
     this.vineText.setText(`$MOO: ${this.vineBalance}`);
@@ -331,7 +330,6 @@ async create() {
   console.log('✅ survival created');
   console.log('🧠 NFT Towers Loaded:', this.towerNFTs);
   this.hasSavedVine = false;
-  this.waveCount = 0;  // Ensure waveCount starts at 0 for a new game
   // 🔐 Fetch sessionToken and gameId
 try {
   const res = await fetch('https://metadata-server-production.up.railway.app/api/start-session', {
@@ -1560,7 +1558,8 @@ this.currentEnemyReward = config.reward;
   // ---------------------------------------------------------------------------
   async restartGame() {
     console.log('🔁 Restarting game...');
-  
+    this.waveNumber = 0;
+    this.waveCount = 0;
     try {
       const res = await fetch('https://metadata-server-production.up.railway.app/api/start-session', {
         method: 'POST',

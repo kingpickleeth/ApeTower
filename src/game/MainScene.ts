@@ -256,7 +256,6 @@ killEnemy(enemy: Phaser.GameObjects.Arc) {
 // cleanupGameObjects(): Resets and clears all active game objects and state
 // ---------------------------------------------------------------------------
 cleanupGameObjects(fullReset = false) {
-  this.waveNumber = 0;
   this.enemySpawnEvent?.remove(false);
   this.time.clearPendingEvents();
   this.time.removeAllEvents();
@@ -1555,7 +1554,8 @@ this.currentEnemyReward = config.reward;
   // ---------------------------------------------------------------------------
   async restartGame() {
     console.log('🔁 Restarting game...');
-  
+    this.waveNumber = 0;
+    this.waveCount = 0;
     try {
       const res = await fetch('https://metadata-server-production.up.railway.app/api/start-session', {
         method: 'POST',
