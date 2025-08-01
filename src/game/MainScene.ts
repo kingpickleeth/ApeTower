@@ -84,7 +84,6 @@ canSpawnEnemies: boolean = false;
 enemyQueue: string[] = []; // Enemies to spawn this wave
 enemySpawnEvent!: Phaser.Time.TimerEvent;
 enemiesEscaped: number = 0;
-enemiesKilled: number = 0;
 enemiesPerWave: number = 5;
 enemiesSpawned: number = 0;
 waveNumber: number = 0;
@@ -248,7 +247,7 @@ killEnemy(enemy: Phaser.GameObjects.Arc) {
   bar?.destroy();
   barBg?.destroy();
   enemy.destroy();
-  this.enemiesKilled++;
+  this.totalEnemiesKilled++;
   this.checkWaveOver();
   console.log(`✅ killEnemy() executed at (${x}, ${y}) with reward ${reward}`);
 }
@@ -330,7 +329,7 @@ async create() {
   console.log('✅ MainScene created');
   console.log('🧠 NFT Towers Loaded:', this.towerNFTs);
   this.hasSavedVine = false;
-  this.waveCount = 0;  // Ensure waveCount starts at 0 for a new game
+  this.waveCount = 0; 
   // 🔐 Fetch sessionToken and gameId
 try {
   const res = await fetch('https://metadata-server-production.up.railway.app/api/start-session', {
@@ -537,7 +536,6 @@ try {
       enemy.getData('hpBar')?.destroy();
       enemy.getData('hpBarBg')?.destroy();
       enemy.destroy();
-      this.enemiesKilled++;
       this.checkWaveOver();
     } else {
       enemy.setData('hp', hp);
@@ -1335,7 +1333,7 @@ console.log(`🚫 Non-HP enemy destroy #${this.totalEnemiesDestroyed}`);
           target.getData('hpBarBg')?.destroy();
           target.destroy();
           bullet.destroy();
-          this.enemiesKilled++;
+          this.totalEnemiesKilled++;
           this.checkWaveOver();
         } else {
           bullet.destroy(); // Not dead, but hit
@@ -1460,7 +1458,6 @@ console.log(`🚫 Non-HP enemy destroy #${this.totalEnemiesDestroyed}`);
    }  
     this.waveText.setText(`Wave: ${this.waveNumber}`);
     this.enemiesSpawned = 0;
-    this.enemiesKilled = 0;
     // 📦 Generate enemy queue
     // ✅ Full Wave Progression for Level 1
     const waveConfig = [
@@ -1556,6 +1553,7 @@ this.currentEnemyReward = config.reward;
     console.log('🔁 Restarting game...');
     this.waveNumber = 0;
     this.waveCount = 0;
+    this.totalEnemiesKilled = 0;
     try {
       const res = await fetch('https://metadata-server-production.up.railway.app/api/start-session', {
         method: 'POST',
