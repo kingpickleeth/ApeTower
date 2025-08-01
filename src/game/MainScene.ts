@@ -331,6 +331,7 @@ async create() {
   console.log('✅ MainScene created');
   console.log('🧠 NFT Towers Loaded:', this.towerNFTs);
   this.hasSavedVine = false;
+  this.waveCount = 0;  // Ensure waveCount starts at 0 for a new game
   // 🔐 Fetch sessionToken and gameId
 try {
   const res = await fetch('https://metadata-server-production.up.railway.app/api/start-session', {
