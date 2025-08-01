@@ -257,7 +257,6 @@ killEnemy(enemy: Phaser.GameObjects.Arc) {
 // ---------------------------------------------------------------------------
 cleanupGameObjects(fullReset = false) {
   this.waveNumber = 0;
-  this.waveCount = 0;  // Add this line to reset wave count
   this.enemySpawnEvent?.remove(false);
   this.time.clearPendingEvents();
   this.time.removeAllEvents();
