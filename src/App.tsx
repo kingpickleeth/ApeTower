@@ -112,51 +112,6 @@ useEffect(() => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
   
-  useEffect(() => {
-    const handler = async (e: any) => {
-      const amount = e.detail.amount;
-      if (!address) {
-        setModalMessage("Wallet not connected.");
-        setModalType('error');
-        return;
-      }      
-      
-      try {
-        const provider = new JsonRpcProvider(APECHAIN_RPC);
-        const privateKey = import.meta.env.VITE_VINE_SENDER_KEY;
-        if (!privateKey) throw new Error("VINE_SENDER_KEY not set in .env");
-        const wallet = new Wallet(privateKey, provider);
-        const token = new Contract(VINE_TOKEN, ERC20_ABI, wallet);
-        const decimals = await token.decimals();
-        const parsedAmount = parseUnits(amount.toString(), decimals);
-        const txRequest = await token.getFunction("transfer").populateTransaction(getAddress(String(address)), parsedAmount);
-        txRequest.gasLimit = 70_000n;
-        txRequest.maxFeePerGas = parseUnits("30", "gwei");
-        const sentTx = await wallet.sendTransaction(txRequest);
-await sentTx.wait();
-
-setTimeout(() => {
-  window.dispatchEvent(new Event("vine-wallet-balance-update"));
-}, 4000); // wait 3s after mining before querying balance
-window.dispatchEvent(new Event("vine-wallet-balance-update"));
-
-        // ✅ Dispatch wallet update event after tx confirmation
-window.dispatchEvent(new CustomEvent("vine-claimed-onchain"));
-
-        setModalMessage(
-          `Nice work Big Dawg!You just claimed ${amount} $VINE!<br /><a href="https://apescan.io/tx/${sentTx.hash}" target="_blank" style="color:#2ecc71;text-decoration:underline;">View on ApeScan</a><br /><br />Don't spend it all in one place 😉`
-        );        
-        setModalType('success');
-} catch (err: any) {
-        console.error(err);
-        setModalMessage("Failed to claim $VINE: " + err.message);
-        setModalType('error');        
-      }
-    };
-    window.addEventListener("claim-vine", handler);
-    return () => window.removeEventListener("claim-vine", handler);
-  }, [address]);
-
 
 useEffect(() => {
   const handler = (e: any) => {
