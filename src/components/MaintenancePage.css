@@ -1,0 +1,199 @@
+/* Body styles */
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #1f2630; /* Darker jungle green with blue undertones */
+    color: #fff;
+    overflow: hidden;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Ensures the body takes full height */
+    position: relative;
+  }
+  
+  /* Full screen maintenance container */
+  .maintenance-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 2; /* Ensure content is above background */
+    text-align: center;
+  }
+  
+  /* Dynamic jungle background with parallax effect */
+  .background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('path-to-jungle-background.png') no-repeat center center fixed;
+    background-size: cover;
+    animation: moveBackground 25s linear infinite;
+    z-index: -1; /* Ensures background stays behind content */
+  }
+  
+  @keyframes moveBackground {
+    0% { background-position: 0 0; }
+    100% { background-position: 100% 0; }
+  }
+  
+  /* Header styles */
+  h1 {
+    font-size: 4rem;
+    color: #1f78d1; /* Primary blue for the header */
+    text-shadow: 5px 5px 15px rgba(0, 0, 0, 0.7);
+    margin-bottom: 20px;
+  }
+  
+  h2 {
+    font-size: 2rem;
+    color: #76e64f; /* Jungle green */
+    margin-bottom: 20px;
+  }
+  
+  p {
+    font-size: 1.5rem;
+    margin: 20px auto;
+    width: 70%;
+  }
+  
+  /* Progress Bar */
+  .progress-bar-container {
+    width: 70%;
+    height: 30px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 15px;
+    margin: 20px auto;
+    position: relative;
+  }
+  
+  .progress-bar {
+    height: 100%;
+    background-color: #76e64f;
+    transition: width 0.1s ease-in-out;
+  }
+  
+  /* Interactive Tower */
+  .interactive-tower {
+    margin: 30px;
+    width: 120px;
+    height: 120px;
+    background: url('tower-icon.png') center no-repeat;
+    background-size: contain;
+    display: inline-block;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+  
+  .interactive-tower:hover {
+    transform: scale(1.2);
+  }
+  
+  /* Footer Section */
+  footer {
+    margin-top: 50px;
+  }
+  
+  footer a {
+    text-decoration: none;
+    color: #fff;
+    padding: 12px 24px;
+    background-color: #1f78d1; /* Primary blue */
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    font-size: 1.2rem;
+  }
+  
+  footer a:hover {
+    background-color: #155b89; /* Darker blue */
+  }
+  
+  /* Responsive Design */
+  
+  /* For Tablets and smaller screens */
+  @media (max-width: 1024px) {
+    h1 {
+      font-size: 2.5rem;
+    }
+  
+    .progress-bar-container {
+      width: 85%;
+    }
+  
+    .interactive-tower {
+      width: 100px;
+      height: 100px;
+    }
+  
+    p {
+      width: 90%;
+    }
+  }
+  
+  /* For Smartphones */
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 2rem;
+    }
+  
+    h2 {
+      font-size: 1.5rem;
+    }
+  
+    .progress-bar-container {
+      width: 90%;
+    }
+  
+    .interactive-tower {
+      width: 80px;
+      height: 80px;
+    }
+  
+    p {
+      width: 100%;
+      font-size: 1.2rem;
+    }
+  
+    footer a {
+      padding: 8px 16px;
+      font-size: 1rem;
+    }
+  }
+  
+  /* For Very Small Screens (Mobile Portrait) */
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 1.8rem;
+    }
+  
+    h2 {
+      font-size: 1.3rem;
+    }
+  
+    .progress-bar-container {
+      width: 90%;
+    }
+  
+    .interactive-tower {
+      width: 70px;
+      height: 70px;
+    }
+  
+    p {
+      width: 100%;
+      font-size: 1rem;
+    }
+  
+    footer a {
+      padding: 6px 12px;
+      font-size: 0.9rem;
+    }
+  }
+  
