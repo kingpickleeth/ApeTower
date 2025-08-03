@@ -64,7 +64,7 @@ const fetchTowers = useCallback(async () => {
     const ids: number[] = await contract.getOwnedTowers(walletAddress);
 
     const towerDataPromises = ids.map(async (id) => {
-      const metaUrl = `https://metadata-server-production.up.railway.app/api/tower/${id}.json`;
+      const metaUrl = `https://dengdefense.xyz/api/tower/${id}.json`;
       let type = 'Unknown', level = 1, speed, range, damage;
       try {
         const res = await fetch(metaUrl);
