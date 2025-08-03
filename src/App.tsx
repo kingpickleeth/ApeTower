@@ -322,7 +322,7 @@ for (let i = 0; i < tokenIds.length; i++) {
         if ((window as any).pauseGameFromUI) (window as any).pauseGameFromUI();
       }}
     >
-      🏆 Leaderboard
+    Leaderboard
     </button>
     <button
   className="my-towers-button"
