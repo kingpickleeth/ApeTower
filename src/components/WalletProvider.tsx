@@ -1,11 +1,31 @@
 // src/components/WalletProvider.tsx
 import '@rainbow-me/rainbowkit/styles.css';
-import { getDefaultConfig, RainbowKitProvider, lightTheme } from '@rainbow-me/rainbowkit';
-import { WagmiProvider } from 'wagmi';
+import { getDefaultConfig, RainbowKitProvider, lightTheme, ConnectButton } from '@rainbow-me/rainbowkit';
+import { WagmiProvider, createConfig } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Chain } from 'viem';
 import type { ReactNode } from 'react';
-import React from 'react';
+import { glyphWalletRK } from "@use-glyph/sdk-react";
+import { connectorsForWallets } from '@rainbow-me/rainbowkit';
+import {
+  metaMaskWallet,
+  rainbowWallet,
+} from '@rainbow-me/rainbowkit/wallets';
+import { createPublicClient, http } from 'viem'; // ✅ FIX
+
+
+const connectors = connectorsForWallets(
+  [
+    {
+      groupName: 'Recommended',
+      wallets: [glyphWalletRK, rainbowWallet, metaMaskWallet],
+    },
+  ],
+  {
+    appName: 'Deng Defense',
+    projectId: 'ec846cc8cfaadc7743c39b5bbe99ade5',
+  }
+);
 
 const apechain: Chain = {
   id: 33139,
@@ -20,12 +40,15 @@ const apechain: Chain = {
   },
 };
 
-const config = getDefaultConfig({
-    appName: 'Deng Defense',
-    chains: [apechain],
-    projectId: 'ec846cc8cfaadc7743c39b5bbe99ade5', // replace this
-  });
-  
+const config = createConfig({
+  connectors,
+  chains: [apechain],
+  client: ({ chain }) =>
+    createPublicClient({
+      chain,
+      transport: http(),
+    }),
+});
 
 const queryClient = new QueryClient();
 
