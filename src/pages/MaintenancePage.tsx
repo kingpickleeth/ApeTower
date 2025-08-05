@@ -2,6 +2,7 @@ import './MaintenancePage.css';
 
 export const MaintenancePage = () => {
   return (
+    <div className="maintenance-container">
     <div className="wrapper">
       <h1 className="title">
         <span className="effect" data-value="Deng Defense">Deng Defense</span> is currently being worked on. Stay tuned!
@@ -67,6 +68,7 @@ export const MaintenancePage = () => {
           </form>
         </div>
       </div>
+    </div>
     </div>
   );
 };
