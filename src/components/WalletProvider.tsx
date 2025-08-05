@@ -17,8 +17,12 @@ import { createPublicClient, http } from 'viem'; // ✅ FIX
 const connectors = connectorsForWallets(
   [
     {
-      groupName: 'Recommended',
-      wallets: [glyphWalletRK, rainbowWallet, metaMaskWallet],
+      groupName: 'Glyph',
+      wallets: [glyphWalletRK],
+    },
+    {
+      groupName: 'Other Wallets',
+      wallets: [rainbowWallet, metaMaskWallet],
     },
   ],
   {
