@@ -1,0 +1,13 @@
+diff --git a/node_modules/ox/core/Errors.ts b/node_modules/ox/core/Errors.ts
+index b130332..8e42faf 100644
+--- a/node_modules/ox/core/Errors.ts
++++ b/node_modules/ox/core/Errors.ts
+@@ -21,7 +21,7 @@ export class BaseError<
+   docsPath?: string | undefined
+   shortMessage: string
+ 
+-  override cause: cause
++  cause: cause
+   override name = 'BaseError'
+ 
+   version = `ox@${getVersion()}`

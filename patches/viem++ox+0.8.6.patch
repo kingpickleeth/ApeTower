@@ -1,0 +1,121 @@
+diff --git a/node_modules/viem/node_modules/ox/core/Authorization.ts b/node_modules/viem/node_modules/ox/core/Authorization.ts
+index 40a4bdf..48697b2 100644
+--- a/node_modules/viem/node_modules/ox/core/Authorization.ts
++++ b/node_modules/viem/node_modules/ox/core/Authorization.ts
+@@ -5,6 +5,7 @@ import * as Hex from './Hex.js'
+ import * as Rlp from './Rlp.js'
+ import * as Signature from './Signature.js'
+ import type { Compute, Mutable, Undefined } from './internal/types.js'
++// 🧠 PATCHED BY CHARLIE
+ 
+ /** Root type for an EIP-7702 Authorization. */
+ export type Authorization<
+@@ -125,7 +126,26 @@ export function from<
+ ): from.ReturnType<authorization, signature> {
+   if (typeof authorization.chainId === 'string')
+     return fromRpc(authorization) as never
+-  return { ...authorization, ...options.signature } as never
++
++  const sig = options.signature
++
++  const hasCompleteSignature =
++    sig?.r !== undefined &&
++    sig?.s !== undefined &&
++    sig?.yParity !== undefined
++
++  if (hasCompleteSignature) {
++    return {
++      ...authorization,
++      r: sig.r,
++      s: sig.s,
++      yParity: sig.yParity,
++    } as never
++  } else {
++    return {
++      ...authorization,
++    } as never
++  }
+ }
+ 
+ export declare namespace from {
+@@ -266,15 +286,38 @@ export declare namespace fromRpcList {
+ export function fromTuple<const tuple extends Tuple>(
+   tuple: tuple,
+ ): fromTuple.ReturnType<tuple> {
+-  const [chainId, address, nonce, yParity, r, s] = tuple
++  const [chainIdHex, address, nonceHex, yParity, r, s] = tuple
++
+   const signature =
+     yParity && r && s ? Signature.fromTuple([yParity, r, s]) : undefined
+-  return from({
+-    address,
+-    chainId: Number(chainId),
+-    nonce: BigInt(nonce),
+-    ...signature,
+-  }) as never
++
++    const hasCompleteSignature =
++    signature?.r !== undefined &&
++    signature?.s !== undefined &&
++    signature?.yParity !== undefined;
++
++  if (hasCompleteSignature) {
++    return from(
++      {
++        address,
++        chainId: Number(chainIdHex),
++        nonce: BigInt(nonceHex),
++        r: signature.r,
++        s: signature.s,
++        yParity: signature.yParity,
++      },
++      {},
++    ) as never;
++  } else {
++    return from(
++      {
++        address,
++        chainId: Number(chainIdHex),
++        nonce: BigInt(nonceHex),
++      },
++      {},
++    ) as never;
++  }
+ }
+ 
+ export declare namespace fromTuple {
+diff --git a/node_modules/viem/node_modules/ox/core/Errors.ts b/node_modules/viem/node_modules/ox/core/Errors.ts
+index 06e2bdc..fc15e3c 100644
+--- a/node_modules/viem/node_modules/ox/core/Errors.ts
++++ b/node_modules/viem/node_modules/ox/core/Errors.ts
+@@ -3,6 +3,7 @@ import { getVersion } from './internal/errors.js'
+ export type GlobalErrorType<name extends string = 'Error'> = Error & {
+   name: name
+ }
++// 🧠 PATCHED BY CHARLIE
+ 
+ /**
+  * Base error class inherited by all errors thrown by ox.
+@@ -21,8 +22,10 @@ export class BaseError<
+   docsPath?: string | undefined
+   shortMessage: string
+ 
+-  override cause: cause
+-  override name = 'BaseError'
++
++  cause: unknown
++  name = 'BaseError'
++
+ 
+   version = `ox@${getVersion()}`
+ 
+@@ -64,8 +67,7 @@ export class BaseError<
+       .filter((x) => typeof x === 'string')
+       .join('\n')
+ 
+-    super(message, options.cause ? { cause: options.cause } : undefined)
+-
++    super(message)
+     this.cause = options.cause as any
+     this.details = details
+     this.docs = docs
