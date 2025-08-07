@@ -107,13 +107,6 @@ this.tweens.add({
 campaignButtonBg.on('pointerdown', async () => {
 let wallet = (window as any).connectedWalletAddress;
 
-if (!wallet && (window as any).ethereum) {
-  const provider = new BrowserProvider((window as any).ethereum);
-  const accounts = await provider.send('eth_requestAccounts', []);
-  wallet = accounts[0];
-  (window as any).connectedWalletAddress = accounts[0];
-}
-
 if (!wallet) {
   console.warn('⚠️ Still no wallet after request');
   return;
@@ -175,13 +168,6 @@ survivalButtonBg.on('pointerout', () => {
 // 🎮 On click → Start Survival Scene
 survivalButtonBg.on('pointerdown', async () => {
   let wallet = (window as any).connectedWalletAddress;
-
-  if (!wallet && (window as any).ethereum) {
-    const provider = new BrowserProvider((window as any).ethereum);
-    const accounts = await provider.send('eth_requestAccounts', []);
-    wallet = accounts[0];
-    (window as any).connectedWalletAddress = accounts[0];
-  }
 
   if (!wallet) {
     console.warn('⚠️ No wallet found for survival mode');

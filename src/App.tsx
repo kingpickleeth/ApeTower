@@ -56,7 +56,14 @@ function App() {
   const [gameKey, setGameKey] = useState(0);
   const [hasDeng, setHasDeng] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
-
+  
+  useEffect(() => {
+    if (address) {
+      (window as any).connectedWalletAddress = address;
+      console.log('🌐 Connected wallet set globally:', address);
+    }
+  }, [address]);
+  
 useEffect(() => {
   const checkDengOwnership = async () => {
     if (!address) return setHasDeng(false);
